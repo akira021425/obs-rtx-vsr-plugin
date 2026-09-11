@@ -33,7 +33,7 @@ void D3D11Interop::Release()
     m_device.Reset();
 }
 
-Microsoft::WRL::ComPtr<ID3D11Texture2D> D3D11Interop::GetD3D11Texture(gs_texture_t* obs_tex)
+ID3D11Texture2D* D3D11Interop::GetD3D11Texture(gs_texture_t* obs_tex)
 {
     if (!obs_tex) return nullptr;
 
