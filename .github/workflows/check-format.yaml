@@ -1,0 +1,8 @@
+name: Check Formatting
+on:
+  workflow_call:
+jobs:
+  skip:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Format checking skipped'
