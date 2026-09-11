@@ -211,23 +211,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 gs_draw_sprite(rt, 0, 1920, 1080);
             }
         } else {
-            // Fallback: Just scale it with OBS graphics API (Bicubic fallback concept)
+            // Fallback: Just pass through the source directly to the output with scaling
             gs_effect_set_texture(image, source_tex);
-            
-            gs_projection_push();
-            gs_ortho(0.0f, 1920.0f, 0.0f, 1080.0f, -100.0f, 100.0f);
-            gs_set_render_target(rt, nullptr);
-            
             while (gs_effect_loop(def_effect, "Draw")) {
                 gs_draw_sprite(source_tex, 0, 1920, 1080);
-            }
-            
-            gs_set_render_target(nullptr, nullptr);
-            gs_projection_pop();
-            
-            gs_effect_set_texture(image, rt);
-            while (gs_effect_loop(def_effect, "Draw")) {
-                gs_draw_sprite(rt, 0, 1920, 1080);
             }
         }
     } else {
