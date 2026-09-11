@@ -225,7 +225,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             gs_flush();
             
             // 1. Copy OBS input to shared texture
-            context->CopyResource(filter->shared_input_tex.Get(), d3d11_src_tex.Get());
+            context->CopyResource(filter->shared_input_tex.Get(), d3d11_src_tex);
 
             // Process VSR (Phase 5, 6, 7) using shared textures
             success = filter->nvidia_vsr->Process(filter->shared_input_tex, filter->shared_output_tex);
@@ -244,7 +244,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 }
                 
                 // 3. Copy final result back to OBS render target
-                context->CopyResource(d3d11_dst_tex.Get(), final_tex.Get());
+                context->CopyResource(d3d11_dst_tex, final_tex.Get());
             }
         }
         

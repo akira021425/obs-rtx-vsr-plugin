@@ -38,12 +38,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> D3D11Interop::GetD3D11Texture(gs_texture
     if (!obs_tex) return nullptr;
 
     ID3D11Texture2D *d3d11_tex = (ID3D11Texture2D *)gs_texture_get_obj(obs_tex);
-    if (!d3d11_tex) {
-        return nullptr;
-    }
-
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> tex_ptr(d3d11_tex);
-    return tex_ptr;
+    return d3d11_tex;
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> D3D11Interop::CreateSharedTexture(uint32_t width, uint32_t height)
