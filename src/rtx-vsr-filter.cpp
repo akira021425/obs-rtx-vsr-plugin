@@ -180,6 +180,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         Microsoft::WRL::ComPtr<ID3D11Texture2D> final_tex;
         
         if (d3d11_src_tex && d3d11_dst_tex) {
+            // Flush D3D11 command queue to prevent CUDA interop deadlock
+            gs_flush();
+            
             // Process VSR (Phase 5, 6, 7)
             success = filter->nvidia_vsr->Process(d3d11_src_tex, d3d11_dst_tex);
             
