@@ -69,10 +69,12 @@ function Package {
     Log-Group
 
     Log-Group "Generating NSIS Installer for ${ProductName}..."
-    Push-Location "${ProjectRoot}/build_x64"
-    Invoke-External cpack -G NSIS -C $Configuration
-    Pop-Location
-    Move-Item -Path "${ProjectRoot}/build_x64/*.exe" -Destination "${ProjectRoot}/release/${OutputName}.exe" -Force -ErrorAction SilentlyContinue
+    if (!(Get-Command makensis -ErrorAction SilentlyContinue)) {
+        choco install nsis -y
+        $env:Path += ";C:\Program Files (x86)\NSIS"
+    }
+    Invoke-External makensis installer.nsi
+    Move-Item -Path "obs-rtx-vsr-1.0.0-windows-x64.exe" -Destination "${ProjectRoot}/release/${OutputName}.exe" -Force -ErrorAction SilentlyContinue
     Log-Group
 }
 
