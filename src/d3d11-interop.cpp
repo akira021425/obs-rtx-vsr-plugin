@@ -45,3 +45,26 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> D3D11Interop::GetD3D11Texture(gs_texture
     Microsoft::WRL::ComPtr<ID3D11Texture2D> tex_ptr(d3d11_tex);
     return tex_ptr;
 }
+
+Microsoft::WRL::ComPtr<ID3D11Texture2D> D3D11Interop::CreateSharedTexture(uint32_t width, uint32_t height)
+{
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
+    HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &tex);
+    if (FAILED(hr)) {
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create shared D3D11 texture (hr: 0x%X)", hr);
+        return nullptr;
+    }
+
+    return tex;
+}

@@ -16,6 +16,9 @@ struct rtx_vsr_data {
     gs_texture_t *render_target; // The final 1080p output texture (from VSR)
     gs_texrender_t *texrender; // For drawing the source into a texture
 
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_input_tex;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> shared_output_tex;
+
     bool is_initialized;
     uint64_t frame_count;
 };
@@ -59,6 +62,9 @@ static void rtx_vsr_destroy(void *data)
         filter->d3d11_interop->Release();
     }
     obs_leave_graphics();
+    
+    filter->shared_input_tex.Reset();
+    filter->shared_output_tex.Reset();
     
     delete filter;
 }
@@ -166,6 +172,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         if (current_rt_width != target_width || current_rt_height != target_height) {
             gs_texture_destroy(filter->render_target);
             filter->render_target = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            filter->shared_input_tex = filter->d3d11_interop->CreateSharedTexture(width, height);
+            filter->shared_output_tex = filter->d3d11_interop->CreateSharedTexture(target_width, target_height);
             filter->nvidia_vsr->Initialize(filter->d3d11_interop->GetDevice(), target_width, target_height);
         }
     }
@@ -176,6 +184,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             filter->is_initialized = true;
             // Target output resolution
             filter->render_target = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            filter->shared_input_tex = filter->d3d11_interop->CreateSharedTexture(width, height);
+            filter->shared_output_tex = filter->d3d11_interop->CreateSharedTexture(target_width, target_height);
             
             // Initialize NVIDIA SDK (Phase 4)
             auto d3d11_dev = filter->d3d11_interop->GetDevice();
@@ -208,27 +218,33 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         bool success = false;
         Microsoft::WRL::ComPtr<ID3D11Texture2D> final_tex;
         
-        if (d3d11_src_tex && d3d11_dst_tex) {
-            // Flush D3D11 command queue to prevent CUDA interop deadlock
+        if (d3d11_src_tex && d3d11_dst_tex && filter->shared_input_tex && filter->shared_output_tex) {
+            auto context = filter->d3d11_interop->GetContext();
+            
+            // Flush OBS graphics before D3D11 raw operations
             gs_flush();
             
-            // Process VSR (Phase 5, 6, 7)
-            success = filter->nvidia_vsr->Process(d3d11_src_tex, d3d11_dst_tex);
+            // 1. Copy OBS input to shared texture
+            context->CopyResource(filter->shared_input_tex.Get(), d3d11_src_tex.Get());
+
+            // Process VSR (Phase 5, 6, 7) using shared textures
+            success = filter->nvidia_vsr->Process(filter->shared_input_tex, filter->shared_output_tex);
             
             if (success) {
-                final_tex = d3d11_dst_tex;
+                final_tex = filter->shared_output_tex;
                 
                 // Process Frame Interpolation (Phase 8-10)
                 if (filter->fruc->IsEnabled()) {
                     // Very simple naive pass-through of timestamp
                     double timestamp = filter->frame_count++ * (1.0 / 30.0);
-                    auto interp_tex = filter->fruc->Process(d3d11_dst_tex, timestamp);
+                    auto interp_tex = filter->fruc->Process(filter->shared_output_tex, timestamp);
                     if (interp_tex) {
-                        // Copy interpolated texture into OBS render_target D3D11 texture
-                        auto context = filter->d3d11_interop->GetContext();
-                        context->CopyResource(d3d11_dst_tex.Get(), interp_tex.Get());
+                        final_tex = interp_tex;
                     }
                 }
+                
+                // 3. Copy final result back to OBS render target
+                context->CopyResource(d3d11_dst_tex.Get(), final_tex.Get());
             }
         }
         
