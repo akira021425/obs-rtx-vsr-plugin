@@ -8,6 +8,7 @@ struct rtx_vsr_data {
     int vsr_quality;
     bool artifact_reduction;
     bool frame_interpolation;
+    float resolution_scale;
 
     std::unique_ptr<D3D11Interop> d3d11_interop;
     std::unique_ptr<NvidiaVSR> nvidia_vsr;
@@ -36,6 +37,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
     data->is_initialized = false;
     data->frame_count = 0;
+    data->resolution_scale = 1.0f; // Default 1x (Matching source)
     
     obs_source_update(context, settings);
     return data;
@@ -67,6 +69,11 @@ static void rtx_vsr_update(void *data, obs_data_t *settings)
     filter->vsr_quality = (int)obs_data_get_int(settings, "vsr_quality");
     filter->artifact_reduction = obs_data_get_bool(settings, "artifact_reduction");
     filter->frame_interpolation = obs_data_get_bool(settings, "frame_interpolation");
+    
+    // Read the resolution scale multiplier
+    double scale = obs_data_get_double(settings, "resolution_scale");
+    if (scale < 1.0) scale = 1.0;
+    filter->resolution_scale = (float)scale;
 
     if (filter->nvidia_vsr) {
         filter->nvidia_vsr->SetQuality(filter->vsr_quality);
@@ -94,6 +101,13 @@ static obs_properties_t *rtx_vsr_properties(void *data)
     obs_properties_add_bool(props, "artifact_reduction", obs_module_text("ArtifactReduction"));
     obs_properties_add_bool(props, "frame_interpolation", obs_module_text("FrameInterpolation"));
     
+    p = obs_properties_add_list(props, "resolution_scale", "Resolution Scale",
+                                OBS_COMBO_TYPE_LIST, OBS_COMBO_FORMAT_FLOAT);
+    obs_property_list_add_float(p, "1.0x (Enhance Only)", 1.0f);
+    obs_property_list_add_float(p, "1.33x", 1.333333f);
+    obs_property_list_add_float(p, "1.5x (720p -> 1080p)", 1.5f);
+    obs_property_list_add_float(p, "2.0x (1080p -> 4K)", 2.0f);
+    
     // Read-only info texts can be added via string properties or text properties, 
     // but for simple UI we just use disabled string or generic properties.
     p = obs_properties_add_text(props, "output_res", obs_module_text("OutputResolution"), OBS_TEXT_DEFAULT);
@@ -109,9 +123,10 @@ static obs_properties_t *rtx_vsr_properties(void *data)
 
 static void rtx_vsr_defaults(obs_data_t *settings)
 {
-    obs_data_set_default_int(settings, "vsr_quality", 2); // Medium
+    obs_data_set_default_int(settings, "vsr_quality", 4);
     obs_data_set_default_bool(settings, "artifact_reduction", false);
     obs_data_set_default_bool(settings, "frame_interpolation", true);
+    obs_data_set_default_double(settings, "resolution_scale", 1.5); // Default to 1.5x (720p->1080p)
     obs_data_set_default_string(settings, "output_res", "1920x1080");
     obs_data_set_default_string(settings, "frame_rate", "60 FPS");
     obs_data_set_default_bool(settings, "perf_info", false);
@@ -141,14 +156,17 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         return;
     }
 
+    uint32_t target_width = (uint32_t)(width * filter->resolution_scale);
+    uint32_t target_height = (uint32_t)(height * filter->resolution_scale);
+
     // Handle resolution changes by re-initializing the render target
     if (filter->is_initialized && filter->render_target) {
         uint32_t current_rt_width = gs_texture_get_width(filter->render_target);
         uint32_t current_rt_height = gs_texture_get_height(filter->render_target);
-        if (current_rt_width != width || current_rt_height != height) {
+        if (current_rt_width != target_width || current_rt_height != target_height) {
             gs_texture_destroy(filter->render_target);
-            filter->render_target = gs_texture_create(width, height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
-            filter->nvidia_vsr->Initialize(filter->d3d11_interop->GetDevice(), width, height);
+            filter->render_target = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            filter->nvidia_vsr->Initialize(filter->d3d11_interop->GetDevice(), target_width, target_height);
         }
     }
 
@@ -156,12 +174,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         // Initialize D3D11 interop (Phase 3)
         if (filter->d3d11_interop->Initialize()) {
             filter->is_initialized = true;
-            // Target output resolution matches source for now to prevent aspect ratio mismatch freezes
-            filter->render_target = gs_texture_create(width, height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            // Target output resolution
+            filter->render_target = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
             
             // Initialize NVIDIA SDK (Phase 4)
             auto d3d11_dev = filter->d3d11_interop->GetDevice();
-            if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height)) {
+            if (!filter->nvidia_vsr->Initialize(d3d11_dev, target_width, target_height)) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to initialize NVIDIA SDK");
                 // Continue running with pass-through or basic scaling fallback
             }
@@ -222,13 +240,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             // Processing succeeded, draw the upscale/interpolated output texture
             gs_effect_set_texture(image, rt);
             while (gs_effect_loop(def_effect, "Draw")) {
-                gs_draw_sprite(rt, 0, width, height);
+                gs_draw_sprite(rt, 0, target_width, target_height);
             }
         } else {
             // Fallback: Just pass through the source directly to the output with scaling
             gs_effect_set_texture(image, source_tex);
             while (gs_effect_loop(def_effect, "Draw")) {
-                gs_draw_sprite(source_tex, 0, width, height);
+                gs_draw_sprite(source_tex, 0, target_width, target_height);
             }
         }
     } else {
@@ -237,7 +255,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
         gs_effect_set_texture(image, source_tex);
         while (gs_effect_loop(def_effect, "Draw")) {
-            gs_draw_sprite(source_tex, 0, width, height);
+            gs_draw_sprite(source_tex, 0, target_width, target_height);
         }
     }
 }
@@ -246,14 +264,16 @@ static uint32_t rtx_vsr_get_width(void *data)
 {
     rtx_vsr_data *filter = (rtx_vsr_data *)data;
     obs_source_t *target = obs_filter_get_target(filter->context);
-    return target ? obs_source_get_base_width(target) : 0;
+    if (!target) return 0;
+    return (uint32_t)(obs_source_get_base_width(target) * filter->resolution_scale);
 }
 
 static uint32_t rtx_vsr_get_height(void *data)
 {
     rtx_vsr_data *filter = (rtx_vsr_data *)data;
     obs_source_t *target = obs_filter_get_target(filter->context);
-    return target ? obs_source_get_base_height(target) : 0;
+    if (!target) return 0;
+    return (uint32_t)(obs_source_get_base_height(target) * filter->resolution_scale);
 }
 
 void register_rtx_vsr_filter()

@@ -30,7 +30,8 @@ void NvidiaVSR::SetQuality(int quality)
 {
     m_quality = quality;
     if (m_effect) {
-        NvVFX_SetF32(m_effect, NVVFX_STRENGTH, (float)m_quality);
+        float strength = (float)(m_quality - 1) / 3.0f; // Map 1-4 to 0.0-1.0
+        NvVFX_SetF32(m_effect, NVVFX_STRENGTH, strength);
     }
 }
 
@@ -53,7 +54,8 @@ bool NvidiaVSR::LoadEffect()
         return false;
     }
 
-    NvVFX_SetF32(m_effect, NVVFX_STRENGTH, (float)m_quality);
+    float strength = (float)(m_quality - 1) / 3.0f; // Map 1-4 to 0.0-1.0
+    NvVFX_SetF32(m_effect, NVVFX_STRENGTH, strength);
     // Note: D3D11 interop might require CUDA stream or graph settings here
     
     status = NvVFX_Load(m_effect);
