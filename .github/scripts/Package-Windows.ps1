@@ -67,6 +67,13 @@ function Package {
     }
     Compress-Archive -Force @CompressArgs
     Log-Group
+
+    Log-Group "Generating NSIS Installer for ${ProductName}..."
+    Push-Location "${ProjectRoot}/build_x64"
+    Invoke-External cpack -G NSIS -C $Configuration
+    Pop-Location
+    Move-Item -Path "${ProjectRoot}/build_x64/*.exe" -Destination "${ProjectRoot}/release/${OutputName}.exe" -Force -ErrorAction SilentlyContinue
+    Log-Group
 }
 
 Package
