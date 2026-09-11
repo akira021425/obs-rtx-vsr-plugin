@@ -30,8 +30,8 @@
   #define _WINSOCKAPI_
   #include <windows.h>
   #include <tchar.h>
-  #include "include/nvTransferD3D.h"
-  #include "include/nvTransferD3D11.h"
+  #include "nvTransferD3D.h"
+  #include "nvTransferD3D11.h"
 #else // !_WIN32
   #include <dlfcn.h>
   typedef void* HMODULE;

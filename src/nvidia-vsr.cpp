@@ -1,5 +1,5 @@
 #include "nvidia-vsr.hpp"
-#include "third-party/include/nvTransferD3D11.h"
+#include "nvTransferD3D11.h"
 #include <obs-module.h>
 
 NvidiaVSR::NvidiaVSR()

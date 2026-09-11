@@ -3,7 +3,7 @@
 #include <obs-module.h>
 #include <d3d11.h>
 #include <wrl/client.h>
-#include "third-party/include/NvOFFRUC.h"
+#include "NvOFFRUC.h"
 #include <windows.h>
 
 class FrameInterpolation {
