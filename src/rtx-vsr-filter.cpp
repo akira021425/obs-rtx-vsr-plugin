@@ -141,12 +141,23 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         return;
     }
 
+    // Handle resolution changes by re-initializing the render target
+    if (filter->is_initialized && filter->render_target) {
+        uint32_t current_rt_width = gs_texture_get_width(filter->render_target);
+        uint32_t current_rt_height = gs_texture_get_height(filter->render_target);
+        if (current_rt_width != width || current_rt_height != height) {
+            gs_texture_destroy(filter->render_target);
+            filter->render_target = gs_texture_create(width, height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            filter->nvidia_vsr->Initialize(filter->d3d11_interop->GetDevice(), width, height);
+        }
+    }
+
     if (!filter->is_initialized) {
         // Initialize D3D11 interop (Phase 3)
         if (filter->d3d11_interop->Initialize()) {
             filter->is_initialized = true;
-            // Target output resolution according to specs (Phase 1 specifies 1920x1080)
-            filter->render_target = gs_texture_create(1920, 1080, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            // Target output resolution matches source for now to prevent aspect ratio mismatch freezes
+            filter->render_target = gs_texture_create(width, height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
             
             // Initialize NVIDIA SDK (Phase 4)
             auto d3d11_dev = filter->d3d11_interop->GetDevice();
@@ -155,7 +166,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 // Continue running with pass-through or basic scaling fallback
             }
 
-            if (!filter->fruc->Initialize(d3d11_dev, 1920, 1080)) {
+            if (!filter->fruc->Initialize(d3d11_dev, width, height)) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to initialize Frame Interpolation SDK");
             }
         } else {
@@ -211,33 +222,38 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             // Processing succeeded, draw the upscale/interpolated output texture
             gs_effect_set_texture(image, rt);
             while (gs_effect_loop(def_effect, "Draw")) {
-                gs_draw_sprite(rt, 0, 1920, 1080);
+                gs_draw_sprite(rt, 0, width, height);
             }
         } else {
             // Fallback: Just pass through the source directly to the output with scaling
             gs_effect_set_texture(image, source_tex);
             while (gs_effect_loop(def_effect, "Draw")) {
-                gs_draw_sprite(source_tex, 0, 1920, 1080);
+                gs_draw_sprite(source_tex, 0, width, height);
             }
         }
     } else {
         // Fallback: Just pass through the source
-        obs_source_skip_video_filter(filter->context);
+        gs_effect_t *def_effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
+        gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
+        gs_effect_set_texture(image, source_tex);
+        while (gs_effect_loop(def_effect, "Draw")) {
+            gs_draw_sprite(source_tex, 0, width, height);
+        }
     }
 }
 
 static uint32_t rtx_vsr_get_width(void *data)
 {
-    // Force output width to 1920
-    UNUSED_PARAMETER(data);
-    return 1920;
+    rtx_vsr_data *filter = (rtx_vsr_data *)data;
+    obs_source_t *target = obs_filter_get_target(filter->context);
+    return target ? obs_source_get_base_width(target) : 0;
 }
 
 static uint32_t rtx_vsr_get_height(void *data)
 {
-    // Force output height to 1080
-    UNUSED_PARAMETER(data);
-    return 1080;
+    rtx_vsr_data *filter = (rtx_vsr_data *)data;
+    obs_source_t *target = obs_filter_get_target(filter->context);
+    return target ? obs_source_get_base_height(target) : 0;
 }
 
 void register_rtx_vsr_filter()
