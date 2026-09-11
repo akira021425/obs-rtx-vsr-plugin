@@ -1,6 +1,5 @@
 #include "d3d11-interop.hpp"
 #include <graphics/graphics.h>
-#include <graphics/device-exports.h>
 
 D3D11Interop::D3D11Interop()
 {
@@ -13,16 +12,9 @@ D3D11Interop::~D3D11Interop()
 
 bool D3D11Interop::Initialize()
 {
-    // OBS graphics context must be active when calling this
-    gs_device_t *device = gs_get_device();
-    if (!device) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to get OBS graphics device.");
-        return false;
-    }
-
     // Attempt to get the D3D11 device
     // NOTE: This assumes OBS is using the Direct3D 11 renderer.
-    ID3D11Device *d3d11_dev = (ID3D11Device *)gs_device_get_device_obj(device);
+    ID3D11Device *d3d11_dev = (ID3D11Device *)gs_get_device_obj();
     if (!d3d11_dev) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to get D3D11 device from OBS. Is OBS using D3D11?");
         return false;

@@ -25,7 +25,7 @@
 ###############################################################################*/
 #include <string>
 
-#include "include/nvVideoEffects.h"
+#include "nvVideoEffects.h"
 
 #ifdef _WIN32
   #define _WINSOCKAPI_

@@ -189,7 +189,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 // Process Frame Interpolation (Phase 8-10)
                 if (filter->fruc->IsEnabled()) {
                     // Very simple naive pass-through of timestamp
-                    double timestamp = obs_source_get_frame_ts(target) / 1000000000.0;
+                    double timestamp = filter->frame_count++ * (1.0 / 30.0);
                     auto interp_tex = filter->fruc->Process(d3d11_dst_tex, timestamp);
                     if (interp_tex) {
                         // Copy interpolated texture into OBS render_target D3D11 texture

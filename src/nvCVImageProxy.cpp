@@ -24,7 +24,7 @@
 #
 ###############################################################################*/
 #include <string>
-#include "include/nvCVImage.h"
+#include "nvCVImage.h"
 
 #ifdef _WIN32
   #define _WINSOCKAPI_
