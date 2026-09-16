@@ -15,6 +15,7 @@ struct rtx_vsr_data {
     std::unique_ptr<FrameInterpolation> fruc;
     
     gs_texrender_t *texrender;       // For capturing source into a texture
+    gs_texrender_t *fruc_render;     // For converting BGRA to RGBA for FRUC
     gs_texture_t *output_texture;    // The upscaled output texture (plain D3D11, no SHARED flag)
     
     uint32_t src_width;
@@ -44,6 +45,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->fruc = std::make_unique<FrameInterpolation>();
     data->output_texture = nullptr;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
     data->is_initialized = false;
     data->vsr_failed = false;
     data->frame_count = 0;
@@ -69,6 +71,9 @@ static void rtx_vsr_destroy(void *data)
     obs_enter_graphics();
     if (filter->texrender) {
         gs_texrender_destroy(filter->texrender);
+    }
+    if (filter->fruc_render) {
+        gs_texrender_destroy(filter->fruc_render);
     }
     if (filter->output_texture) {
         gs_texture_destroy(filter->output_texture);
@@ -180,9 +185,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // One-time initialization
     if (!filter->is_initialized && !filter->vsr_failed) {
         if (filter->d3d11_interop->Initialize()) {
-            // Create output texture (plain GS_RGBA, NO GS_RENDER_TARGET, NO SHARED flags)
-            // GS_RGBA creates DXGI_FORMAT_R8G8B8A8_UNORM which is REQUIRED by NvOFFRUC (ARGBSurface)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, 0);
+            // Create output texture for VSR (must be BGRA for NvCVImage_InitFromD3D11Texture to succeed)
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, 0);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
@@ -235,6 +239,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         return;
     }
 
+    gs_effect_t *def_effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
+    gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
+
     bool success = false;
 
     if (filter->is_initialized && filter->nvidia_vsr->IsReady() && filter->output_texture) {
@@ -260,34 +267,47 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             
             // Frame Interpolation (30fps -> 60fps)
             if (success && filter->fruc->IsEnabled()) {
-                // To convert 30fps source to 60fps output:
-                // Tick 1 (New frame arrives): Feed to FRUC. FRUC outputs Frame 0.5. Draw Frame 0.5.
-                // Tick 2 (Duplicate frame): Do not feed to FRUC. Draw Original Frame 1.
                 filter->render_count++;
                 
-                if (filter->render_count % 2 == 1) {
+                // Convert VSR output (BGRA) to FRUC input (RGBA) using OBS renderer
+                gs_texrender_reset(filter->fruc_render);
+                if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
+                    gs_effect_set_texture(image, filter->output_texture);
+                    while (gs_effect_loop(def_effect, "Draw")) {
+                        gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+                    }
+                    gs_texrender_end(filter->fruc_render);
+                }
+
+                gs_texture_t *fruc_rgba_tex = gs_texrender_get_texture(filter->fruc_render);
+                
+                if (fruc_rgba_tex && (filter->render_count % 2 == 1)) {
                     // Odd ticks: Process with FRUC to get the interpolated frame (n - 0.5)
                     double timestamp = filter->frame_count++ * (1.0 / 30.0);
-                    auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
+                    ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_rgba_tex);
+                    auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
                     if (fruc_out) {
-                        // Copy FRUC output back to d3d11_dst to be drawn
+                        // Copy FRUC output back to fruc_rgba_tex to be drawn
                         auto context = filter->d3d11_interop->GetContext();
                         if (context) {
-                            context->CopyResource(d3d11_dst, fruc_out.Get());
+                            context->CopyResource(d3d11_fruc_in, fruc_out.Get());
                         }
                     }
-                } else {
-                    // Even ticks: Skip FRUC. d3d11_dst contains the original scaled frame (n).
-                    // Just let it be drawn directly.
+                }
+                
+                // Draw the result (either interpolated or original converted)
+                if (fruc_rgba_tex) {
+                    gs_effect_set_texture(image, fruc_rgba_tex);
+                    while (gs_effect_loop(def_effect, "Draw")) {
+                        gs_draw_sprite(fruc_rgba_tex, 0, target_width, target_height);
+                    }
+                    return; // Done drawing
                 }
             }
         }
     }
 
-    // Draw the result
-    gs_effect_t *def_effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
-    gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
-
+    // Draw the VSR result directly if FRUC is off or failed
     if (success) {
         gs_effect_set_texture(image, filter->output_texture);
         while (gs_effect_loop(def_effect, "Draw")) {
