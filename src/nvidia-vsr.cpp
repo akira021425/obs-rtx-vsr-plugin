@@ -104,11 +104,6 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     NvVFX_SetImage(m_effect, NVVFX_OUTPUT_IMAGE, m_dst_gpu);
 
     // 8. Load/compile the effect model
-    status = NvVFX_SetF32(m_effect, NVVFX_SCALE, (float)dst_width / (float)src_width);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_WARNING, "[RTX-VSR] Failed to set scale parameter (status: %d)", status);
-    }
-
     status = NvVFX_Load(m_effect);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to load SR_UPSCALE model (status: %d)", status);
