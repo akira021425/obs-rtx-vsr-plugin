@@ -240,11 +240,20 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture);
         
         if (d3d11_src && d3d11_dst) {
-            // Flush OBS D3D11 commands before NVIDIA SDK takes over
-            gs_flush();
-            
-            // Run the AI upscaler
-            success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+            if (filter->resolution_scale > 1.01f) {
+                // Flush OBS D3D11 commands before NVIDIA SDK takes over
+                gs_flush();
+                
+                // Run the AI upscaler
+                success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+            } else {
+                // For 1.0x scale, bypass VSR to avoid -16 NVCV_ERR_RESOLUTION
+                auto context = filter->d3d11_interop->GetContext();
+                if (context) {
+                    context->CopyResource(d3d11_dst, d3d11_src);
+                    success = true;
+                }
+            }
             
             // Frame Interpolation
             if (success && filter->fruc->IsEnabled()) {
