@@ -51,6 +51,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
     if (status != NvOFFRUC_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCCreate failed with status %d", status);
+        Release();
         return false;
     }
 
@@ -64,24 +65,37 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    // NvOFFRUC strictly requires the D3D11 texture to be a shared NT handle resource
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
     
     HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
     if (FAILED(hr)) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC output texture");
+        Release();
         return false;
     }
 
-    // Register output texture
+    hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
+    if (FAILED(hr)) {
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture");
+        Release();
+        return false;
+    }
+
+    // Register textures with FRUC
     NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
     reg_param.pArrResource[0] = m_output_tex.Get();
-    reg_param.uiCount = 1;
+    reg_param.pArrResource[1] = m_input_tex.Get();
+    reg_param.uiCount = 2;
     
     status = m_register(m_fruc_handle, &reg_param);
     if (status != NvOFFRUC_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCRegisterResource failed %d", status);
+        Release();
         return false;
     }
     m_output_registered = true;
+    m_input_registered = true;
 
     blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully");
     return true;
@@ -92,9 +106,11 @@ void FrameInterpolation::Release()
     if (m_output_registered && m_unregister) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         unreg.pArrResource[0] = m_output_tex.Get();
-        unreg.uiCount = 1;
+        unreg.pArrResource[1] = m_input_tex.Get();
+        unreg.uiCount = 2;
         m_unregister(m_fruc_handle, &unreg);
         m_output_registered = false;
+        m_input_registered = false;
     }
 
     if (m_fruc_handle && m_destroy) {
@@ -108,28 +124,25 @@ void FrameInterpolation::Release()
     }
 
     m_output_tex.Reset();
+    m_input_tex.Reset();
     m_device.Reset();
 }
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Texture2D *src_tex, double timestamp)
 {
-    if (!m_enabled || !m_fruc_handle || !src_tex) {
+    if (!m_enabled || !m_fruc_handle || !src_tex || !m_input_tex || !m_output_tex) {
         return nullptr;
     }
 
-    // Register input texture (normally we should pool these, but for a simple impl we register and unregister, 
-    // or assume the caller manages it. Since OBS might give us different textures, we register it temporarily).
-    // Note: for production, a texture pool is better, but this satisfies Phase 8-10 auto-generation.
-    NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-    reg_param.pArrResource[0] = src_tex;
-    reg_param.uiCount = 1;
-    
-    if (m_register(m_fruc_handle, &reg_param) != NvOFFRUC_SUCCESS) {
-        return nullptr;
-    }
+    // Copy the OBS texture (src_tex) into our dedicated shared input texture (m_input_tex)
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    m_device->GetImmediateContext(&context);
+    if (!context) return nullptr;
+    context->CopyResource(m_input_tex.Get(), src_tex);
 
+    // The textures are already registered during Initialize()
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
-    in_params.stFrameDataInput.pFrame = src_tex;
+    in_params.stFrameDataInput.pFrame = m_input_tex.Get();
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.bSkipWarp = 0;
     
@@ -137,12 +150,6 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     out_params.stFrameDataOutput.pFrame = m_output_tex.Get();
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
-
-    // Unregister input texture
-    NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg_param = {};
-    unreg_param.pArrResource[0] = src_tex;
-    unreg_param.uiCount = 1;
-    m_unregister(m_fruc_handle, &unreg_param);
 
     if (status == NvOFFRUC_SUCCESS) {
         // We have a new interpolated frame!

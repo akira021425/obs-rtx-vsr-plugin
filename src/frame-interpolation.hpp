@@ -39,6 +39,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
     bool m_output_registered = false;
     
+    // We also need a dedicated shared input texture because NvOFFRUC requires shared NT handles
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
+    bool m_input_registered = false;
+    
     // We also need to keep track of previous inputs to manage timestamp differences and 60fps generation
     bool LoadDLL();
 };
