@@ -15,7 +15,7 @@ public:
     void Release();
 
     // Returns an interpolated frame if one was generated, or nullptr if none
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> Process(Microsoft::WRL::ComPtr<ID3D11Texture2D> src_tex, double timestamp);
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> Process(ID3D11Texture2D *src_tex, double timestamp);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }

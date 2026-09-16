@@ -41,7 +41,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->nvidia_vsr = std::make_unique<NvidiaVSR>();
     data->fruc = std::make_unique<FrameInterpolation>();
     data->output_texture = nullptr;
-    data->texrender = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
+    data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->is_initialized = false;
     data->vsr_failed = false;
     data->frame_count = 0;
@@ -179,7 +179,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         if (filter->d3d11_interop->Initialize()) {
             // Create output texture (plain GS_RGBA, NO GS_RENDER_TARGET, NO SHARED flags)
             // flags=0 means a standard D3D11 texture that gs_texture_get_obj can safely retrieve
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, 0);
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, 0);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
@@ -245,6 +245,19 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             
             // Run the AI upscaler
             success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+            
+            // Frame Interpolation
+            if (success && filter->fruc->IsEnabled()) {
+                double timestamp = filter->frame_count++ * (1.0 / 30.0);
+                auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
+                if (fruc_out) {
+                    // Copy FRUC output back to d3d11_dst
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(d3d11_dst, fruc_out.Get());
+                    }
+                }
+            }
         }
     }
 

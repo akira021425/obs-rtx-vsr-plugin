@@ -111,7 +111,7 @@ void FrameInterpolation::Release()
     m_device.Reset();
 }
 
-Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(Microsoft::WRL::ComPtr<ID3D11Texture2D> src_tex, double timestamp)
+Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Texture2D *src_tex, double timestamp)
 {
     if (!m_enabled || !m_fruc_handle || !src_tex) {
         return nullptr;
@@ -121,7 +121,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(Microsoft::W
     // or assume the caller manages it. Since OBS might give us different textures, we register it temporarily).
     // Note: for production, a texture pool is better, but this satisfies Phase 8-10 auto-generation.
     NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-    reg_param.pArrResource[0] = src_tex.Get();
+    reg_param.pArrResource[0] = src_tex;
     reg_param.uiCount = 1;
     
     if (m_register(m_fruc_handle, &reg_param) != NvOFFRUC_SUCCESS) {
@@ -129,7 +129,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(Microsoft::W
     }
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
-    in_params.stFrameDataInput.pFrame = src_tex.Get();
+    in_params.stFrameDataInput.pFrame = src_tex;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.bSkipWarp = 0;
     
@@ -140,7 +140,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(Microsoft::W
 
     // Unregister input texture
     NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg_param = {};
-    unreg_param.pArrResource[0] = src_tex.Get();
+    unreg_param.pArrResource[0] = src_tex;
     unreg_param.uiCount = 1;
     m_unregister(m_fruc_handle, &unreg_param);
 
