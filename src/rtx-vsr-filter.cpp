@@ -25,8 +25,10 @@ struct rtx_vsr_data {
     bool is_initialized;
     bool vsr_failed;  // If VSR init fails, don't retry every frame
     uint64_t frame_count;
+    uint64_t render_count;
 };
 
+// Intermediate textures for format conversion (not needed when using NVCV_RGB staging)
 static const char *rtx_vsr_get_name(void *type_data)
 {
     UNUSED_PARAMETER(type_data);
@@ -45,6 +47,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->is_initialized = false;
     data->vsr_failed = false;
     data->frame_count = 0;
+    data->render_count = 0;
     data->resolution_scale = 1.5f;
     data->src_width = 0;
     data->src_height = 0;
@@ -255,16 +258,27 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 }
             }
             
-            // Frame Interpolation
+            // Frame Interpolation (30fps -> 60fps)
             if (success && filter->fruc->IsEnabled()) {
-                double timestamp = filter->frame_count++ * (1.0 / 30.0);
-                auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
-                if (fruc_out) {
-                    // Copy FRUC output back to d3d11_dst
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(d3d11_dst, fruc_out.Get());
+                // To convert 30fps source to 60fps output:
+                // Tick 1 (New frame arrives): Feed to FRUC. FRUC outputs Frame 0.5. Draw Frame 0.5.
+                // Tick 2 (Duplicate frame): Do not feed to FRUC. Draw Original Frame 1.
+                filter->render_count++;
+                
+                if (filter->render_count % 2 == 1) {
+                    // Odd ticks: Process with FRUC to get the interpolated frame (n - 0.5)
+                    double timestamp = filter->frame_count++ * (1.0 / 30.0);
+                    auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
+                    if (fruc_out) {
+                        // Copy FRUC output back to d3d11_dst to be drawn
+                        auto context = filter->d3d11_interop->GetContext();
+                        if (context) {
+                            context->CopyResource(d3d11_dst, fruc_out.Get());
+                        }
                     }
+                } else {
+                    // Even ticks: Skip FRUC. d3d11_dst contains the original scaled frame (n).
+                    // Just let it be drawn directly.
                 }
             }
         }
