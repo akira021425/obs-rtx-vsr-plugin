@@ -3,12 +3,15 @@
 #include "nvidia-vsr.hpp"
 #include "frame-interpolation.hpp"
 
+#include <atomic>
+
 struct rtx_vsr_data {
     obs_source_t *context;
     int vsr_quality;
     bool artifact_reduction;
     bool frame_interpolation;
     float resolution_scale;
+    std::atomic<bool> new_frame_arrived;
 
     std::unique_ptr<D3D11Interop> d3d11_interop;
     std::unique_ptr<NvidiaVSR> nvidia_vsr;
@@ -253,71 +256,71 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture);
         
         if (d3d11_src && d3d11_dst) {
-            if (filter->resolution_scale > 1.01f) {
-                // Flush OBS D3D11 commands before NVIDIA SDK takes over
-                gs_flush();
-                
-                // Run the AI upscaler
-                success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
-            } else {
-                // For 1.0x scale, bypass VSR to avoid -16 NVCV_ERR_RESOLUTION
-                auto context = filter->d3d11_interop->GetContext();
-                if (context) {
-                    context->CopyResource(d3d11_dst, d3d11_src);
-                    success = true;
-                }
-            }
+            bool is_new_frame = filter->new_frame_arrived.exchange(false);
             
-            // Frame Interpolation (30fps -> 60fps)
-            if (success && filter->fruc->IsEnabled()) {
-                filter->render_count++;
-                
-                // Convert VSR output (BGRA) to FRUC input (RGBA) using OBS renderer
-                gs_texrender_reset(filter->fruc_render);
-                if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                    gs_effect_set_texture(image, filter->output_texture);
-                    while (gs_effect_loop(def_effect, "Draw")) {
-                        gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+            if (is_new_frame) {
+                // We got a new source frame! Run VSR.
+                if (filter->resolution_scale > 1.01f) {
+                    gs_flush();
+                    success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+                } else {
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(d3d11_dst, d3d11_src);
+                        success = true;
                     }
-                    gs_texrender_end(filter->fruc_render);
                 }
 
-                gs_texture_t *fruc_rgba_tex = gs_texrender_get_texture(filter->fruc_render);
-                
-                if (fruc_rgba_tex && (filter->render_count % 2 == 1)) {
-                    // Odd ticks: Process with FRUC to get the interpolated frame (n - 0.5)
-                    double timestamp = filter->frame_count++ * (1.0 / 30.0);
-                    ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_rgba_tex);
-                    auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
-                    if (fruc_out) {
-                        // Copy FRUC output back to fruc_rgba_tex to be drawn
-                        auto context = filter->d3d11_interop->GetContext();
-                        if (context) {
-                            context->CopyResource(d3d11_fruc_in, fruc_out.Get());
+                if (success && filter->fruc->IsEnabled()) {
+                    // Convert VSR output to FRUC input
+                    gs_texrender_reset(filter->fruc_render);
+                    if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
+                        gs_effect_set_texture(image, filter->output_texture);
+                        while (gs_effect_loop(def_effect, "Draw")) {
+                            gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+                        }
+                        gs_texrender_end(filter->fruc_render);
+                    }
+
+                    gs_texture_t *fruc_rgba_tex = gs_texrender_get_texture(filter->fruc_render);
+                    if (fruc_rgba_tex) {
+                        // Generate the interpolated frame (between previous and current)
+                        double timestamp = filter->frame_count++ * (1.0 / 30.0);
+                        ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_rgba_tex);
+                        auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
+                        
+                        if (fruc_out) {
+                            // Draw the INTERPOLATED frame FIRST!
+                            // This ensures perfect chronological order: A.5 is drawn before B
+                            auto context = filter->d3d11_interop->GetContext();
+                            if (context) {
+                                context->CopyResource(d3d11_fruc_in, fruc_out.Get());
+                            }
+                            
+                            gs_effect_set_texture(image, fruc_rgba_tex);
+                            while (gs_effect_loop(def_effect, "Draw")) {
+                                gs_draw_sprite(fruc_rgba_tex, 0, target_width, target_height);
+                            }
+                            return; // Wait until the next canvas tick to draw the actual new frame
                         }
                     }
                 }
-                
-                // Draw the result (either interpolated or original converted)
-                if (fruc_rgba_tex) {
-                    gs_effect_set_texture(image, fruc_rgba_tex);
-                    while (gs_effect_loop(def_effect, "Draw")) {
-                        gs_draw_sprite(fruc_rgba_tex, 0, target_width, target_height);
-                    }
-                    return; // Done drawing
-                }
+            } else {
+                // Not a new source frame (e.g. Even canvas tick)
+                // We just draw the ALREADY processed VSR frame!
+                success = true;
             }
         }
     }
 
-    // Draw the VSR result directly if FRUC is off or failed
-    if (success) {
+    // Draw the VSR result directly (This handles both the non-new frame ticks, AND fallback if FRUC fails)
+    if (success && filter->output_texture) {
         gs_effect_set_texture(image, filter->output_texture);
         while (gs_effect_loop(def_effect, "Draw")) {
             gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
         }
     } else {
-        // Fallback: pass through source (possibly scaled)
+        // Fallback: pass through source
         gs_effect_set_texture(image, source_tex);
         while (gs_effect_loop(def_effect, "Draw")) {
             gs_draw_sprite(source_tex, 0, target_width, target_height);
