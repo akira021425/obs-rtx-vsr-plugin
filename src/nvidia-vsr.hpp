@@ -38,6 +38,9 @@ private:
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
+    ID3D11Texture2D *m_last_src_tex = nullptr;
+    ID3D11Texture2D *m_last_dst_tex = nullptr;
+    
     uint32_t m_src_width = 0;
     uint32_t m_src_height = 0;
     uint32_t m_dst_width = 0;
