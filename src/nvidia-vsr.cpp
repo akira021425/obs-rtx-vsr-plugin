@@ -57,26 +57,26 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
 
     // 5. Create persistent GPU NvCVImage buffers for SDK input/output
     // These are standalone GPU buffers that the SDK reads from / writes to
-    status = NvCVImage_Create(src_width, src_height, NVCV_RGB, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_src_gpu);
+    status = NvCVImage_Create(src_width, src_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_src_gpu);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create src GPU image (status: %d)", status);
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_src_gpu, src_width, src_height, NVCV_RGB, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    status = NvCVImage_Alloc(m_src_gpu, src_width, src_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc src GPU image (status: %d)", status);
         Release();
         return false;
     }
 
-    status = NvCVImage_Create(dst_width, dst_height, NVCV_RGB, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_dst_gpu);
+    status = NvCVImage_Create(dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_dst_gpu);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create dst GPU image (status: %d)", status);
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_dst_gpu, dst_width, dst_height, NVCV_RGB, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    status = NvCVImage_Alloc(m_dst_gpu, dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst GPU image (status: %d)", status);
         Release();

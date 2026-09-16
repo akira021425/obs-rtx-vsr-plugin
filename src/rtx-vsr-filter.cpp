@@ -181,8 +181,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     if (!filter->is_initialized && !filter->vsr_failed) {
         if (filter->d3d11_interop->Initialize()) {
             // Create output texture (plain GS_RGBA, NO GS_RENDER_TARGET, NO SHARED flags)
-            // flags=0 means a standard D3D11 texture that gs_texture_get_obj can safely retrieve
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, 0);
+            // GS_RGBA creates DXGI_FORMAT_R8G8B8A8_UNORM which is REQUIRED by NvOFFRUC (ARGBSurface)
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, 0);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
