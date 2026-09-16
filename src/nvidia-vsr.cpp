@@ -110,8 +110,8 @@ void NvidiaVSR::Release()
     m_last_src_tex = nullptr;
     m_last_dst_tex = nullptr;
 
-    if (m_src_img) { NvCVImage_Destroy(m_src_img); m_src_img = nullptr; }
-    if (m_dst_img) { NvCVImage_Destroy(m_dst_img); m_dst_img = nullptr; }
+    if (m_src_img) { NvCVImage_Destroy(m_src_img); delete m_src_img; m_src_img = nullptr; }
+    if (m_dst_img) { NvCVImage_Destroy(m_dst_img); delete m_dst_img; m_dst_img = nullptr; }
     if (m_src_gpu) { NvCVImage_Destroy(m_src_gpu); m_src_gpu = nullptr; }
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
 
@@ -148,8 +148,8 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
 
     // 1. Bind D3D11 textures to wrapper NvCVImages (only if changed)
     if (m_last_src_tex != src_tex) {
-        if (m_src_img) { NvCVImage_Destroy(m_src_img); m_src_img = nullptr; }
-        NvCVImage_Create(m_src_width, m_src_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_src_img);
+        if (m_src_img) { NvCVImage_Destroy(m_src_img); delete m_src_img; m_src_img = nullptr; }
+        m_src_img = new NvCVImage();
         status = NvCVImage_InitFromD3D11Texture(m_src_img, src_tex);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] InitFromD3D11Texture(src) failed: %d", status);
@@ -159,8 +159,8 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     }
 
     if (m_last_dst_tex != dst_tex) {
-        if (m_dst_img) { NvCVImage_Destroy(m_dst_img); m_dst_img = nullptr; }
-        NvCVImage_Create(m_dst_width, m_dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_dst_img);
+        if (m_dst_img) { NvCVImage_Destroy(m_dst_img); delete m_dst_img; m_dst_img = nullptr; }
+        m_dst_img = new NvCVImage();
         status = NvCVImage_InitFromD3D11Texture(m_dst_img, dst_tex);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] InitFromD3D11Texture(dst) failed: %d", status);

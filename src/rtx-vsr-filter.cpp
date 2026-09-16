@@ -195,23 +195,26 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             }
 
             // Initialize NVIDIA VSR with proper dimensions
-            auto d3d11_dev = filter->d3d11_interop->GetDevice();
-            
-            // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
-            gs_flush();
-            
-            if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
-                blog(LOG_ERROR, "[RTX-VSR] Failed to initialize NVIDIA VSR SDK");
-                filter->vsr_failed = true;
-                // Don't return - we can still do pass-through
-            }
+              auto d3d11_dev = filter->d3d11_interop->GetDevice();
+              
+              // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
+              gs_flush();
+              
+              // Frame interpolation MUST be initialized FIRST!
+              // NvOFFRUC creates a CUDA context that can override the thread's current context.
+              // If initialized after VSR, it corrupts VSR's resource mapping (-1400 error).
+              if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
+                  blog(LOG_WARNING, "[RTX-VSR] Frame interpolation not available");
+              }
 
-            // Frame interpolation (optional, usually unavailable)
-            if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                blog(LOG_WARNING, "[RTX-VSR] Frame interpolation not available");
-            }
-
-            filter->src_width = width;
+              // Initialize NVIDIA VSR with proper dimensions
+              if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
+                  blog(LOG_ERROR, "[RTX-VSR] Failed to initialize NVIDIA VSR SDK");
+                  filter->vsr_failed = true;
+                  // Don't return - we can still do pass-through
+              }
+  
+              filter->src_width = width;
             filter->src_height = height;
             filter->out_width = target_width;
             filter->out_height = target_height;
