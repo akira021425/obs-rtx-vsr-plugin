@@ -185,8 +185,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // One-time initialization
     if (!filter->is_initialized && !filter->vsr_failed) {
         if (filter->d3d11_interop->Initialize()) {
-            // Create output texture for VSR (using GS_RGBA matches NVCV_RGBA and avoids NvCVImage_Transfer format errors)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA, 1, nullptr, GS_RENDER_TARGET);
+            // Create output texture for VSR (must be BGRA for NvCVImage_InitFromD3D11Texture to succeed)
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;

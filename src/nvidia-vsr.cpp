@@ -56,7 +56,6 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     }
 
     // 5. Create persistent GPU NvCVImage buffers for SDK input/output
-    // These are standalone GPU buffers that the SDK reads from / writes to
     status = NvCVImage_Create(src_width, src_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_src_gpu);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create src GPU image (status: %d)", status);
@@ -79,6 +78,20 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     status = NvCVImage_Alloc(m_dst_gpu, dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst GPU image (status: %d)", status);
+        Release();
+        return false;
+    }
+
+    // Create an intermediate BGRA GPU buffer for safe transfer to mapped D3D11
+    status = NvCVImage_Create(dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_dst_bgra_gpu);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create dst BGRA GPU image (status: %d)", status);
+        Release();
+        return false;
+    }
+    status = NvCVImage_Alloc(m_dst_bgra_gpu, dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst BGRA GPU image (status: %d)", status);
         Release();
         return false;
     }
@@ -114,6 +127,7 @@ void NvidiaVSR::Release()
     if (m_dst_img) { delete m_dst_img; m_dst_img = nullptr; }
     if (m_src_gpu) { NvCVImage_Destroy(m_src_gpu); m_src_gpu = nullptr; }
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
+    if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
 
     if (m_effect) {
         NvVFX_DestroyEffect(m_effect);
@@ -203,9 +217,20 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
         return false;
     }
 
-    status = NvCVImage_Transfer(m_dst_gpu, m_dst_img, 1.0f, m_stream, NULL);
+    // 4. Transfer output from SDK GPU buffer back to D3D11 texture
+    // We cannot transfer RGBA (m_dst_gpu) directly to BGRA mapped D3D11 (m_dst_img) as it throws -9.
+    // However, CUDA-to-CUDA transfer from RGBA to BGRA works!
+    status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->dst failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->bgra_gpu failed: %d", status);
+        NvCVImage_UnmapResource(m_dst_img, m_stream);
+        return false;
+    }
+
+    // Now transfer BGRA to BGRA (pure CUDA to mapped D3D11)
+    status = NvCVImage_Transfer(m_dst_bgra_gpu, m_dst_img, 1.0f, m_stream, NULL);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] Transfer bgra_gpu->dst failed: %d", status);
         NvCVImage_UnmapResource(m_dst_img, m_stream);
         return false;
     }

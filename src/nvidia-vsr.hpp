@@ -36,7 +36,8 @@ private:
     NvCVImage *m_src_img = nullptr;  // Wraps source D3D11 texture
     NvCVImage *m_dst_img = nullptr;  // Wraps destination D3D11 texture
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
-    NvCVImage *m_dst_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
+    NvCVImage *m_dst_gpu = nullptr;
+    NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
     ID3D11Texture2D *m_last_src_tex = nullptr;
     ID3D11Texture2D *m_last_dst_tex = nullptr;
