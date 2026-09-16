@@ -363,3 +363,4 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
