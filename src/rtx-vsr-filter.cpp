@@ -55,10 +55,10 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->vsr_cache_texture = nullptr;
     data->last_source_d3d11 = nullptr;
     data->has_cached_vsr = false;
-    data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->texrender = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
-    data->hash_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
-    data->hash_stage = gs_stagesurface_create(16, 16, GS_BGRA_UNORM);
+    data->hash_render = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
+    data->hash_stage = gs_stagesurface_create(16, 16, GS_BGRA);
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
     data->vsr_failed = false;
@@ -349,7 +349,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 // Cache the VSR result so we can use it on duplicate frames
                 if (!filter->vsr_cache_texture) {
                     filter->vsr_cache_texture = gs_texture_create(
-                        target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        target_width, target_height, GS_BGRA, 1, nullptr, GS_RENDER_TARGET);
                 }
                 if (filter->vsr_cache_texture) {
                     ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
