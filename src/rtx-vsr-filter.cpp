@@ -29,7 +29,6 @@ struct rtx_vsr_data {
     uint32_t out_height;
 
     bool is_initialized;
-    gs_texrender_t *hash_render;
     ID3D11Texture2D *hash_stage_d3d11;
     uint32_t last_hash[256];
     bool vsr_failed;  // If VSR init fails, don't retry every frame
@@ -57,7 +56,6 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
-    data->hash_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->hash_stage_d3d11 = nullptr;
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
@@ -88,9 +86,6 @@ static void rtx_vsr_destroy(void *data)
     }
     if (filter->fruc_render) {
         gs_texrender_destroy(filter->fruc_render);
-    }
-    if (filter->hash_render) {
-        gs_texrender_destroy(filter->hash_render);
     }
     if (filter->hash_stage_d3d11) {
         filter->hash_stage_d3d11->Release();
@@ -303,49 +298,40 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         if (d3d11_src && d3d11_dst) {
             // Generate a 16x16 hash of the source frame to detect duplicates
             bool is_new_frame = true;
-            gs_texrender_reset(filter->hash_render);
-            if (gs_texrender_begin(filter->hash_render, 16, 16)) {
-                gs_effect_set_texture(image, source_tex);
-                while (gs_effect_loop(def_effect, "Draw")) {
-                    gs_draw_sprite(source_tex, 0, 16, 16);
-                }
-                gs_texrender_end(filter->hash_render);
+            if (filter->hash_stage_d3d11 && d3d11_src) {
+                auto d3d_context = filter->d3d11_interop->GetContext();
                 
-                gs_texture_t *hash_tex = gs_texrender_get_texture(filter->hash_render);
-                if (hash_tex && filter->hash_stage_d3d11) {
-                    ID3D11Texture2D *d3d11_hash = (ID3D11Texture2D *)gs_texture_get_obj(hash_tex);
-                    if (d3d11_hash) {
-                        auto d3d_context = filter->d3d11_interop->GetContext();
-                        d3d_context->CopyResource(filter->hash_stage_d3d11, d3d11_hash);
-                        
-                        D3D11_MAPPED_SUBRESOURCE mapped;
-                        if (SUCCEEDED(d3d_context->Map(filter->hash_stage_d3d11, 0, D3D11_MAP_READ, 0, &mapped))) {
-                            uint8_t *data = (uint8_t*)mapped.pData;
-                            uint32_t linesize = mapped.RowPitch;
-                            
-                            // linesize might be wider than 16*4 bytes (64 bytes), but we only care about first 16 pixels per line
-                            uint32_t current_hash[256];
-                            for (int y = 0; y < 16; ++y) {
-                                memcpy(&current_hash[y * 16], data + y * linesize, 64);
-                            }
-                            d3d_context->Unmap(filter->hash_stage_d3d11, 0);
-                            
-                            if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
-                                is_new_frame = false;
-                            } else {
-                                memcpy(filter->last_hash, current_hash, sizeof(current_hash));
-                            }
-                        } else {
-                            blog(LOG_ERROR, "[RTX-VSR] Failed to map staging texture");
-                        }
+                // Copy a 16x16 region from the center of the source frame directly
+                D3D11_BOX box;
+                box.left = width / 2 - 8;
+                box.right = width / 2 + 8;
+                box.top = height / 2 - 8;
+                box.bottom = height / 2 + 8;
+                box.front = 0;
+                box.back = 1;
+                
+                d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 0, 0, d3d11_src, 0, &box);
+                
+                D3D11_MAPPED_SUBRESOURCE mapped;
+                if (SUCCEEDED(d3d_context->Map(filter->hash_stage_d3d11, 0, D3D11_MAP_READ, 0, &mapped))) {
+                    uint8_t *data = (uint8_t*)mapped.pData;
+                    uint32_t linesize = mapped.RowPitch;
+                    
+                    uint32_t current_hash[256];
+                    for (int y = 0; y < 16; ++y) {
+                        memcpy(&current_hash[y * 16], data + y * linesize, 64);
                     }
+                    d3d_context->Unmap(filter->hash_stage_d3d11, 0);
+                    
+                    if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
+                        is_new_frame = false;
+                    } else {
+                        memcpy(filter->last_hash, current_hash, sizeof(current_hash));
+                    }
+                } else {
+                    blog(LOG_ERROR, "[RTX-VSR] Failed to map staging texture");
                 }
             }
-
-            if (filter->frame_count % 300 == 0) {
-                blog(LOG_INFO, "[RTX-VSR] Processing frame %llu - is_new: %d", filter->frame_count, is_new_frame);
-            }
-            filter->frame_count++;
 
             if (!is_new_frame && filter->has_cached_vsr) {
                 // Duplicate frame: restore VSR cache and output it directly
