@@ -73,7 +73,7 @@ function Package {
         choco install nsis -y
         $env:Path += ";C:\Program Files (x86)\NSIS"
     }
-    Invoke-External makensis installer.nsi
+    Invoke-External makensis "/DCONFIG=$Configuration" installer.nsi
     Move-Item -Path "obs-rtx-vsr-1.0.0-windows-x64.exe" -Destination "${ProjectRoot}/release/${OutputName}.exe" -Force -ErrorAction SilentlyContinue
     Log-Group
 }

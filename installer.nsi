@@ -7,10 +7,14 @@ RequestExecutionLevel admin
 Page directory
 Page instfiles
 
+!ifndef CONFIG
+  !define CONFIG "RelWithDebInfo"
+!endif
+
 Section ""
   SetOutPath $INSTDIR\obs-plugins\64bit
-  File "release\RelWithDebInfo\obs-rtx-vsr\bin\64bit\obs-rtx-vsr.dll"
+  File "release\${CONFIG}\obs-rtx-vsr\bin\64bit\obs-rtx-vsr.dll"
   
   SetOutPath $INSTDIR\data\obs-plugins\obs-rtx-vsr\locale
-  File /r "release\RelWithDebInfo\obs-rtx-vsr\data\locale\*.*"
+  File /r "release\${CONFIG}\obs-rtx-vsr\data\locale\*.*"
 SectionEnd
