@@ -30,7 +30,7 @@ struct rtx_vsr_data {
 
     bool is_initialized;
     gs_texrender_t *hash_render;
-    gs_stagesurface_t *hash_stage;
+    gs_stagesurf_t *hash_stage;
     uint32_t last_hash[256];
     bool vsr_failed;  // If VSR init fails, don't retry every frame
     uint64_t frame_count;
