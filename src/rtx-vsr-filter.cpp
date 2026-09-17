@@ -30,7 +30,7 @@ struct rtx_vsr_data {
 
     bool is_initialized;
     gs_texrender_t *hash_render;
-    gs_stagesurf_t *hash_stage;
+    ID3D11Texture2D *hash_stage_d3d11;
     uint32_t last_hash[256];
     bool vsr_failed;  // If VSR init fails, don't retry every frame
     uint64_t frame_count;
@@ -55,10 +55,10 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->vsr_cache_texture = nullptr;
     data->last_source_d3d11 = nullptr;
     data->has_cached_vsr = false;
-    data->texrender = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
+    data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
-    data->hash_render = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
-    data->hash_stage = gs_stagesurface_create(16, 16, GS_BGRA);
+    data->hash_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->hash_stage_d3d11 = nullptr;
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
     data->vsr_failed = false;
@@ -92,8 +92,8 @@ static void rtx_vsr_destroy(void *data)
     if (filter->hash_render) {
         gs_texrender_destroy(filter->hash_render);
     }
-    if (filter->hash_stage) {
-        gs_stagesurface_destroy(filter->hash_stage);
+    if (filter->hash_stage_d3d11) {
+        filter->hash_stage_d3d11->Release();
     }
     if (filter->output_texture) {
         gs_texture_destroy(filter->output_texture);
@@ -205,6 +205,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             gs_texture_destroy(filter->vsr_cache_texture);
             filter->vsr_cache_texture = nullptr;
         }
+        if (filter->hash_stage_d3d11) {
+            filter->hash_stage_d3d11->Release();
+            filter->hash_stage_d3d11 = nullptr;
+        }
         filter->last_source_d3d11 = nullptr;
         filter->has_cached_vsr = false;
         filter->is_initialized = false;
@@ -214,6 +218,25 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // One-time initialization
     if (!filter->is_initialized && !filter->vsr_failed) {
         if (filter->d3d11_interop->Initialize()) {
+            auto d3d11_dev = filter->d3d11_interop->GetDevice();
+            
+            // Create D3D11 staging texture for hash download
+            D3D11_TEXTURE2D_DESC desc = {};
+            desc.Width = 16;
+            desc.Height = 16;
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE_STAGING;
+            desc.BindFlags = 0;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            if (filter->hash_stage_d3d11) {
+                filter->hash_stage_d3d11->Release();
+                filter->hash_stage_d3d11 = nullptr;
+            }
+            d3d11_dev->CreateTexture2D(&desc, nullptr, &filter->hash_stage_d3d11);
+
             // Create output texture for VSR (must be BGRA for NvCVImage_InitFromD3D11Texture to succeed)
             filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
@@ -223,13 +246,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 return;
             }
 
-            // Initialize NVIDIA VSR with proper dimensions
-              auto d3d11_dev = filter->d3d11_interop->GetDevice();
-              
-              // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
-              gs_flush();
-              
-              // Frame interpolation MUST be initialized FIRST!
+            // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
+            gs_flush();
+            
+            // Frame interpolation MUST be initialized FIRST!
               // NvOFFRUC creates a CUDA context that can override the thread's current context.
               // If initialized after VSR, it corrupts VSR's resource mapping (-1400 error).
               if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
@@ -292,22 +312,29 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 gs_texrender_end(filter->hash_render);
                 
                 gs_texture_t *hash_tex = gs_texrender_get_texture(filter->hash_render);
-                if (hash_tex) {
-                    gs_stage_texture(filter->hash_stage, hash_tex);
-                    uint8_t *data;
-                    uint32_t linesize;
-                    if (gs_stagesurface_map(filter->hash_stage, &data, &linesize)) {
-                        // linesize might be wider than 16*4 bytes (64 bytes), but we only care about first 16 pixels per line
-                        uint32_t current_hash[256];
-                        for (int y = 0; y < 16; ++y) {
-                            memcpy(&current_hash[y * 16], data + y * linesize, 64);
-                        }
-                        gs_stagesurface_unmap(filter->hash_stage);
+                if (hash_tex && filter->hash_stage_d3d11) {
+                    ID3D11Texture2D *d3d11_hash = (ID3D11Texture2D *)gs_texture_get_obj(hash_tex);
+                    if (d3d11_hash) {
+                        auto d3d_context = filter->d3d11_interop->GetContext();
+                        d3d_context->CopyResource(filter->hash_stage_d3d11, d3d11_hash);
                         
-                        if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
-                            is_new_frame = false;
-                        } else {
-                            memcpy(filter->last_hash, current_hash, sizeof(current_hash));
+                        D3D11_MAPPED_SUBRESOURCE mapped;
+                        if (SUCCEEDED(d3d_context->Map(filter->hash_stage_d3d11, 0, D3D11_MAP_READ, 0, &mapped))) {
+                            uint8_t *data = (uint8_t*)mapped.pData;
+                            uint32_t linesize = mapped.RowPitch;
+                            
+                            // linesize might be wider than 16*4 bytes (64 bytes), but we only care about first 16 pixels per line
+                            uint32_t current_hash[256];
+                            for (int y = 0; y < 16; ++y) {
+                                memcpy(&current_hash[y * 16], data + y * linesize, 64);
+                            }
+                            d3d_context->Unmap(filter->hash_stage_d3d11, 0);
+                            
+                            if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
+                                is_new_frame = false;
+                            } else {
+                                memcpy(filter->last_hash, current_hash, sizeof(current_hash));
+                            }
                         }
                     }
                 }
@@ -349,7 +376,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 // Cache the VSR result so we can use it on duplicate frames
                 if (!filter->vsr_cache_texture) {
                     filter->vsr_cache_texture = gs_texture_create(
-                        target_width, target_height, GS_BGRA, 1, nullptr, GS_RENDER_TARGET);
+                        target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                 }
                 if (filter->vsr_cache_texture) {
                     ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
