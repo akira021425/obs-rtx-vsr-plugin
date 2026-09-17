@@ -3,15 +3,12 @@
 #include "nvidia-vsr.hpp"
 #include "frame-interpolation.hpp"
 
-#include <atomic>
-
 struct rtx_vsr_data {
     obs_source_t *context;
     int vsr_quality;
     bool artifact_reduction;
     bool frame_interpolation;
     float resolution_scale;
-    std::atomic<bool> new_frame_arrived;
 
     std::unique_ptr<D3D11Interop> d3d11_interop;
     std::unique_ptr<NvidiaVSR> nvidia_vsr;
@@ -20,6 +17,11 @@ struct rtx_vsr_data {
     gs_texrender_t *texrender;       // For capturing source into a texture
     gs_texrender_t *fruc_render;     // For converting BGRA to RGBA for FRUC
     gs_texture_t *output_texture;    // The upscaled output texture (plain D3D11, no SHARED flag)
+    
+    // VSR result caching: avoid running expensive AI upscale 60x/sec on a 30fps source
+    gs_texture_t *vsr_cache_texture;     // Cached copy of last VSR result for re-use
+    ID3D11Texture2D *last_source_d3d11;  // Last D3D11 source texture pointer (for change detection)
+    bool has_cached_vsr;                 // True if vsr_cache_texture holds a valid VSR result
     
     uint32_t src_width;
     uint32_t src_height;
@@ -47,6 +49,9 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->nvidia_vsr = std::make_unique<NvidiaVSR>();
     data->fruc = std::make_unique<FrameInterpolation>();
     data->output_texture = nullptr;
+    data->vsr_cache_texture = nullptr;
+    data->last_source_d3d11 = nullptr;
+    data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
     data->is_initialized = false;
@@ -80,6 +85,9 @@ static void rtx_vsr_destroy(void *data)
     }
     if (filter->output_texture) {
         gs_texture_destroy(filter->output_texture);
+    }
+    if (filter->vsr_cache_texture) {
+        gs_texture_destroy(filter->vsr_cache_texture);
     }
     if (filter->is_initialized) {
         filter->d3d11_interop->Release();
@@ -181,6 +189,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             gs_texture_destroy(filter->output_texture);
             filter->output_texture = nullptr;
         }
+        if (filter->vsr_cache_texture) {
+            gs_texture_destroy(filter->vsr_cache_texture);
+            filter->vsr_cache_texture = nullptr;
+        }
+        filter->last_source_d3d11 = nullptr;
+        filter->has_cached_vsr = false;
         filter->is_initialized = false;
         filter->vsr_failed = false;
     }
@@ -251,25 +265,62 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     bool success = false;
 
     if (filter->is_initialized && filter->nvidia_vsr->IsReady() && filter->output_texture) {
-        // Get the raw D3D11 texture pointers (no ComPtr wrapping = no ref count changes)
         ID3D11Texture2D *d3d11_src = (ID3D11Texture2D *)gs_texture_get_obj(source_tex);
         ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture);
         
         if (d3d11_src && d3d11_dst) {
-            // Run VSR on the current source frame
-            if (filter->resolution_scale > 1.01f) {
-                gs_flush();
-                success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+            // Detect whether the source frame has actually changed.
+            // OBS re-uses the same D3D11 texture pointer for the same source frame,
+            // so a pointer change means a genuinely new decoded frame arrived.
+            bool is_new_frame = (d3d11_src != filter->last_source_d3d11);
+            filter->last_source_d3d11 = d3d11_src;
+
+            if (is_new_frame || !filter->has_cached_vsr) {
+                // NEW SOURCE FRAME: Run the expensive VSR AI upscale (only ~30x/sec)
+                if (filter->resolution_scale > 1.01f) {
+                    gs_flush();
+                    success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
+                } else {
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(d3d11_dst, d3d11_src);
+                        success = true;
+                    }
+                }
+
+                if (success) {
+                    // Cache the VSR result so we can skip VSR on the next canvas tick
+                    if (!filter->vsr_cache_texture) {
+                        filter->vsr_cache_texture = gs_texture_create(
+                            target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                    }
+                    if (filter->vsr_cache_texture) {
+                        ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
+                        if (cache_d3d11) {
+                            auto context = filter->d3d11_interop->GetContext();
+                            if (context) {
+                                context->CopyResource(cache_d3d11, d3d11_dst);
+                                filter->has_cached_vsr = true;
+                            }
+                        }
+                    }
+                }
             } else {
-                auto context = filter->d3d11_interop->GetContext();
-                if (context) {
-                    context->CopyResource(d3d11_dst, d3d11_src);
-                    success = true;
+                // SAME SOURCE FRAME: Skip VSR entirely, just restore cached result (very fast!)
+                if (filter->vsr_cache_texture) {
+                    ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
+                    if (cache_d3d11) {
+                        auto context = filter->d3d11_interop->GetContext();
+                        if (context) {
+                            context->CopyResource(d3d11_dst, cache_d3d11);
+                            success = true;
+                        }
+                    }
                 }
             }
 
+            // FRUC: runs every tick (60x/sec) but is lightweight compared to VSR
             if (success && filter->fruc->IsEnabled()) {
-                // Convert VSR output to FRUC input
                 gs_texrender_reset(filter->fruc_render);
                 if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
                     gs_effect_set_texture(image, filter->output_texture);
@@ -295,21 +346,20 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         while (gs_effect_loop(def_effect, "Draw")) {
                             gs_draw_sprite(fruc_rgba_tex, 0, target_width, target_height);
                         }
-                        return; // Done drawing the FRUC frame
+                        return;
                     }
                 }
             }
         }
     }
 
-    // Draw the VSR result directly (Fallback if FRUC is disabled or failed)
+    // Fallback drawing
     if (success && filter->output_texture) {
         gs_effect_set_texture(image, filter->output_texture);
         while (gs_effect_loop(def_effect, "Draw")) {
             gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
         }
     } else {
-        // Fallback: pass through source
         gs_effect_set_texture(image, source_tex);
         while (gs_effect_loop(def_effect, "Draw")) {
             gs_draw_sprite(source_tex, 0, target_width, target_height);
