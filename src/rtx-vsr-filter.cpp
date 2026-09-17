@@ -29,6 +29,9 @@ struct rtx_vsr_data {
     uint32_t out_height;
 
     bool is_initialized;
+    gs_texrender_t *hash_render;
+    gs_stagesurface_t *hash_stage;
+    uint32_t last_hash[256];
     bool vsr_failed;  // If VSR init fails, don't retry every frame
     uint64_t frame_count;
     uint64_t render_count;
@@ -54,6 +57,9 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
+    data->hash_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->hash_stage = gs_stagesurface_create(16, 16, GS_BGRA_UNORM);
+    memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
     data->vsr_failed = false;
     data->frame_count = 0;
@@ -82,6 +88,12 @@ static void rtx_vsr_destroy(void *data)
     }
     if (filter->fruc_render) {
         gs_texrender_destroy(filter->fruc_render);
+    }
+    if (filter->hash_render) {
+        gs_texrender_destroy(filter->hash_render);
+    }
+    if (filter->hash_stage) {
+        gs_stagesurface_destroy(filter->hash_stage);
     }
     if (filter->output_texture) {
         gs_texture_destroy(filter->output_texture);
@@ -269,7 +281,60 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture);
         
         if (d3d11_src && d3d11_dst) {
-            // Always run VSR since we can't reliably detect hardware-decoded duplicates
+            // Generate a 16x16 hash of the source frame to detect duplicates
+            bool is_new_frame = true;
+            gs_texrender_reset(filter->hash_render);
+            if (gs_texrender_begin(filter->hash_render, 16, 16)) {
+                gs_effect_set_texture(image, source_tex);
+                while (gs_effect_loop(def_effect, "Draw")) {
+                    gs_draw_sprite(source_tex, 0, 16, 16);
+                }
+                gs_texrender_end(filter->hash_render);
+                
+                gs_texture_t *hash_tex = gs_texrender_get_texture(filter->hash_render);
+                if (hash_tex) {
+                    gs_stage_texture(filter->hash_stage, hash_tex);
+                    uint8_t *data;
+                    uint32_t linesize;
+                    if (gs_stagesurface_map(filter->hash_stage, &data, &linesize)) {
+                        // linesize might be wider than 16*4 bytes (64 bytes), but we only care about first 16 pixels per line
+                        uint32_t current_hash[256];
+                        for (int y = 0; y < 16; ++y) {
+                            memcpy(&current_hash[y * 16], data + y * linesize, 64);
+                        }
+                        gs_stagesurface_unmap(filter->hash_stage);
+                        
+                        if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
+                            is_new_frame = false;
+                        } else {
+                            memcpy(filter->last_hash, current_hash, sizeof(current_hash));
+                        }
+                    }
+                }
+            }
+
+            if (!is_new_frame && filter->has_cached_vsr) {
+                // Duplicate frame: restore VSR cache and SKIP FRUC entirely!
+                if (filter->vsr_cache_texture) {
+                    ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
+                    if (cache_d3d11) {
+                        auto context = filter->d3d11_interop->GetContext();
+                        if (context) {
+                            context->CopyResource(d3d11_dst, cache_d3d11);
+                        }
+                    }
+                }
+                
+                // For duplicates, we don't run FRUC because it ruins optical flow timing.
+                // We just output the exact same output texture.
+                gs_effect_set_texture(image, filter->output_texture);
+                while (gs_effect_loop(def_effect, "Draw")) {
+                    gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+                }
+                return;
+            }
+            
+            // genuinely new frame (or no cache)
             if (filter->resolution_scale > 1.01f) {
                 success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
             } else {
@@ -277,6 +342,24 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (context) {
                     context->CopyResource(d3d11_dst, d3d11_src);
                     success = true;
+                }
+            }
+
+            if (success) {
+                // Cache the VSR result so we can use it on duplicate frames
+                if (!filter->vsr_cache_texture) {
+                    filter->vsr_cache_texture = gs_texture_create(
+                        target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                }
+                if (filter->vsr_cache_texture) {
+                    ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
+                    if (cache_d3d11) {
+                        auto context = filter->d3d11_interop->GetContext();
+                        if (context) {
+                            context->CopyResource(cache_d3d11, d3d11_dst);
+                            filter->has_cached_vsr = true;
+                        }
+                    }
                 }
             }
 
@@ -293,7 +376,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
                 gs_texture_t *fruc_rgba_tex = gs_texrender_get_texture(filter->fruc_render);
                 if (fruc_rgba_tex) {
-                    double timestamp = filter->render_count++ * (1.0 / 60.0);
+                    double timestamp = (double)obs_get_video_frame_time() / 1000000000.0;
                     ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_rgba_tex);
                     auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
                     
