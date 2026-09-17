@@ -249,12 +249,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
             gs_flush();
             
-            // Frame interpolation MUST be initialized FIRST!
-              // NvOFFRUC creates a CUDA context that can override the thread's current context.
-              // If initialized after VSR, it corrupts VSR's resource mapping (-1400 error).
-              if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                  blog(LOG_WARNING, "[RTX-VSR] Frame interpolation not available");
-              }
+            // FRUC initialization is currently disabled due to deadlocks
+            /*
+            if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
+                blog(LOG_WARNING, "[RTX-VSR] Frame interpolation not available");
+            }
+            */
 
               // Initialize NVIDIA VSR with proper dimensions
               if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
@@ -335,13 +335,20 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             } else {
                                 memcpy(filter->last_hash, current_hash, sizeof(current_hash));
                             }
+                        } else {
+                            blog(LOG_ERROR, "[RTX-VSR] Failed to map staging texture");
                         }
                     }
                 }
             }
 
+            if (filter->frame_count % 300 == 0) {
+                blog(LOG_INFO, "[RTX-VSR] Processing frame %llu - is_new: %d", filter->frame_count, is_new_frame);
+            }
+            filter->frame_count++;
+
             if (!is_new_frame && filter->has_cached_vsr) {
-                // Duplicate frame: restore VSR cache and SKIP FRUC entirely!
+                // Duplicate frame: restore VSR cache and output it directly
                 if (filter->vsr_cache_texture) {
                     ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
                     if (cache_d3d11) {
@@ -352,7 +359,6 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     }
                 }
                 
-                // For duplicates, we don't run FRUC because it ruins optical flow timing.
                 // We just output the exact same output texture.
                 gs_effect_set_texture(image, filter->output_texture);
                 while (gs_effect_loop(def_effect, "Draw")) {
@@ -390,37 +396,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 }
             }
 
-            // FRUC: lightweight compared to VSR
-            if (success && filter->fruc->IsEnabled()) {
-                gs_texrender_reset(filter->fruc_render);
-                if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                    gs_effect_set_texture(image, filter->output_texture);
-                    while (gs_effect_loop(def_effect, "Draw")) {
-                        gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
-                    }
-                    gs_texrender_end(filter->fruc_render);
-                }
-
-                gs_texture_t *fruc_rgba_tex = gs_texrender_get_texture(filter->fruc_render);
-                if (fruc_rgba_tex) {
-                    double timestamp = (double)obs_get_video_frame_time() / 1000000000.0;
-                    ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_rgba_tex);
-                    auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
-                    
-                    if (fruc_out) {
-                        auto context = filter->d3d11_interop->GetContext();
-                        if (context) {
-                            context->CopyResource(d3d11_fruc_in, fruc_out.Get());
-                        }
-                        
-                        gs_effect_set_texture(image, fruc_rgba_tex);
-                        while (gs_effect_loop(def_effect, "Draw")) {
-                            gs_draw_sprite(fruc_rgba_tex, 0, target_width, target_height);
-                        }
-                        return;
-                    }
-                }
-            }
+            // FRUC processing has been disabled due to deadlocks in NvOFFRUC.dll
+            // when fed with non-standard frame cadences (e.g., 30fps source on 60fps canvas).
         }
     }
 
