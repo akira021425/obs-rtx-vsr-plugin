@@ -55,18 +55,18 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         return false;
     }
 
-    // Create textures with SHARED flags as required by NvOFFRUC
+    // Create textures - BGRA format to match ARGBSurface (ARGB in NVIDIA = BGRA in DXGI)
+    // No SHARED flags needed since FRUC uses the same D3D11 device
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = width;
     desc.Height = height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
-    
+    desc.MiscFlags = 0;
     HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
     if (FAILED(hr)) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture (hr=0x%08X)", hr);

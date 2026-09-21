@@ -371,44 +371,22 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
             // ===== FRUC processing (every frame, as required by NvOFFRUC API) =====
             if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
-                // Convert BGRA output to RGBA for FRUC via texrender
-                gs_texrender_reset(filter->fruc_render);
-                if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                    gs_effect_set_texture(image, filter->output_texture);
-                    while (gs_effect_loop(def_effect, "Draw")) {
-                        gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
-                    }
-                    gs_texrender_end(filter->fruc_render);
-                }
-
-                gs_texture_t *fruc_input_tex = gs_texrender_get_texture(filter->fruc_render);
-                if (fruc_input_tex) {
-                    // Get timestamp in seconds (monotonic)
-                    double timestamp = (double)os_gettime_ns() / 1000000000.0;
-                    
-                    ID3D11Texture2D *d3d11_fruc_in = (ID3D11Texture2D *)gs_texture_get_obj(fruc_input_tex);
-                    if (d3d11_fruc_in) {
-                        auto fruc_out = filter->fruc->Process(d3d11_fruc_in, timestamp);
-                        
-                        if (fruc_out) {
-                            // Copy FRUC output back to the fruc_render texture for OBS to draw
-                            auto context = filter->d3d11_interop->GetContext();
-                            if (context) {
-                                context->CopyResource(d3d11_fruc_in, fruc_out.Get());
-                            }
-                            
-                            // Draw the interpolated frame
-                            gs_effect_set_texture(image, fruc_input_tex);
-                            while (gs_effect_loop(def_effect, "Draw")) {
-                                gs_draw_sprite(fruc_input_tex, 0, target_width, target_height);
-                            }
-                            filter->frame_count++;
-                            return;
-                        }
+                // VSR output texture is already BGRA which matches FRUC's ARGBSurface format
+                // Pass it directly without format conversion
+                double timestamp = (double)os_gettime_ns() / 1000000000.0;
+                
+                auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
+                
+                if (fruc_out) {
+                    // Copy FRUC interpolated output back to our output texture
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(d3d11_dst, fruc_out.Get());
                     }
                 }
+                // If FRUC returns nullptr (e.g. first frame, building optical flow),
+                // we just use the VSR output as-is
             }
-            // FRUC didn't produce output (or not available) - fall through to draw VSR output
         }
     }
 
