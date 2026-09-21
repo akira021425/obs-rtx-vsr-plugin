@@ -55,7 +55,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         return false;
     }
 
-    // Create an output texture
+    // Create textures with SHARED flags as required by NvOFFRUC
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = width;
     desc.Height = height;
@@ -65,52 +65,58 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    // NvOFFRUC strictly requires the D3D11 texture to be a shared NT handle resource
     desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
     
-    HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
+    HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
     if (FAILED(hr)) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC output texture");
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture (hr=0x%08X)", hr);
         Release();
         return false;
     }
 
-    hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
+    hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
     if (FAILED(hr)) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture");
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC output texture (hr=0x%08X)", hr);
         Release();
         return false;
     }
 
-    // Register textures with FRUC
+    hr = m_device->CreateTexture2D(&desc, nullptr, &m_interp_tex);
+    if (FAILED(hr)) {
+        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC interp texture (hr=0x%08X)", hr);
+        Release();
+        return false;
+    }
+
+    // Register all 3 textures with FRUC (NvOFFRUC_MIN_RESOURCE = 3)
     NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-    reg_param.pArrResource[0] = m_output_tex.Get();
-    reg_param.pArrResource[1] = m_input_tex.Get();
-    reg_param.uiCount = 2;
+    reg_param.pArrResource[0] = m_input_tex.Get();
+    reg_param.pArrResource[1] = m_output_tex.Get();
+    reg_param.pArrResource[2] = m_interp_tex.Get();
+    reg_param.uiCount = 3;
     
     status = m_register(m_fruc_handle, &reg_param);
     if (status != NvOFFRUC_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCRegisterResource failed %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCRegisterResource failed: %d", status);
         Release();
         return false;
     }
-    m_output_registered = true;
-    m_input_registered = true;
+    m_resources_registered = true;
 
-    blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully");
+    blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully (%ux%u)", width, height);
     return true;
 }
 
 void FrameInterpolation::Release()
 {
-    if (m_output_registered && m_unregister) {
+    if (m_resources_registered && m_unregister && m_fruc_handle) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
-        unreg.pArrResource[0] = m_output_tex.Get();
-        unreg.pArrResource[1] = m_input_tex.Get();
-        unreg.uiCount = 2;
+        unreg.pArrResource[0] = m_input_tex.Get();
+        unreg.pArrResource[1] = m_output_tex.Get();
+        unreg.pArrResource[2] = m_interp_tex.Get();
+        unreg.uiCount = 3;
         m_unregister(m_fruc_handle, &unreg);
-        m_output_registered = false;
-        m_input_registered = false;
+        m_resources_registered = false;
     }
 
     if (m_fruc_handle && m_destroy) {
@@ -123,8 +129,9 @@ void FrameInterpolation::Release()
         m_fruc_dll = nullptr;
     }
 
-    m_output_tex.Reset();
     m_input_tex.Reset();
+    m_output_tex.Reset();
+    m_interp_tex.Reset();
     m_device.Reset();
 }
 
@@ -134,13 +141,12 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
         return nullptr;
     }
 
-    // Copy the OBS texture (src_tex) into our dedicated shared input texture (m_input_tex)
+    // Copy the source texture into our registered input texture
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
     m_device->GetImmediateContext(&context);
     if (!context) return nullptr;
     context->CopyResource(m_input_tex.Get(), src_tex);
 
-    // The textures are already registered during Initialize()
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = m_input_tex.Get();
     in_params.stFrameDataInput.nTimeStamp = timestamp;
@@ -152,9 +158,15 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
 
     if (status == NvOFFRUC_SUCCESS) {
-        // We have a new interpolated frame!
         return m_output_tex;
     }
+
+    // Log errors sparingly (only first occurrence or every 300 frames)
+    static int error_count = 0;
+    if (error_count < 5 || error_count % 300 == 0) {
+        blog(LOG_WARNING, "[RTX-VSR] NvOFFRUCProcess returned status %d (count=%d)", status, error_count);
+    }
+    error_count++;
 
     return nullptr;
 }

@@ -19,6 +19,7 @@ public:
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }
+    bool IsInitialized() const { return m_fruc_handle != nullptr; }
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -35,14 +36,11 @@ private:
     uint32_t m_width = 0;
     uint32_t m_height = 0;
 
-    // We need to keep track of textures for FRUC output
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
-    bool m_output_registered = false;
-    
-    // We also need a dedicated shared input texture because NvOFFRUC requires shared NT handles
+    // NvOFFRUC requires NvOFFRUC_MIN_RESOURCE (3) registered textures
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
-    bool m_input_registered = false;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_interp_tex;  // 3rd required resource
+    bool m_resources_registered = false;
     
-    // We also need to keep track of previous inputs to manage timestamp differences and 60fps generation
     bool LoadDLL();
 };
