@@ -36,10 +36,9 @@ private:
     uint32_t m_width = 0;
     uint32_t m_height = 0;
 
-    // NvOFFRUC requires NvOFFRUC_MIN_RESOURCE (3) registered textures
+    // NvOFFRUC requires SHARED D3D11 textures for resource registration
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_interp_tex;  // 3rd required resource
     bool m_resources_registered = false;
     
     bool LoadDLL();

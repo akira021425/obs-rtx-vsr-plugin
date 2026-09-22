@@ -56,7 +56,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     }
 
     // Create textures - BGRA format to match ARGBSurface (ARGB in NVIDIA = BGRA in DXGI)
-    // No SHARED flags needed since FRUC uses the same D3D11 device
+    // SHARED flag is required by NvOFFRUC for resource registration
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = width;
     desc.Height = height;
@@ -66,7 +66,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MiscFlags = 0;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+
     HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
     if (FAILED(hr)) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture (hr=0x%08X)", hr);
@@ -81,19 +82,11 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         return false;
     }
 
-    hr = m_device->CreateTexture2D(&desc, nullptr, &m_interp_tex);
-    if (FAILED(hr)) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC interp texture (hr=0x%08X)", hr);
-        Release();
-        return false;
-    }
-
-    // Register all 3 textures with FRUC (NvOFFRUC_MIN_RESOURCE = 3)
+    // Register 2 textures with FRUC (input + output)
     NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
     reg_param.pArrResource[0] = m_input_tex.Get();
     reg_param.pArrResource[1] = m_output_tex.Get();
-    reg_param.pArrResource[2] = m_interp_tex.Get();
-    reg_param.uiCount = 3;
+    reg_param.uiCount = 2;
     
     status = m_register(m_fruc_handle, &reg_param);
     if (status != NvOFFRUC_SUCCESS) {
@@ -113,8 +106,7 @@ void FrameInterpolation::Release()
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         unreg.pArrResource[0] = m_input_tex.Get();
         unreg.pArrResource[1] = m_output_tex.Get();
-        unreg.pArrResource[2] = m_interp_tex.Get();
-        unreg.uiCount = 3;
+        unreg.uiCount = 2;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
     }
@@ -131,7 +123,6 @@ void FrameInterpolation::Release()
 
     m_input_tex.Reset();
     m_output_tex.Reset();
-    m_interp_tex.Reset();
     m_device.Reset();
 }
 
