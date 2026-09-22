@@ -1,0 +1,2771 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineSystem.cmake:212 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Windows - 10.0.26200 - AMD64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/"
+    found: "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+      2026/09/11 11:33:34 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+      
+      繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdC\\CompilerIdC.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+      PrepareForBuild:
+        繝・ぅ繝ｬ繧ｯ繝医Μ "Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+        繝・ぅ繝ｬ繧ｯ繝医Μ "Debug\\CompilerIdC.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+      InitializeBuildStatus:
+        "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdC\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        繝輔ぃ繧､繝ｫ "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" 繧貞炎髯､縺励※縺・∪縺吶\xc2\x80・
+        "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+      繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdC\\CompilerIdC.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′螳御ｺ・＠縺ｾ縺励◆縲・
+      
+      繝薙Ν繝峨↓謌仙粥縺励∪縺励◆縲・
+          0 蛟九・隴ｦ蜻・
+          0 繧ｨ繝ｩ繝ｼ
+      
+      邨碁℃譎る俣 00:00:01.04
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:103 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:104 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Program Files/PowerShell/7/lld-link.com"
+      - "C:/Program Files/PowerShell/7/lld-link.exe"
+      - "C:/Program Files/PowerShell/7/lld-link"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link.com"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link.exe"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link.com"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link.exe"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link.com"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link.exe"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link.com"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link.exe"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files (x86)/dotnet/lld-link.com"
+      - "C:/Program Files (x86)/dotnet/lld-link.exe"
+      - "C:/Program Files (x86)/dotnet/lld-link"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link.com"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link.exe"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link.com"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link.exe"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/ProgramData/chocolatey/bin/lld-link.com"
+      - "C:/ProgramData/chocolatey/bin/lld-link.exe"
+      - "C:/ProgramData/chocolatey/bin/lld-link"
+      - "C:/Program Files/Tailscale/lld-link.com"
+      - "C:/Program Files/Tailscale/lld-link.exe"
+      - "C:/Program Files/Tailscale/lld-link"
+      - "C:/Program Files/CMake/bin/lld-link.com"
+      - "C:/Program Files/CMake/bin/lld-link.exe"
+      - "C:/Program Files/CMake/bin/lld-link"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link.com"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link.exe"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link"
+      - "C:/Program Files/Git/cmd/lld-link.com"
+      - "C:/Program Files/Git/cmd/lld-link.exe"
+      - "C:/Program Files/Git/cmd/lld-link"
+      - "C:/Python313/Scripts/lld-link.com"
+      - "C:/Python313/Scripts/lld-link.exe"
+      - "C:/Python313/Scripts/lld-link"
+      - "C:/Python313/lld-link.com"
+      - "C:/Python313/lld-link.exe"
+      - "C:/Python313/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_MT"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "mt"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt"
+      - "C:/Program Files/PowerShell/7/mt.com"
+      - "C:/Program Files/PowerShell/7/mt.exe"
+      - "C:/Program Files/PowerShell/7/mt"
+      - "C:/Users/arai5/.gemini/antigravity/bin/mt.com"
+      - "C:/Users/arai5/.gemini/antigravity/bin/mt.exe"
+      - "C:/Users/arai5/.gemini/antigravity/bin/mt"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/mt.com"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/mt.exe"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/mt"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/mt.com"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/mt.exe"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/mt"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/mt.com"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/mt.exe"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/mt"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/mt.com"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/mt.exe"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/mt"
+      - "C:/Windows/System32/mt.com"
+      - "C:/Windows/System32/mt.exe"
+      - "C:/Windows/System32/mt"
+      - "C:/Windows/mt.com"
+      - "C:/Windows/mt.exe"
+      - "C:/Windows/mt"
+      - "C:/Windows/System32/wbem/mt.com"
+      - "C:/Windows/System32/wbem/mt.exe"
+      - "C:/Windows/System32/wbem/mt"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt"
+      - "C:/Windows/System32/OpenSSH/mt.com"
+      - "C:/Windows/System32/OpenSSH/mt.exe"
+      - "C:/Windows/System32/OpenSSH/mt"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/mt.com"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/mt.exe"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/mt"
+      - "C:/Program Files/dotnet/mt.com"
+      - "C:/Program Files/dotnet/mt.exe"
+      - "C:/Program Files/dotnet/mt"
+      - "C:/Program Files (x86)/dotnet/mt.com"
+      - "C:/Program Files (x86)/dotnet/mt.exe"
+      - "C:/Program Files (x86)/dotnet/mt"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/mt.com"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/mt.exe"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/mt"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/mt.com"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/mt.exe"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/mt"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt"
+      - "C:/Program Files/nodejs/mt.com"
+      - "C:/Program Files/nodejs/mt.exe"
+      - "C:/Program Files/nodejs/mt"
+      - "C:/ProgramData/chocolatey/bin/mt.com"
+      - "C:/ProgramData/chocolatey/bin/mt.exe"
+      - "C:/ProgramData/chocolatey/bin/mt"
+      - "C:/Program Files/Tailscale/mt.com"
+      - "C:/Program Files/Tailscale/mt.exe"
+      - "C:/Program Files/Tailscale/mt"
+      - "C:/Program Files/CMake/bin/mt.com"
+      - "C:/Program Files/CMake/bin/mt.exe"
+      - "C:/Program Files/CMake/bin/mt"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/mt.com"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/mt.exe"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/mt"
+      - "C:/Program Files/Git/cmd/mt.com"
+      - "C:/Program Files/Git/cmd/mt.exe"
+      - "C:/Program Files/Git/cmd/mt"
+      - "C:/Python313/Scripts/mt.com"
+      - "C:/Python313/Scripts/mt.exe"
+      - "C:/Python313/Scripts/mt"
+      - "C:/Python313/mt.com"
+      - "C:/Python313/mt.exe"
+      - "C:/Python313/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/mt"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/mt.com"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/mt"
+      - "C:/Users/arai5/AppData/Roaming/npm/mt.com"
+      - "C:/Users/arai5/AppData/Roaming/npm/mt.exe"
+      - "C:/Users/arai5/AppData/Roaming/npm/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/mt"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/mt.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/mt.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/mt"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_AR"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lib"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/"
+    found: "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+      2026/09/11 11:33:36 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+      
+      繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+      PrepareForBuild:
+        繝・ぅ繝ｬ繧ｯ繝医Μ "Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+        繝・ぅ繝ｬ繧ｯ繝医Μ "Debug\\CompilerIdCXX.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+      InitializeBuildStatus:
+        "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        繝輔ぃ繧､繝ｫ "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" 繧貞炎髯､縺励※縺・∪縺吶\xc2\x80・
+        "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+      繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\4.3.1\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′螳御ｺ・＠縺ｾ縺励◆縲・
+      
+      繝薙Ν繝峨↓謌仙粥縺励∪縺励◆縲・
+          0 蛟九・隴ｦ蜻・
+          0 繧ｨ繝ｩ繝ｼ
+      
+      邨碁℃譎る俣 00:00:00.64
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindBinUtils.cmake:104 (__resolve_linker_path)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Program Files/PowerShell/7/lld-link.com"
+      - "C:/Program Files/PowerShell/7/lld-link.exe"
+      - "C:/Program Files/PowerShell/7/lld-link"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/lld-link"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link.com"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link.exe"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/lld-link"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link.com"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link.exe"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lld-link"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link.com"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link.exe"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link.com"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link.exe"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files (x86)/dotnet/lld-link.com"
+      - "C:/Program Files (x86)/dotnet/lld-link.exe"
+      - "C:/Program Files (x86)/dotnet/lld-link"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link.com"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link.exe"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lld-link"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link.com"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link.exe"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lld-link"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/ProgramData/chocolatey/bin/lld-link.com"
+      - "C:/ProgramData/chocolatey/bin/lld-link.exe"
+      - "C:/ProgramData/chocolatey/bin/lld-link"
+      - "C:/Program Files/Tailscale/lld-link.com"
+      - "C:/Program Files/Tailscale/lld-link.exe"
+      - "C:/Program Files/Tailscale/lld-link"
+      - "C:/Program Files/CMake/bin/lld-link.com"
+      - "C:/Program Files/CMake/bin/lld-link.exe"
+      - "C:/Program Files/CMake/bin/lld-link"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link.com"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link.exe"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lld-link"
+      - "C:/Program Files/Git/cmd/lld-link.com"
+      - "C:/Program Files/Git/cmd/lld-link.exe"
+      - "C:/Program Files/Git/cmd/lld-link"
+      - "C:/Python313/Scripts/lld-link.com"
+      - "C:/Python313/Scripts/lld-link.exe"
+      - "C:/Python313/Scripts/lld-link"
+      - "C:/Python313/lld-link.com"
+      - "C:/Python313/lld-link.exe"
+      - "C:/Python313/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lld-link"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/arai5/AppData/Roaming/npm/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/lld-link"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/lld-link"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineRCCompiler.cmake:40 (find_program)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake:592 (enable_language)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake:565 (__windows_compiler_msvc_enable_rc)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC-C.cmake:5 (__windows_compiler_msvc)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCInformation.cmake:48 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_RC_COMPILER"
+    description: "RC compiler"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "rc"
+    candidate_directories:
+      - "C:/Program Files/PowerShell/7/"
+      - "C:/Users/arai5/.gemini/antigravity/bin/"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/dotnet/"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/ProgramData/chocolatey/bin/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/"
+      - "C:/Program Files/Git/cmd/"
+      - "C:/Python313/Scripts/"
+      - "C:/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/arai5/AppData/Roaming/npm/"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Program Files/bin/"
+      - "C:/Program Files/sbin/"
+      - "C:/Program Files/"
+      - "C:/Program Files (x86)/bin/"
+      - "C:/Program Files (x86)/sbin/"
+      - "C:/Program Files (x86)/"
+      - "C:/Program Files/CMake/bin/"
+      - "C:/Program Files/CMake/sbin/"
+      - "C:/Program Files/CMake/"
+      - "C:/Program Files/obs-rtx-vsr/bin/"
+      - "C:/Program Files/obs-rtx-vsr/sbin/"
+      - "C:/Program Files/obs-rtx-vsr/"
+    searched_directories:
+      - "C:/Program Files/PowerShell/7/rc.com"
+      - "C:/Program Files/PowerShell/7/rc.exe"
+      - "C:/Program Files/PowerShell/7/rc"
+      - "C:/Users/arai5/.gemini/antigravity/bin/rc.com"
+      - "C:/Users/arai5/.gemini/antigravity/bin/rc.exe"
+      - "C:/Users/arai5/.gemini/antigravity/bin/rc"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/rc.com"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/rc.exe"
+      - "C:/Users/arai5/AppData/Roaming/Antigravity/bin/rc"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/rc.com"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/rc.exe"
+      - "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/bin/rc"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/rc.com"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/rc.exe"
+      - "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/rc"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/rc.com"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/rc.exe"
+      - "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/rc"
+      - "C:/Windows/System32/rc.com"
+      - "C:/Windows/System32/rc.exe"
+      - "C:/Windows/System32/rc"
+      - "C:/Windows/rc.com"
+      - "C:/Windows/rc.exe"
+      - "C:/Windows/rc"
+      - "C:/Windows/System32/wbem/rc.com"
+      - "C:/Windows/System32/wbem/rc.exe"
+      - "C:/Windows/System32/wbem/rc"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc"
+      - "C:/Windows/System32/OpenSSH/rc.com"
+      - "C:/Windows/System32/OpenSSH/rc.exe"
+      - "C:/Windows/System32/OpenSSH/rc"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/rc.com"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/rc.exe"
+      - "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/rc"
+      - "C:/Program Files/dotnet/rc.com"
+      - "C:/Program Files/dotnet/rc.exe"
+      - "C:/Program Files/dotnet/rc"
+      - "C:/Program Files (x86)/dotnet/rc.com"
+      - "C:/Program Files (x86)/dotnet/rc.exe"
+      - "C:/Program Files (x86)/dotnet/rc"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/rc.com"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/rc.exe"
+      - "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/rc"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/rc.com"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/rc.exe"
+      - "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/rc"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc"
+      - "C:/Program Files/nodejs/rc.com"
+      - "C:/Program Files/nodejs/rc.exe"
+      - "C:/Program Files/nodejs/rc"
+      - "C:/ProgramData/chocolatey/bin/rc.com"
+      - "C:/ProgramData/chocolatey/bin/rc.exe"
+      - "C:/ProgramData/chocolatey/bin/rc"
+      - "C:/Program Files/Tailscale/rc.com"
+      - "C:/Program Files/Tailscale/rc.exe"
+      - "C:/Program Files/Tailscale/rc"
+      - "C:/Program Files/CMake/bin/rc.com"
+      - "C:/Program Files/CMake/bin/rc.exe"
+      - "C:/Program Files/CMake/bin/rc"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/rc.com"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/rc.exe"
+      - "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/rc"
+      - "C:/Program Files/Git/cmd/rc.com"
+      - "C:/Program Files/Git/cmd/rc.exe"
+      - "C:/Program Files/Git/cmd/rc"
+      - "C:/Python313/Scripts/rc.com"
+      - "C:/Python313/Scripts/rc.exe"
+      - "C:/Python313/Scripts/rc"
+      - "C:/Python313/rc.com"
+      - "C:/Python313/rc.exe"
+      - "C:/Python313/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python313/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Python312/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/rc"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/rc.com"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/rc"
+      - "C:/Users/arai5/AppData/Roaming/npm/rc.com"
+      - "C:/Users/arai5/AppData/Roaming/npm/rc.exe"
+      - "C:/Users/arai5/AppData/Roaming/npm/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/bin/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity/bin/rc"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/rc.com"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/rc.exe"
+      - "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/bin/rc"
+      - "C:/Program Files/bin/rc.com"
+      - "C:/Program Files/bin/rc.exe"
+      - "C:/Program Files/bin/rc"
+      - "C:/Program Files/sbin/rc.com"
+      - "C:/Program Files/sbin/rc.exe"
+      - "C:/Program Files/sbin/rc"
+      - "C:/Program Files/rc.com"
+      - "C:/Program Files/rc.exe"
+      - "C:/Program Files/rc"
+      - "C:/Program Files (x86)/bin/rc.com"
+      - "C:/Program Files (x86)/bin/rc.exe"
+      - "C:/Program Files (x86)/bin/rc"
+      - "C:/Program Files (x86)/sbin/rc.com"
+      - "C:/Program Files (x86)/sbin/rc.exe"
+      - "C:/Program Files (x86)/sbin/rc"
+      - "C:/Program Files (x86)/rc.com"
+      - "C:/Program Files (x86)/rc.exe"
+      - "C:/Program Files (x86)/rc"
+      - "C:/Program Files/CMake/bin/rc.com"
+      - "C:/Program Files/CMake/bin/rc.exe"
+      - "C:/Program Files/CMake/bin/rc"
+      - "C:/Program Files/CMake/sbin/rc.com"
+      - "C:/Program Files/CMake/sbin/rc.exe"
+      - "C:/Program Files/CMake/sbin/rc"
+      - "C:/Program Files/CMake/rc.com"
+      - "C:/Program Files/CMake/rc.exe"
+      - "C:/Program Files/CMake/rc"
+      - "C:/Program Files/obs-rtx-vsr/bin/rc.com"
+      - "C:/Program Files/obs-rtx-vsr/bin/rc.exe"
+      - "C:/Program Files/obs-rtx-vsr/bin/rc"
+      - "C:/Program Files/obs-rtx-vsr/sbin/rc.com"
+      - "C:/Program Files/obs-rtx-vsr/sbin/rc.exe"
+      - "C:/Program Files/obs-rtx-vsr/sbin/rc"
+      - "C:/Program Files/obs-rtx-vsr/rc.com"
+      - "C:/Program Files/obs-rtx-vsr/rc.exe"
+      - "C:/Program Files/obs-rtx-vsr/rc"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/obs-rtx-vsr"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files/obs-rtx-vsr"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-rautlj"
+      binary: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-rautlj"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-rautlj'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_473c9.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+        2026/09/11 11:33:37 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+        
+        繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rautlj\\cmTC_473c9.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+        PrepareForBuild:
+          讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rautlj\\Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "cmTC_473c9.dir\\Debug\\cmTC_473c9.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        InitializeBuildStatus:
+          "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "cmTC_473c9.dir\\Debug\\cmTC_473c9.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_473c9.dir\\Debug\\cmTC_473c9.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_473c9.dir\\Debug\\\\" /Fd"cmTC_473c9.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          Microsoft(R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_473c9.dir\\Debug\\\\" /Fd"cmTC_473c9.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          CMakeCCompilerABI.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rautlj\\Debug\\cmTC_473c9.exe" /INCREMENTAL /ILK:"cmTC_473c9.dir\\Debug\\cmTC_473c9.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-rautlj/Debug/cmTC_473c9.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-rautlj/Debug/cmTC_473c9.lib" /MACHINE:X64  /machine:x64 cmTC_473c9.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_473c9.vcxproj -> C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rautlj\\Debug\\cmTC_473c9.exe
+        FinalizeBuildStatus:
+          繝輔ぃ繧､繝ｫ "cmTC_473c9.dir\\Debug\\cmTC_473c9.tlog\\unsuccessfulbuild" 繧貞炎髯､縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_473c9.dir\\Debug\\cmTC_473c9.tlog\\cmTC_473c9.lastbuildstate" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rautlj\\cmTC_473c9.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′螳御ｺ・＠縺ｾ縺励◆縲・
+        
+        繝薙Ν繝峨↓謌仙粥縺励∪縺励◆縲・
+            0 蛟九・隴ｦ蜻・
+            0 繧ｨ繝ｩ繝ｼ
+        
+        邨碁℃譎る俣 00:00:00.56
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'C': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the C compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35224.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-m7tks7"
+      binary: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-m7tks7"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /GR /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-m7tks7'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_e234a.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+        2026/09/11 11:33:38 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+        
+        繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m7tks7\\cmTC_e234a.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+        PrepareForBuild:
+          讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m7tks7\\Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "cmTC_e234a.dir\\Debug\\cmTC_e234a.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        InitializeBuildStatus:
+          "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "cmTC_e234a.dir\\Debug\\cmTC_e234a.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_e234a.dir\\Debug\\cmTC_e234a.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GR /Fo"cmTC_e234a.dir\\Debug\\\\" /Fd"cmTC_e234a.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          Microsoft(R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /GR /Fo"cmTC_e234a.dir\\Debug\\\\" /Fd"cmTC_e234a.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m7tks7\\Debug\\cmTC_e234a.exe" /INCREMENTAL /ILK:"cmTC_e234a.dir\\Debug\\cmTC_e234a.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-m7tks7/Debug/cmTC_e234a.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-m7tks7/Debug/cmTC_e234a.lib" /MACHINE:X64  /machine:x64 cmTC_e234a.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_e234a.vcxproj -> C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m7tks7\\Debug\\cmTC_e234a.exe
+        FinalizeBuildStatus:
+          繝輔ぃ繧､繝ｫ "cmTC_e234a.dir\\Debug\\cmTC_e234a.tlog\\unsuccessfulbuild" 繧貞炎髯､縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_e234a.dir\\Debug\\cmTC_e234a.tlog\\cmTC_e234a.lastbuildstate" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-m7tks7\\cmTC_e234a.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′螳御ｺ・＠縺ｾ縺励◆縲・
+        
+        繝薙Ν繝峨↓謌仙粥縺励∪縺励◆縲・
+            0 蛟九・隴ｦ蜻・
+            0 繧ｨ繝ｩ繝ｼ
+        
+        邨碁℃譎る俣 00:00:00.56
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.44.35224.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:8 (find_package)"
+    name: "libobs"
+    configs:
+      -
+        filename: "libobs.cps"
+        kind: "cps"
+      -
+        filename: "libobsConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "libobs-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "libobs"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/PowerShell/7/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/.gemini/antigravity/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/.gemini/antigravity/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/.gemini/antigravity/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/.gemini/antigravity/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Roaming/Antigravity/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Roaming/Antigravity/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Roaming/Antigravity/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Roaming/Antigravity/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Intel/Shared Libraries/redist/intel64_win/compiler/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/Common Files/Oracle/Java/javapath/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/wbem/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/WindowsPowerShell/v1.0/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Windows/System32/OpenSSH/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Solidigm/Solidigm(TM) Storage Tool/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/dotnet/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/dotnet/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/dotnet/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/dotnet/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/dotnet/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Intel/Intel(R) Memory and Storage Tool/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/NVIDIA Corporation/NVIDIA app/NvDLISR/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Docker/Docker/resources/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Docker/Docker/resources/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Docker/Docker/resources/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Docker/Docker/resources/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/nodejs/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/chocolatey/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/chocolatey/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/chocolatey/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/ProgramData/chocolatey/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Tailscale/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/AOMEI/AOMEI Backupper/8.4.0/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/Git/cmd/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/Scripts/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/Scripts/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/Scripts/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/Scripts/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Python313/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/Scripts/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python313/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/Scripts/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Python312/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Python/Launcher/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Microsoft/WindowsApps/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Microsoft VS Code/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AppData/Local/Programs/Antigravity IDE/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/CMake/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/libobsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/libobs-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/lib/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Program Files (x86)/share/cps/libobs.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found: null
+    search_context:
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/obs-rtx-vsr"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files/obs-rtx-vsr"
+...
+
+---
+events:
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - ".deps/cmake/libobsConfig.cmake:30 (find_dependency)"
+      - "CMakeLists.txt:16 (find_package)"
+    name: "w32-pthreads"
+    configs:
+      -
+        filename: "w32-pthreads.cps"
+        kind: "cps"
+      -
+        filename: "w32-pthreadsConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "w32-pthreads-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: true
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "w32-pthreads"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/w32-pthreadsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/w32-pthreads-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/lib/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/pkgRedirects/share/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/w32-pthreadsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/w32-pthreads-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/cmake/w32-pthreadsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/cmake/w32-pthreads-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/lib/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64/share/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-qt6-2025-07-11-x64/w32-pthreadsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-qt6-2025-07-11-x64/w32-pthreads-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-qt6-2025-07-11-x64/lib/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-qt6-2025-07-11-x64/share/cps/w32-pthreads.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/w32-pthreadsConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/w32-pthreads-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+    found:
+      path: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsConfig.cmake"
+      mode: "config"
+      version: "31.1.1"
+    search_context:
+      CMAKE_PREFIX_PATH:
+        - "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-2025-07-11-x64"
+        - "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/obs-deps-qt6-2025-07-11-x64"
+        - "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps"
+      ENV{PATH}:
+        - "C:\\Program Files\\PowerShell\\7"
+        - "C:/Users/arai5/.gemini/antigravity/bin"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\Program Files\\Microsoft\\jdk-17.0.18.8-hotspot\\bin"
+        - "C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler"
+        - "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Solidigm\\Solidigm(TM) Storage Tool\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\dotnet\\"
+        - "C:\\WINDOWS\\system32"
+        - "C:\\WINDOWS"
+        - "C:\\WINDOWS\\System32\\Wbem"
+        - "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\WINDOWS\\System32\\OpenSSH\\"
+        - "C:\\Program Files\\Intel\\Intel(R) Memory and Storage Tool\\"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\ProgramData\\chocolatey\\bin"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Program Files\\CMake\\bin"
+        - "C:\\Program Files (x86)\\AOMEI\\AOMEI Backupper\\8.4.0"
+        - "C:\\Program Files\\Git\\cmd"
+        - "C:\\Program Files\\PowerShell\\7\\"
+        - "C:\\Python313\\Scripts\\"
+        - "C:\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python313\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Python312\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Python\\Launcher\\"
+        - "C:\\Users\\arai5\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\arai5\\AppData\\Roaming\\npm"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity\\bin"
+        - "C:\\Users\\arai5\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/obs-rtx-vsr"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/Program Files/CMake"
+        - "C:/Program Files/obs-rtx-vsr"
+      CMAKE_MODULE_PATH:
+        - "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common"
+        - "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CheckCSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:160 (check_c_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - ".deps/cmake/libobsConfig.cmake:32 (find_dependency)"
+      - "CMakeLists.txt:16 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-0y1ywy"
+      binary: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-0y1ywy"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common;C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "ProgramDatabase"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-0y1ywy'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_5714d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+        2026/09/11 14:41:08 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+        
+        繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\cmTC_5714d.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+        PrepareForBuild:
+          讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "cmTC_5714d.dir\\Debug\\cmTC_5714d.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        InitializeBuildStatus:
+          "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "cmTC_5714d.dir\\Debug\\cmTC_5714d.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_5714d.dir\\Debug\\cmTC_5714d.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_5714d.dir\\Debug\\\\" /Fd"cmTC_5714d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\src.c"
+          Microsoft(R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_5714d.dir\\Debug\\\\" /Fd"cmTC_5714d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\src.c"
+          src.c
+        C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\src.c(1,1): error C1083: include 繝輔ぃ繧､繝ｫ繧帝幕縺代∪縺帙ｓ縲・pthread.h':No such file or directory [C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\cmTC_5714d.vcxproj]
+        繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\cmTC_5714d.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′邨ゆｺ・＠縺ｾ縺励◆ -- 螟ｱ謨励\xc2\x80・
+        
+        繝薙Ν繝峨↓螟ｱ謨励＠縺ｾ縺励◆縲・
+        
+        "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\cmTC_5714d.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) (1) ->
+        (ClCompile 繧ｿ繝ｼ繧ｲ繝・ヨ) -> 
+          C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\src.c(1,1): error C1083: include 繝輔ぃ繧､繝ｫ繧帝幕縺代∪縺帙ｓ縲・pthread.h':No such file or directory [C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0y1ywy\\cmTC_5714d.vcxproj]
+        
+            0 蛟九・隴ｦ蜻・
+            1 繧ｨ繝ｩ繝ｼ
+        
+        邨碁℃譎る俣 00:00:00.32
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:238 (_threads_check_lib)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - ".deps/cmake/libobsConfig.cmake:32 (find_dependency)"
+      - "CMakeLists.txt:16 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-b0i35x"
+      binary: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-b0i35x"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common;C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "ProgramDatabase"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-b0i35x'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_9ebd2.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+        2026/09/11 14:41:08 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+        
+        繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\cmTC_9ebd2.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+        PrepareForBuild:
+          讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "cmTC_9ebd2.dir\\Debug\\cmTC_9ebd2.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        InitializeBuildStatus:
+          "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "cmTC_9ebd2.dir\\Debug\\cmTC_9ebd2.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_9ebd2.dir\\Debug\\cmTC_9ebd2.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_9ebd2.dir\\Debug\\\\" /Fd"cmTC_9ebd2.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\CheckFunctionExists.c"
+          Microsoft(R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_9ebd2.dir\\Debug\\\\" /Fd"cmTC_9ebd2.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\Debug\\cmTC_9ebd2.exe" /INCREMENTAL /ILK:"cmTC_9ebd2.dir\\Debug\\cmTC_9ebd2.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-b0i35x/Debug/cmTC_9ebd2.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-b0i35x/Debug/cmTC_9ebd2.lib" /MACHINE:X64  /machine:x64 cmTC_9ebd2.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: 繝輔ぃ繧､繝ｫ 'pthreads.lib' 繧帝幕縺上％縺ｨ縺後〒縺阪∪縺帙ｓ縲・[C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\cmTC_9ebd2.vcxproj]
+        繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\cmTC_9ebd2.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′邨ゆｺ・＠縺ｾ縺励◆ -- 螟ｱ謨励\xc2\x80・
+        
+        繝薙Ν繝峨↓螟ｱ謨励＠縺ｾ縺励◆縲・
+        
+        "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\cmTC_9ebd2.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) (1) ->
+        (Link 繧ｿ繝ｼ繧ｲ繝・ヨ) -> 
+          LINK : fatal error LNK1104: 繝輔ぃ繧､繝ｫ 'pthreads.lib' 繧帝幕縺上％縺ｨ縺後〒縺阪∪縺帙ｓ縲・[C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-b0i35x\\cmTC_9ebd2.vcxproj]
+        
+            0 蛟九・隴ｦ蜻・
+            1 繧ｨ繝ｩ繝ｼ
+        
+        邨碁℃譎る俣 00:00:00.42
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake:239 (_threads_check_lib)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - ".deps/cmake/libobsConfig.cmake:32 (find_dependency)"
+      - "CMakeLists.txt:16 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-mpyx86"
+      binary: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-mpyx86"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common;C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "ProgramDatabase"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-mpyx86'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_42c36.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild 縺ｮ繝舌・繧ｸ繝ｧ繝ｳ 17.14.40+3e7442088 (.NET Framework)
+        2026/09/11 14:41:09 縺ｫ繝薙Ν繝峨ｒ髢句ｧ九＠縺ｾ縺励◆縲・
+        
+        繝弱・繝・1 荳翫・繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\cmTC_42c36.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ)縲・
+        PrepareForBuild:
+          讒矩\xc2\x80蛹門・蜉帙′譛牙柑縺ｫ縺ｪ縺｣縺ｦ縺・∪縺吶\xc2\x80ゅさ繝ｳ繝代う繝ｩ險ｺ譁ｭ縺ｮ譖ｸ蠑剰ｨｭ螳壹↓縺ｯ繧ｨ繝ｩ繝ｼ髫主ｱ､縺悟渚譏縺輔ｌ縺ｾ縺吶\xc2\x80りｩｳ邏ｰ縺ｫ縺､縺・※縺ｯ縲”ttps://aka.ms/cpp/structured-output 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\Debug\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          繝・ぅ繝ｬ繧ｯ繝医Μ "cmTC_42c36.dir\\Debug\\cmTC_42c36.tlog\\" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+        InitializeBuildStatus:
+          "AlwaysCreate" 縺梧欠螳壹＆繧後◆縺溘ａ "cmTC_42c36.dir\\Debug\\cmTC_42c36.tlog\\unsuccessfulbuild" 繧剃ｽ懈・縺励※縺・∪縺吶\xc2\x80・
+          "cmTC_42c36.dir\\Debug\\cmTC_42c36.tlog\\unsuccessfulbuild" 縺ｮ繧ｿ繝・メ 繧ｿ繧ｹ繧ｯ繧貞ｮ溯｡後＠縺ｦ縺・∪縺吶\xc2\x80・
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_42c36.dir\\Debug\\\\" /Fd"cmTC_42c36.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\CheckFunctionExists.c"
+          Microsoft(R) C/C++ Optimizing Compiler Version 19.44.35224 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /std:c17 /Fo"cmTC_42c36.dir\\Debug\\\\" /Fd"cmTC_42c36.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\Debug\\cmTC_42c36.exe" /INCREMENTAL /ILK:"cmTC_42c36.dir\\Debug\\cmTC_42c36.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-mpyx86/Debug/cmTC_42c36.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/CMakeScratch/TryCompile-mpyx86/Debug/cmTC_42c36.lib" /MACHINE:X64  /machine:x64 cmTC_42c36.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: 繝輔ぃ繧､繝ｫ 'pthread.lib' 繧帝幕縺上％縺ｨ縺後〒縺阪∪縺帙ｓ縲・[C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\cmTC_42c36.vcxproj]
+        繝励Ο繧ｸ繧ｧ繧ｯ繝・"C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\cmTC_42c36.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) 縺ｮ繝薙Ν繝峨′邨ゆｺ・＠縺ｾ縺励◆ -- 螟ｱ謨励\xc2\x80・
+        
+        繝薙Ν繝峨↓螟ｱ謨励＠縺ｾ縺励◆縲・
+        
+        "C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\cmTC_42c36.vcxproj" (譌｢螳壹・繧ｿ繝ｼ繧ｲ繝・ヨ) (1) ->
+        (Link 繧ｿ繝ｼ繧ｲ繝・ヨ) -> 
+          LINK : fatal error LNK1104: 繝輔ぃ繧､繝ｫ 'pthread.lib' 繧帝幕縺上％縺ｨ縺後〒縺阪∪縺帙ｓ縲・[C:\\Users\\arai5\\AndroidStudioProjects\\OCVUltimate\\obs-rtx-vsr\\build\\CMakeFiles\\CMakeScratch\\TryCompile-mpyx86\\cmTC_42c36.vcxproj]
+        
+            0 蛟九・隴ｦ蜻・
+            1 繧ｨ繝ｩ繝ｼ
+        
+        邨碁℃譎る俣 00:00:00.42
+        
+      exitCode: 1
+...

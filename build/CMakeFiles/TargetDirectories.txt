@@ -1,0 +1,4 @@
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/obs-rtx-vsr.dir
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/INSTALL.dir
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/ZERO_CHECK.dir

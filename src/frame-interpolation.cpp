@@ -17,6 +17,7 @@ bool FrameInterpolation::LoadDLL()
         blog(LOG_WARNING, "[RTX-VSR] NvOFFRUC.dll not found. Frame interpolation will be disabled.");
         return false;
     }
+    blog(LOG_INFO, "[RTX-VSR] NvOFFRUC.dll loaded successfully");
 
     m_create = (PtrToFuncNvOFFRUCCreate)GetProcAddress(m_fruc_dll, "NvOFFRUCCreate");
     m_register = (PtrToFuncNvOFFRUCRegisterResource)GetProcAddress(m_fruc_dll, "NvOFFRUCRegisterResource");
@@ -41,6 +42,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
     if (!LoadDLL()) return false;
 
+    blog(LOG_INFO, "[RTX-VSR] FRUC: Creating handle (%ux%u, DirectX11, ARGBSurface)", width, height);
+
     NvOFFRUC_CREATE_PARAM params = {};
     params.uiWidth = width;
     params.uiHeight = height;
@@ -50,54 +53,85 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
     NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
     if (status != NvOFFRUC_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCCreate failed with status %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
         Release();
         return false;
     }
+    blog(LOG_INFO, "[RTX-VSR] FRUC: NvOFFRUCCreate succeeded (handle=%p)", m_fruc_handle);
 
-    // Create textures - BGRA format to match ARGBSurface (ARGB in NVIDIA = BGRA in DXGI)
-    // SHARED flag is required by NvOFFRUC for resource registration
-    D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = width;
-    desc.Height = height;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.SampleDesc.Count = 1;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
-
-    HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
-    if (FAILED(hr)) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC input texture (hr=0x%08X)", hr);
-        Release();
-        return false;
-    }
-
-    hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
-    if (FAILED(hr)) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC output texture (hr=0x%08X)", hr);
-        Release();
-        return false;
-    }
-
-    // Register 2 textures with FRUC (input + output)
-    NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-    reg_param.pArrResource[0] = m_input_tex.Get();
-    reg_param.pArrResource[1] = m_output_tex.Get();
-    reg_param.uiCount = 2;
+    // Try multiple texture configurations until one works
+    struct TexConfig {
+        DXGI_FORMAT format;
+        UINT miscFlags;
+        const char *desc;
+    };
     
-    status = m_register(m_fruc_handle, &reg_param);
-    if (status != NvOFFRUC_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] NvOFFRUCRegisterResource failed: %d", status);
-        Release();
-        return false;
+    TexConfig configs[] = {
+        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "RGBA+SHARED+NTHANDLE" },
+        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "RGBA+SHARED" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "BGRA+SHARED+NTHANDLE" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "BGRA+SHARED" },
+        { DXGI_FORMAT_R8G8B8A8_UNORM, 0, "RGBA+NoFlags" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
+    };
+    
+    for (int i = 0; i < 6; i++) {
+        // Clean up previous attempt
+        m_input_tex.Reset();
+        m_output_tex.Reset();
+        
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying texture config [%d]: %s", i, configs[i].desc);
+        
+        D3D11_TEXTURE2D_DESC desc = {};
+        desc.Width = width;
+        desc.Height = height;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = configs[i].format;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+        desc.MiscFlags = configs[i].miscFlags;
+        
+        HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
+        if (FAILED(hr)) {
+            blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(input) failed: hr=0x%08X for %s", hr, configs[i].desc);
+            continue;
+        }
+        
+        hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
+        if (FAILED(hr)) {
+            blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(output) failed: hr=0x%08X for %s", hr, configs[i].desc);
+            m_input_tex.Reset();
+            continue;
+        }
+        
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Textures created, input=%p output=%p", m_input_tex.Get(), m_output_tex.Get());
+        
+        // Try registration
+        NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
+        reg_param.pArrResource[0] = m_input_tex.Get();
+        reg_param.pArrResource[1] = m_output_tex.Get();
+        reg_param.uiCount = 2;
+        
+        status = m_register(m_fruc_handle, &reg_param);
+        if (status == NvOFFRUC_SUCCESS) {
+            m_resources_registered = true;
+            m_tex_format = configs[i].format;
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with config: %s", configs[i].desc);
+            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully (%ux%u, %s)", 
+                 width, height, configs[i].desc);
+            return true;
+        }
+        
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: RegisterResource FAILED: status=%d for %s", status, configs[i].desc);
+        m_input_tex.Reset();
+        m_output_tex.Reset();
     }
-    m_resources_registered = true;
-
-    blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully (%ux%u)", width, height);
-    return true;
+    
+    blog(LOG_ERROR, "[RTX-VSR] FRUC: All texture configurations failed for RegisterResource");
+    Release();
+    return false;
 }
 
 void FrameInterpolation::Release()
@@ -148,16 +182,18 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
 
+    m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
+        m_success_count++;
         return m_output_tex;
     }
 
-    // Log errors sparingly (only first occurrence or every 300 frames)
-    static int error_count = 0;
-    if (error_count < 5 || error_count % 300 == 0) {
-        blog(LOG_WARNING, "[RTX-VSR] NvOFFRUCProcess returned status %d (count=%d)", status, error_count);
+    m_fail_count++;
+    // Log errors sparingly
+    if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f)",
+             status, m_success_count, m_fail_count, m_process_count, timestamp);
     }
-    error_count++;
 
     return nullptr;
 }

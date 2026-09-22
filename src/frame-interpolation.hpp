@@ -14,12 +14,14 @@ public:
     bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height);
     void Release();
 
-    // Returns an interpolated frame if one was generated, or nullptr if none
     Microsoft::WRL::ComPtr<ID3D11Texture2D> Process(ID3D11Texture2D *src_tex, double timestamp);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }
-    bool IsInitialized() const { return m_fruc_handle != nullptr; }
+    bool IsInitialized() const { return m_fruc_handle != nullptr && m_resources_registered; }
+    
+    // Returns the DXGI format that FRUC textures use (determined during auto-discovery)
+    DXGI_FORMAT GetTextureFormat() const { return m_tex_format; }
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -35,11 +37,16 @@ private:
     bool m_enabled = true;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
+    DXGI_FORMAT m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    // NvOFFRUC requires SHARED D3D11 textures for resource registration
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
     bool m_resources_registered = false;
+    
+    // Statistics
+    uint64_t m_process_count = 0;
+    uint64_t m_success_count = 0;
+    uint64_t m_fail_count = 0;
     
     bool LoadDLL();
 };

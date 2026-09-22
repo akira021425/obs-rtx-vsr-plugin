@@ -1,0 +1,63 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCXXInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeFindDependencyMacro.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CheckCSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Compiler/MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Compiler/MSVC.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/FindThreads.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeCLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeCXXLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CMakeCommonLinkerInformation.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Internal/CheckSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Linker/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Linker/MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Linker/MSVC.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Linker/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Linker/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Linker/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-Initialize.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-4.3/Modules/Platform/WindowsPaths.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/libobsConfig.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/libobsConfigVersion.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/libobsTargets-debug.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/libobsTargets-release.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/libobsTargets.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsConfig.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsConfigVersion.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsTargets-debug.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsTargets-release.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/.deps/cmake/w32-pthreadsTargets.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/CMakeLists.txt
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CMakeCCompiler.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CMakeCXXCompiler.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CMakeRCCompiler.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/4.3.1/CMakeSystem.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/bootstrap.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/buildnumber.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/buildspec_common.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/compiler_common.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/helpers_common.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/common/osconfig.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows/buildspec.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows/compilerconfig.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows/defaults.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows/helpers.cmake
+C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/cmake/windows/resources/resource.rc.in

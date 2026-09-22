@@ -16,14 +16,14 @@ struct rtx_vsr_data {
     std::unique_ptr<FrameInterpolation> fruc;
     
     gs_texrender_t *texrender;       // For capturing source into a texture
-    gs_texrender_t *fruc_render;     // For converting BGRA to RGBA for FRUC
-    gs_texture_t *output_texture;    // The upscaled output texture (plain D3D11, no SHARED flag)
+    gs_texrender_t *fruc_render;     // For converting BGRA->RGBA for FRUC input
+    gs_texture_t *output_texture;    // The upscaled output texture
     
-    // VSR result caching: avoid running expensive AI upscale 60x/sec on a 30fps source
-    gs_texture_t *vsr_cache_texture;     // Cached copy of last VSR result for re-use
-    bool has_cached_vsr;                 // True if vsr_cache_texture holds a valid VSR result
+    // VSR result caching
+    gs_texture_t *vsr_cache_texture;
+    bool has_cached_vsr;
     
-    // Duplicate frame detection via D3D11 pixel sampling
+    // Duplicate frame detection
     ID3D11Texture2D *hash_stage_d3d11;
     uint32_t last_hash[256];
     
@@ -33,8 +33,16 @@ struct rtx_vsr_data {
     uint32_t out_height;
 
     bool is_initialized;
-    bool vsr_failed;  // If VSR init fails, don't retry every frame
+    bool vsr_failed;
+    
+    // Statistics for logging
     uint64_t frame_count;
+    uint64_t new_frame_count;
+    uint64_t dup_frame_count;
+    uint64_t vsr_count;
+    uint64_t fruc_attempt_count;
+    uint64_t fruc_success_count;
+    uint64_t last_log_time;
 };
 
 static const char *rtx_vsr_get_name(void *type_data)
@@ -60,6 +68,12 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->is_initialized = false;
     data->vsr_failed = false;
     data->frame_count = 0;
+    data->new_frame_count = 0;
+    data->dup_frame_count = 0;
+    data->vsr_count = 0;
+    data->fruc_attempt_count = 0;
+    data->fruc_success_count = 0;
+    data->last_log_time = 0;
     data->resolution_scale = 1.5f;
     data->src_width = 0;
     data->src_height = 0;
@@ -74,29 +88,16 @@ static void rtx_vsr_destroy(void *data)
 {
     rtx_vsr_data *filter = (rtx_vsr_data *)data;
 
-    // Release NVIDIA SDK first (before destroying textures it references)
     filter->nvidia_vsr->Release();
     filter->fruc->Release();
 
     obs_enter_graphics();
-    if (filter->texrender) {
-        gs_texrender_destroy(filter->texrender);
-    }
-    if (filter->fruc_render) {
-        gs_texrender_destroy(filter->fruc_render);
-    }
-    if (filter->hash_stage_d3d11) {
-        filter->hash_stage_d3d11->Release();
-    }
-    if (filter->output_texture) {
-        gs_texture_destroy(filter->output_texture);
-    }
-    if (filter->vsr_cache_texture) {
-        gs_texture_destroy(filter->vsr_cache_texture);
-    }
-    if (filter->is_initialized) {
-        filter->d3d11_interop->Release();
-    }
+    if (filter->texrender) gs_texrender_destroy(filter->texrender);
+    if (filter->fruc_render) gs_texrender_destroy(filter->fruc_render);
+    if (filter->hash_stage_d3d11) filter->hash_stage_d3d11->Release();
+    if (filter->output_texture) gs_texture_destroy(filter->output_texture);
+    if (filter->vsr_cache_texture) gs_texture_destroy(filter->vsr_cache_texture);
+    if (filter->is_initialized) filter->d3d11_interop->Release();
     obs_leave_graphics();
     
     delete filter;
@@ -126,7 +127,6 @@ static obs_properties_t *rtx_vsr_properties(void *data)
 {
     UNUSED_PARAMETER(data);
     obs_properties_t *props = obs_properties_create();
-
     obs_property_t *p;
 
     p = obs_properties_add_list(props, "vsr_quality", obs_module_text("VSRQuality"),
@@ -153,7 +153,7 @@ static void rtx_vsr_defaults(obs_data_t *settings)
 {
     obs_data_set_default_int(settings, "vsr_quality", 4);
     obs_data_set_default_bool(settings, "artifact_reduction", false);
-    obs_data_set_default_bool(settings, "frame_interpolation", true);  // Default ON for 60fps
+    obs_data_set_default_bool(settings, "frame_interpolation", true);
     obs_data_set_default_double(settings, "resolution_scale", 1.5);
 }
 
@@ -185,23 +185,17 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     uint32_t target_width = (uint32_t)(width * filter->resolution_scale);
     uint32_t target_height = (uint32_t)(height * filter->resolution_scale);
 
-    // Check if source resolution changed - need to reinitialize
+    // Check if source resolution changed
     if (filter->is_initialized && (filter->src_width != width || filter->src_height != height ||
                                     filter->out_width != target_width || filter->out_height != target_height)) {
+        blog(LOG_INFO, "[RTX-VSR] Resolution changed: %ux%u->%ux%u => %ux%u->%ux%u, reinitializing",
+             filter->src_width, filter->src_height, filter->out_width, filter->out_height,
+             width, height, target_width, target_height);
         filter->nvidia_vsr->Release();
         filter->fruc->Release();
-        if (filter->output_texture) {
-            gs_texture_destroy(filter->output_texture);
-            filter->output_texture = nullptr;
-        }
-        if (filter->vsr_cache_texture) {
-            gs_texture_destroy(filter->vsr_cache_texture);
-            filter->vsr_cache_texture = nullptr;
-        }
-        if (filter->hash_stage_d3d11) {
-            filter->hash_stage_d3d11->Release();
-            filter->hash_stage_d3d11 = nullptr;
-        }
+        if (filter->output_texture) { gs_texture_destroy(filter->output_texture); filter->output_texture = nullptr; }
+        if (filter->vsr_cache_texture) { gs_texture_destroy(filter->vsr_cache_texture); filter->vsr_cache_texture = nullptr; }
+        if (filter->hash_stage_d3d11) { filter->hash_stage_d3d11->Release(); filter->hash_stage_d3d11 = nullptr; }
         filter->has_cached_vsr = false;
         filter->is_initialized = false;
         filter->vsr_failed = false;
@@ -209,10 +203,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
     // One-time initialization
     if (!filter->is_initialized && !filter->vsr_failed) {
+        blog(LOG_INFO, "[RTX-VSR] Initializing: source=%ux%u, output=%ux%u, scale=%.2f",
+             width, height, target_width, target_height, filter->resolution_scale);
+             
         if (filter->d3d11_interop->Initialize()) {
             auto d3d11_dev = filter->d3d11_interop->GetDevice();
             
-            // Create D3D11 staging texture for hash download (16x16 center sample)
+            // Hash staging texture (16x16)
             D3D11_TEXTURE2D_DESC desc = {};
             desc.Width = 16;
             desc.Height = 16;
@@ -223,13 +220,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             desc.Usage = D3D11_USAGE_STAGING;
             desc.BindFlags = 0;
             desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-            if (filter->hash_stage_d3d11) {
-                filter->hash_stage_d3d11->Release();
-                filter->hash_stage_d3d11 = nullptr;
-            }
-            d3d11_dev->CreateTexture2D(&desc, nullptr, &filter->hash_stage_d3d11);
+            if (filter->hash_stage_d3d11) { filter->hash_stage_d3d11->Release(); filter->hash_stage_d3d11 = nullptr; }
+            HRESULT hr = d3d11_dev->CreateTexture2D(&desc, nullptr, &filter->hash_stage_d3d11);
+            blog(LOG_INFO, "[RTX-VSR] Hash staging texture: hr=0x%08X, ptr=%p", hr, filter->hash_stage_d3d11);
 
-            // Create output texture for VSR (must be BGRA for NvCVImage_InitFromD3D11Texture)
+            // Output texture (BGRA)
             filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
@@ -237,18 +232,19 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 obs_source_skip_video_filter(filter->context);
                 return;
             }
+            blog(LOG_INFO, "[RTX-VSR] Output texture created: %ux%u BGRA, d3d11=%p",
+                 target_width, target_height, gs_texture_get_obj(filter->output_texture));
 
-            // Flush OBS graphics pipeline before NVIDIA SDK accesses D3D11
             gs_flush();
             
-            // Initialize FRUC first (NvOFFRUC creates CUDA context that can override thread context)
+            // FRUC init (before VSR)
             if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                blog(LOG_WARNING, "[RTX-VSR] Frame interpolation not available (NvOFFRUC.dll may be missing)");
+                blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
             }
 
-            // Initialize NVIDIA VSR with proper dimensions
+            // VSR init
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
-                blog(LOG_ERROR, "[RTX-VSR] Failed to initialize NVIDIA VSR SDK");
+                blog(LOG_ERROR, "[RTX-VSR] VSR initialization failed");
                 filter->vsr_failed = true;
             }
   
@@ -257,6 +253,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             filter->out_width = target_width;
             filter->out_height = target_height;
             filter->is_initialized = true;
+            filter->last_log_time = os_gettime_ns();
         } else {
             blog(LOG_ERROR, "[RTX-VSR] D3D11 interop init failed");
             filter->vsr_failed = true;
@@ -265,7 +262,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         }
     }
 
-    // Capture the source frame into a texture
+    // Capture source frame
     gs_texrender_reset(filter->texrender);
     if (!gs_texrender_begin(filter->texrender, width, height)) {
         obs_source_skip_video_filter(filter->context);
@@ -284,6 +281,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
 
     bool success = false;
+    filter->frame_count++;
 
     if (filter->is_initialized && filter->nvidia_vsr->IsReady() && filter->output_texture) {
         ID3D11Texture2D *d3d11_src = (ID3D11Texture2D *)gs_texture_get_obj(source_tex);
@@ -291,11 +289,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         
         if (d3d11_src && d3d11_dst) {
             // ===== Duplicate frame detection =====
-            // Copy a 16x16 region from center of source to detect duplicates
             bool is_new_frame = true;
             if (filter->hash_stage_d3d11) {
                 auto d3d_context = filter->d3d11_interop->GetContext();
-                
                 D3D11_BOX box;
                 box.left = width / 2 - 8;
                 box.right = width / 2 + 8;
@@ -303,14 +299,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 box.bottom = height / 2 + 8;
                 box.front = 0;
                 box.back = 1;
-                
                 d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 0, 0, d3d11_src, 0, &box);
                 
                 D3D11_MAPPED_SUBRESOURCE mapped;
                 if (SUCCEEDED(d3d_context->Map(filter->hash_stage_d3d11, 0, D3D11_MAP_READ, 0, &mapped))) {
                     uint8_t *pixel_data = (uint8_t*)mapped.pData;
                     uint32_t linesize = mapped.RowPitch;
-                    
                     uint32_t current_hash[256];
                     for (int y = 0; y < 16; ++y) {
                         memcpy(&current_hash[y * 16], pixel_data + y * linesize, 64);
@@ -325,72 +319,98 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 }
             }
 
+            if (is_new_frame) filter->new_frame_count++;
+            else filter->dup_frame_count++;
+
             // ===== VSR processing =====
             if (is_new_frame || !filter->has_cached_vsr) {
-                // New frame: run VSR (or copy if scale=1.0)
                 if (filter->resolution_scale > 1.01f) {
                     success = filter->nvidia_vsr->Process(d3d11_src, d3d11_dst);
                 } else {
                     auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(d3d11_dst, d3d11_src);
-                        success = true;
-                    }
+                    if (context) { context->CopyResource(d3d11_dst, d3d11_src); success = true; }
                 }
-
-                // Cache the VSR result for duplicate frames
                 if (success) {
+                    filter->vsr_count++;
                     if (!filter->vsr_cache_texture) {
-                        filter->vsr_cache_texture = gs_texture_create(
-                            target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                     }
                     if (filter->vsr_cache_texture) {
                         ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
                         if (cache_d3d11) {
                             auto context = filter->d3d11_interop->GetContext();
-                            if (context) {
-                                context->CopyResource(cache_d3d11, d3d11_dst);
-                                filter->has_cached_vsr = true;
-                            }
+                            if (context) { context->CopyResource(cache_d3d11, d3d11_dst); filter->has_cached_vsr = true; }
                         }
                     }
                 }
             } else {
-                // Duplicate frame: restore cached VSR result
+                // Duplicate: use cached VSR
                 if (filter->vsr_cache_texture) {
                     ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
                     if (cache_d3d11) {
                         auto context = filter->d3d11_interop->GetContext();
+                        if (context) { context->CopyResource(d3d11_dst, cache_d3d11); success = true; }
+                    }
+                }
+            }
+
+            // ===== FRUC processing =====
+            if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+                filter->fruc_attempt_count++;
+                
+                // Determine how to pass the VSR output to FRUC based on FRUC's texture format
+                DXGI_FORMAT fruc_fmt = filter->fruc->GetTextureFormat();
+                ID3D11Texture2D *fruc_src = nullptr;
+                gs_texture_t *fruc_obs_tex = nullptr;
+                
+                if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
+                    // FRUC uses BGRA = same as VSR output, pass directly
+                    fruc_src = d3d11_dst;
+                } else {
+                    // FRUC uses RGBA, need format conversion via texrender
+                    gs_texrender_reset(filter->fruc_render);
+                    if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
+                        gs_effect_set_texture(image, filter->output_texture);
+                        while (gs_effect_loop(def_effect, "Draw")) {
+                            gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+                        }
+                        gs_texrender_end(filter->fruc_render);
+                    }
+                    fruc_obs_tex = gs_texrender_get_texture(filter->fruc_render);
+                    if (fruc_obs_tex) {
+                        fruc_src = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
+                    }
+                }
+                
+                if (fruc_src) {
+                    double timestamp = (double)os_gettime_ns() / 1000000000.0;
+                    auto fruc_out = filter->fruc->Process(fruc_src, timestamp);
+                    
+                    if (fruc_out) {
+                        filter->fruc_success_count++;
+                        // Copy FRUC output back
+                        auto context = filter->d3d11_interop->GetContext();
                         if (context) {
-                            context->CopyResource(d3d11_dst, cache_d3d11);
-                            success = true;
+                            if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
+                                context->CopyResource(d3d11_dst, fruc_out.Get());
+                            } else if (fruc_obs_tex) {
+                                ID3D11Texture2D *fruc_obs_d3d = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
+                                if (fruc_obs_d3d) context->CopyResource(fruc_obs_d3d, fruc_out.Get());
+                                // Draw the RGBA result
+                                gs_effect_set_texture(image, fruc_obs_tex);
+                                while (gs_effect_loop(def_effect, "Draw")) {
+                                    gs_draw_sprite(fruc_obs_tex, 0, target_width, target_height);
+                                }
+                                goto log_and_return;
+                            }
                         }
                     }
                 }
             }
-
-            // ===== FRUC processing (every frame, as required by NvOFFRUC API) =====
-            if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
-                // VSR output texture is already BGRA which matches FRUC's ARGBSurface format
-                // Pass it directly without format conversion
-                double timestamp = (double)os_gettime_ns() / 1000000000.0;
-                
-                auto fruc_out = filter->fruc->Process(d3d11_dst, timestamp);
-                
-                if (fruc_out) {
-                    // Copy FRUC interpolated output back to our output texture
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(d3d11_dst, fruc_out.Get());
-                    }
-                }
-                // If FRUC returns nullptr (e.g. first frame, building optical flow),
-                // we just use the VSR output as-is
-            }
         }
     }
 
-    // Draw VSR output or fallback to source
+    // Draw output
     if (success && filter->output_texture) {
         gs_effect_set_texture(image, filter->output_texture);
         while (gs_effect_loop(def_effect, "Draw")) {
@@ -402,7 +422,16 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             gs_draw_sprite(source_tex, 0, target_width, target_height);
         }
     }
-    filter->frame_count++;
+
+log_and_return:
+    // Periodic stats logging (every 10 seconds)
+    uint64_t now = os_gettime_ns();
+    if (filter->last_log_time > 0 && (now - filter->last_log_time) >= 10000000000ULL) {
+        blog(LOG_INFO, "[RTX-VSR] Stats: frames=%llu new=%llu dup=%llu vsr=%llu fruc_try=%llu fruc_ok=%llu",
+             filter->frame_count, filter->new_frame_count, filter->dup_frame_count,
+             filter->vsr_count, filter->fruc_attempt_count, filter->fruc_success_count);
+        filter->last_log_time = now;
+    }
 }
 
 static uint32_t rtx_vsr_get_width(void *data)

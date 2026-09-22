@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A3827A59-AD88-30A4-BD2D-867CA3E9517E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr -BC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build --check-stamp-file C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeSystem.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\bootstrap.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildnumber.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildspec_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\compiler_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\helpers_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\osconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\buildspec.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\compilerconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\defaults.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\helpers.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\resources\resource.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr -BC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build --check-stamp-file C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeSystem.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\bootstrap.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildnumber.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildspec_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\compiler_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\helpers_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\osconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\buildspec.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\compilerconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\defaults.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\helpers.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\resources\resource.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr -BC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build --check-stamp-file C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeSystem.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\bootstrap.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildnumber.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildspec_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\compiler_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\helpers_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\osconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\buildspec.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\compilerconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\defaults.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\helpers.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\resources\resource.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr -BC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build --check-stamp-file C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeFindDependencyMacro.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\libobsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsConfigVersion.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-debug.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets-release.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\.deps\cmake\w32-pthreadsTargets.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\4.3.1\CMakeSystem.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\bootstrap.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildnumber.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\buildspec_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\compiler_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\helpers_common.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\common\osconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\buildspec.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\compilerconfig.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\defaults.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\helpers.cmake;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\cmake\windows\resources\resource.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\ZERO_CHECK.vcxproj">
+      <Project>{3D8A3EF1-5A8D-3C9A-BDF5-3C691229E202}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.vcxproj">
+      <Project>{E3A5B8FB-BE48-35E7-AA4C-365271A52089}</Project>
+      <Name>obs-rtx-vsr</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

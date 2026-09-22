@@ -1,0 +1,7 @@
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\plugin-main.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\plugin-main.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\rtx-vsr-filter.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\rtx-vsr-filter.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\d3d11-interop.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\d3d11-interop.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\nvidia-vsr.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\nvidia-vsr.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\nvCVImageProxy.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\nvCVImageProxy.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\NVVideoEffectsProxy.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\NVVideoEffectsProxy.obj
+C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\frame-interpolation.cpp;C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.dir\RelWithDebInfo\frame-interpolation.obj

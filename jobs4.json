@@ -1,0 +1,494 @@
+{
+  "total_count": 6,
+  "jobs": [
+    {
+      "id": 103140468827,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6aoWw",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140468827",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140468827",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-09-11T03:50:32Z",
+      "started_at": "2026-09-11T03:50:36Z",
+      "completed_at": "2026-09-11T03:50:40Z",
+      "name": "Check Formatting 🔍 / skip",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-11T03:50:37Z",
+          "completed_at": "2026-09-11T03:50:38Z"
+        },
+        {
+          "name": "Run echo 'Format checking skipped'",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-11T03:50:38Z",
+          "completed_at": "2026-09-11T03:50:38Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-11T03:50:38Z",
+          "completed_at": "2026-09-11T03:50:38Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140468827",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000016,
+      "runner_name": "GitHub Actions 1000000016",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 103140469852,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6asXA",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140469852",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140469852",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-09-11T03:50:33Z",
+      "started_at": "2026-09-11T03:50:35Z",
+      "completed_at": "2026-09-11T03:50:39Z",
+      "name": "Build Project 🧱 / Check GitHub Event Data 🔎",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-11T03:50:36Z",
+          "completed_at": "2026-09-11T03:50:36Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-11T03:50:36Z",
+          "completed_at": "2026-09-11T03:50:37Z"
+        },
+        {
+          "name": "Check Event Data ☑️",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-11T03:50:37Z",
+          "completed_at": "2026-09-11T03:50:37Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-09-11T03:50:37Z",
+          "completed_at": "2026-09-11T03:50:37Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-09-11T03:50:37Z",
+          "completed_at": "2026-09-11T03:50:37Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140469852",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000000017,
+      "runner_name": "GitHub Actions 1000000017",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 103140490562,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6b9Qg",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140490562",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140490562",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-09-11T03:50:39Z",
+      "started_at": "2026-09-11T03:50:42Z",
+      "completed_at": "2026-09-11T03:52:20Z",
+      "name": "Build Project 🧱 / Build for Windows 🪟",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-11T03:50:43Z",
+          "completed_at": "2026-09-11T03:50:43Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-11T03:50:43Z",
+          "completed_at": "2026-09-11T03:50:51Z"
+        },
+        {
+          "name": "Set Up Environment 🔧",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-11T03:50:51Z",
+          "completed_at": "2026-09-11T03:50:52Z"
+        },
+        {
+          "name": "Build Plugin 🧱",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-11T03:50:52Z",
+          "completed_at": "2026-09-11T03:52:15Z"
+        },
+        {
+          "name": "Package Plugin 📀",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-09-11T03:52:15Z",
+          "completed_at": "2026-09-11T03:52:17Z"
+        },
+        {
+          "name": "Upload Artifacts 📡",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-09-11T03:52:17Z",
+          "completed_at": "2026-09-11T03:52:17Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-09-11T03:52:17Z",
+          "completed_at": "2026-09-11T03:52:18Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-09-11T03:52:18Z",
+          "completed_at": "2026-09-11T03:52:18Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140490562",
+      "labels": [
+        "windows-2022"
+      ],
+      "runner_id": 1000000018,
+      "runner_name": "GitHub Actions 1000000018",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 103140490586,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6b9Wg",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140490586",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140490586",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-09-11T03:50:39Z",
+      "started_at": "2026-09-11T03:50:43Z",
+      "completed_at": "2026-09-11T03:51:01Z",
+      "name": "Build Project 🧱 / Build for Ubuntu 🐧 (ubuntu-24.04)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-11T03:50:44Z",
+          "completed_at": "2026-09-11T03:50:45Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-11T03:50:45Z",
+          "completed_at": "2026-09-11T03:50:46Z"
+        },
+        {
+          "name": "Set Up Environment 🔧",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-11T03:50:46Z",
+          "completed_at": "2026-09-11T03:50:46Z"
+        },
+        {
+          "name": "Run actions/cache/restore@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-11T03:50:46Z",
+          "completed_at": "2026-09-11T03:50:46Z"
+        },
+        {
+          "name": "Build Plugin 🧱",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-09-11T03:50:46Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Package Plugin 📀",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Upload Source Tarball 🗜️",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Upload Artifacts 📡",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Upload debug symbol artifacts 🪲",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Run actions/cache/save@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:51:00Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-09-11T03:51:00Z",
+          "completed_at": "2026-09-11T03:51:00Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140490586",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000000019,
+      "runner_name": "GitHub Actions 1000000019",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 103140491380,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6cAdA",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140491380",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140491380",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-09-11T03:50:40Z",
+      "started_at": "2026-09-11T03:50:53Z",
+      "completed_at": "2026-09-11T03:51:03Z",
+      "name": "Build Project 🧱 / Build for macOS 🍏",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-11T03:50:54Z",
+          "completed_at": "2026-09-11T03:50:55Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-11T03:50:55Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Set Up Environment 🔧",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Run actions/cache/restore@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Set Up Codesigning 🔑",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Build Plugin 🧱",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Package Plugin 📀",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Upload Artifacts 📡",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Upload Debug Symbol Artifacts 🪲",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Run actions/cache/save@v4",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:58Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-09-11T03:50:58Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-09-11T03:50:59Z",
+          "completed_at": "2026-09-11T03:50:59Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140491380",
+      "labels": [
+        "macos-15"
+      ],
+      "runner_id": 1000000020,
+      "runner_name": "GitHub Actions 1000000020",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 103140798289,
+      "run_id": 34559960353,
+      "workflow_name": "main push run 🚀",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUV_e5M8AAAAYA6uvUQ",
+      "head_sha": "debcfa45c4229356f0ed1e4e872797e0558f26d4",
+      "url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/actions/jobs/103140798289",
+      "html_url": "https://github.com/akira021425/obs-rtx-vsr-plugin/actions/runs/34559960353/job/103140798289",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-09-11T03:52:21Z",
+      "started_at": "2026-09-11T03:52:21Z",
+      "completed_at": "2026-09-11T03:52:20Z",
+      "name": "Create Release 🛫",
+      "steps": [
+
+      ],
+      "check_run_url": "https://api.github.com/repos/akira021425/obs-rtx-vsr-plugin/check-runs/103140798289",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    }
+  ]
+}

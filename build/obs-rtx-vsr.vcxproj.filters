@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\plugin-main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\rtx-vsr-filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\d3d11-interop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\nvidia-vsr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\nvCVImageProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\NVVideoEffectsProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\frame-interpolation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\plugin-main.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\rtx-vsr-filter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\d3d11-interop.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\nvidia-vsr.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\src\frame-interpolation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\data\locale\en-US.ini">
+      <Filter>Resources\locale</Filter>
+    </None>
+    <None Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\data\locale\ja-JP.ini">
+      <Filter>Resources\locale</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build\obs-rtx-vsr.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{B1374A11-9949-3FE2-AAFE-F42E9EC605D9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{9281E0F3-8D6C-3684-A9C0-34B5DD297DDD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\locale">
+      <UniqueIdentifier>{10CEC3B2-121C-3229-B046-76801A0AC2AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{14D016E9-9A40-3192-BC28-9EA9A84AF58A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
