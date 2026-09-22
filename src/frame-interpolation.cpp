@@ -60,6 +60,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     blog(LOG_INFO, "[RTX-VSR] FRUC: NvOFFRUCCreate succeeded (handle=%p)", m_fruc_handle);
 
     // Try multiple texture configurations until one works
+    // NvOFFRUC_MIN_RESOURCE=3: try 3 textures first, then fallback to 2
     struct TexConfig {
         DXGI_FORMAT format;
         UINT miscFlags;
@@ -75,58 +76,79 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
     };
     
-    for (int i = 0; i < 6; i++) {
-        // Clean up previous attempt
-        m_input_tex.Reset();
-        m_output_tex.Reset();
-        
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying texture config [%d]: %s", i, configs[i].desc);
-        
-        D3D11_TEXTURE2D_DESC desc = {};
-        desc.Width = width;
-        desc.Height = height;
-        desc.MipLevels = 1;
-        desc.ArraySize = 1;
-        desc.Format = configs[i].format;
-        desc.SampleDesc.Count = 1;
-        desc.Usage = D3D11_USAGE_DEFAULT;
-        desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-        desc.MiscFlags = configs[i].miscFlags;
-        
-        HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
-        if (FAILED(hr)) {
-            blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(input) failed: hr=0x%08X for %s", hr, configs[i].desc);
-            continue;
-        }
-        
-        hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
-        if (FAILED(hr)) {
-            blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(output) failed: hr=0x%08X for %s", hr, configs[i].desc);
+    // Try each config with 3 resources first (NvOFFRUC_MIN_RESOURCE=3), then 2
+    int resource_counts[] = { 3, 2 };
+    
+    for (int rc = 0; rc < 2; rc++) {
+        int count = resource_counts[rc];
+        for (int i = 0; i < 6; i++) {
+            // Clean up previous attempt
             m_input_tex.Reset();
-            continue;
+            m_output_tex.Reset();
+            m_interp_tex.Reset();
+            
+            blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config [%d]: %s with %d resources", i, configs[i].desc, count);
+            
+            D3D11_TEXTURE2D_DESC desc = {};
+            desc.Width = width;
+            desc.Height = height;
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = configs[i].format;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            desc.MiscFlags = configs[i].miscFlags;
+            
+            HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
+            if (FAILED(hr)) {
+                blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(input) failed: hr=0x%08X", hr);
+                continue;
+            }
+            
+            hr = m_device->CreateTexture2D(&desc, nullptr, &m_output_tex);
+            if (FAILED(hr)) {
+                blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(output) failed: hr=0x%08X", hr);
+                m_input_tex.Reset();
+                continue;
+            }
+            
+            if (count >= 3) {
+                hr = m_device->CreateTexture2D(&desc, nullptr, &m_interp_tex);
+                if (FAILED(hr)) {
+                    blog(LOG_WARNING, "[RTX-VSR] FRUC: CreateTexture2D(interp) failed: hr=0x%08X", hr);
+                    m_input_tex.Reset();
+                    m_output_tex.Reset();
+                    continue;
+                }
+            }
+            
+            blog(LOG_INFO, "[RTX-VSR] FRUC: Textures created: input=%p output=%p interp=%p", 
+                 m_input_tex.Get(), m_output_tex.Get(), count >= 3 ? m_interp_tex.Get() : nullptr);
+            
+            // Try registration
+            NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
+            reg_param.pArrResource[0] = m_input_tex.Get();
+            reg_param.pArrResource[1] = m_output_tex.Get();
+            if (count >= 3) reg_param.pArrResource[2] = m_interp_tex.Get();
+            reg_param.uiCount = count;
+            
+            status = m_register(m_fruc_handle, &reg_param);
+            if (status == NvOFFRUC_SUCCESS) {
+                m_resources_registered = true;
+                m_resource_count = count;
+                m_tex_format = configs[i].format;
+                blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED: %s, %d resources", configs[i].desc, count);
+                blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, %s, %d res)", 
+                     width, height, configs[i].desc, count);
+                return true;
+            }
+            
+            blog(LOG_WARNING, "[RTX-VSR] FRUC: RegisterResource FAILED: status=%d for %s, %d res", status, configs[i].desc, count);
+            m_input_tex.Reset();
+            m_output_tex.Reset();
+            m_interp_tex.Reset();
         }
-        
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Textures created, input=%p output=%p", m_input_tex.Get(), m_output_tex.Get());
-        
-        // Try registration
-        NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-        reg_param.pArrResource[0] = m_input_tex.Get();
-        reg_param.pArrResource[1] = m_output_tex.Get();
-        reg_param.uiCount = 2;
-        
-        status = m_register(m_fruc_handle, &reg_param);
-        if (status == NvOFFRUC_SUCCESS) {
-            m_resources_registered = true;
-            m_tex_format = configs[i].format;
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with config: %s", configs[i].desc);
-            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized successfully (%ux%u, %s)", 
-                 width, height, configs[i].desc);
-            return true;
-        }
-        
-        blog(LOG_WARNING, "[RTX-VSR] FRUC: RegisterResource FAILED: status=%d for %s", status, configs[i].desc);
-        m_input_tex.Reset();
-        m_output_tex.Reset();
     }
     
     blog(LOG_ERROR, "[RTX-VSR] FRUC: All texture configurations failed for RegisterResource");
@@ -140,7 +162,8 @@ void FrameInterpolation::Release()
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         unreg.pArrResource[0] = m_input_tex.Get();
         unreg.pArrResource[1] = m_output_tex.Get();
-        unreg.uiCount = 2;
+        if (m_resource_count >= 3 && m_interp_tex) unreg.pArrResource[2] = m_interp_tex.Get();
+        unreg.uiCount = m_resource_count;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
     }
@@ -157,6 +180,7 @@ void FrameInterpolation::Release()
 
     m_input_tex.Reset();
     m_output_tex.Reset();
+    m_interp_tex.Reset();
     m_device.Reset();
 }
 

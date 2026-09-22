@@ -41,7 +41,9 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_interp_tex;
     bool m_resources_registered = false;
+    uint32_t m_resource_count = 0;
     
     // Statistics
     uint64_t m_process_count = 0;
