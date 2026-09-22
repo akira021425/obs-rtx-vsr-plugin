@@ -97,7 +97,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             desc.Format = configs[i].format;
             desc.SampleDesc.Count = 1;
             desc.Usage = D3D11_USAGE_DEFAULT;
-            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+            desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
             desc.MiscFlags = configs[i].miscFlags;
             
             HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_input_tex);
@@ -214,6 +214,9 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     m_device->GetImmediateContext(&context);
     if (!context) return nullptr;
     context->CopyResource(in_tex, src_tex);
+    
+    // Flush the context to ensure the copy is submitted before CUDA tries to read it
+    context->Flush();
 
     bool frame_repeated = false;
 

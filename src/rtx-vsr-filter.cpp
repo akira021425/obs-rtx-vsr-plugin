@@ -383,8 +383,16 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 }
                 
                 if (fruc_src) {
-                    double timestamp = (double)os_gettime_ns() / 1000000000.0;
-                    auto fruc_out = filter->fruc->Process(fruc_src, timestamp);
+                    static double fruc_simulated_time = 0.0;
+                    if (is_new_frame) {
+                        fruc_simulated_time += (1.0 / 30.0); // Assuming 30fps source for clean timestamps
+                    } else {
+                        // For duplicate frames, advance by a tiny amount or don't advance?
+                        // Let's just strictly advance by 1/60th
+                        fruc_simulated_time += (1.0 / 60.0);
+                    }
+                    
+                    auto fruc_out = filter->fruc->Process(fruc_src, fruc_simulated_time);
                     
                     if (fruc_out) {
                         filter->fruc_success_count++;
