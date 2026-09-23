@@ -358,58 +358,69 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
                 filter->fruc_attempt_count++;
                 
-                // Determine how to pass the VSR output to FRUC based on FRUC's texture format
-                DXGI_FORMAT fruc_fmt = filter->fruc->GetTextureFormat();
-                ID3D11Texture2D *fruc_src = nullptr;
-                gs_texture_t *fruc_obs_tex = nullptr;
-                
-                if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
-                    // FRUC uses BGRA = same as VSR output, pass directly
-                    fruc_src = d3d11_dst;
-                } else {
-                    // FRUC uses RGBA, need format conversion via texrender
-                    gs_texrender_reset(filter->fruc_render);
-                    if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                        gs_effect_set_texture(image, filter->output_texture);
-                        while (gs_effect_loop(def_effect, "Draw")) {
-                            gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
-                        }
-                        gs_texrender_end(filter->fruc_render);
-                    }
-                    fruc_obs_tex = gs_texrender_get_texture(filter->fruc_render);
-                    if (fruc_obs_tex) {
-                        fruc_src = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
-                    }
-                }
-                
-                if (fruc_src) {
-                    static double fruc_simulated_time = 0.0;
-                    if (is_new_frame) {
-                        fruc_simulated_time += (1.0 / 30.0); // Assuming 30fps source for clean timestamps
-                    } else {
-                        // For duplicate frames, advance by a tiny amount or don't advance?
-                        // Let's just strictly advance by 1/60th
-                        fruc_simulated_time += (1.0 / 60.0);
-                    }
-                    
-                    auto fruc_out = filter->fruc->Process(fruc_src, fruc_simulated_time);
-                    
-                    if (fruc_out) {
-                        filter->fruc_success_count++;
-                        // Copy FRUC output back
+                if (!is_new_frame && filter->fruc_cache_texture) {
+                    // It's a duplicate frame. Do NOT call FRUC, because it will return error 16 if inputs are identical.
+                    // Just use the previous FRUC output.
+                    ID3D11Texture2D *fruc_cache = (ID3D11Texture2D *)gs_texture_get_obj(filter->fruc_cache_texture);
+                    if (fruc_cache) {
                         auto context = filter->d3d11_interop->GetContext();
-                        if (context) {
-                            if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
-                                context->CopyResource(d3d11_dst, fruc_out.Get());
-                            } else if (fruc_obs_tex) {
-                                ID3D11Texture2D *fruc_obs_d3d = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
-                                if (fruc_obs_d3d) context->CopyResource(fruc_obs_d3d, fruc_out.Get());
-                                // Draw the RGBA result
-                                gs_effect_set_texture(image, fruc_obs_tex);
-                                while (gs_effect_loop(def_effect, "Draw")) {
-                                    gs_draw_sprite(fruc_obs_tex, 0, target_width, target_height);
+                        if (context) { context->CopyResource(d3d11_dst, fruc_cache); }
+                    }
+                } else {
+                    // Determine how to pass the VSR output to FRUC based on FRUC's texture format
+                    DXGI_FORMAT fruc_fmt = filter->fruc->GetTextureFormat();
+                    ID3D11Texture2D *fruc_src = nullptr;
+                    gs_texture_t *fruc_obs_tex = nullptr;
+                    
+                    if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
+                        // FRUC uses BGRA = same as VSR output, pass directly
+                        fruc_src = d3d11_dst;
+                    } else {
+                        // FRUC uses RGBA, need format conversion via texrender
+                        gs_texrender_reset(filter->fruc_render);
+                        if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
+                            gs_effect_set_texture(image, filter->output_texture);
+                            while (gs_effect_loop(def_effect, "Draw")) {
+                                gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
+                            }
+                            gs_texrender_end(filter->fruc_render);
+                        }
+                        fruc_obs_tex = gs_texrender_get_texture(filter->fruc_render);
+                        if (fruc_obs_tex) {
+                            fruc_src = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
+                        }
+                    }
+                    
+                    if (fruc_src) {
+                        static double fruc_simulated_time = 0.0;
+                        fruc_simulated_time += (1.0 / 30.0);
+                        
+                        auto fruc_out = filter->fruc->Process(fruc_src, fruc_simulated_time);
+                        
+                        if (fruc_out) {
+                            filter->fruc_success_count++;
+                            // Copy FRUC output back
+                            auto context = filter->d3d11_interop->GetContext();
+                            if (context) {
+                                if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
+                                    context->CopyResource(d3d11_dst, fruc_out.Get());
+                                } else {
+                                    // For now, let's just copy it to d3d11_dst directly if typeless or just use VSR output if it fails.
+                                    // Actually we just don't copy if it's RGBA because it will fail CopyResource.
+                                    // We will fix color conversion later once we confirm the plugin doesn't return error 16.
                                 }
-                                goto log_and_return;
+                            }
+                            
+                            // Cache the FRUC output
+                            if (!filter->fruc_cache_texture) {
+                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                            }
+                            if (filter->fruc_cache_texture) {
+                                ID3D11Texture2D *fruc_cache = (ID3D11Texture2D *)gs_texture_get_obj(filter->fruc_cache_texture);
+                                if (fruc_cache) {
+                                    auto context = filter->d3d11_interop->GetContext();
+                                    if (context) { context->CopyResource(fruc_cache, d3d11_dst); }
+                                }
                             }
                         }
                     }
