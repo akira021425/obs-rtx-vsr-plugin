@@ -59,10 +59,11 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     };
     
     TexConfig configs[] = {
-        // We MUST use NV12 because ARGBSurface is fundamentally unstable on many NVIDIA drivers and causes status=16.
-        { DXGI_FORMAT_NV12, 0, "NV12+NoFlags" },
-        { DXGI_FORMAT_NV12, D3D11_RESOURCE_MISC_SHARED, "NV12+SHARED" },
-        { DXGI_FORMAT_NV12, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "NV12+SHARED+NTHANDLE" },
+        // Try R8G8B8A8_UNORM for ARGBSurface. We have fixed the vector singularity issue
+        // so it should not return status=16. R8G8B8A8 is supported by NvCVImage natively.
+        { DXGI_FORMAT_R8G8B8A8_UNORM, 0, "RGBA+NoFlags" },
+        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "RGBA+SHARED" },
+        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "RGBA+SHARED+NTHANDLE" },
     };
     
     const int num_configs = 3;
