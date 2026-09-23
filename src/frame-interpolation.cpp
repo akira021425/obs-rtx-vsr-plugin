@@ -121,7 +121,7 @@ void FrameInterpolation::Release()
 {
     if (m_resources_registered && m_unregister && m_fruc_handle) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
-        for (int t = 0; t < m_resource_count; t++) {
+        for (uint32_t t = 0; t < m_resource_count; t++) {
             unreg.pArrResource[t] = m_cuda_ptrs[t];
         }
         unreg.uiCount = m_resource_count;
