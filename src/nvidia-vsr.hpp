@@ -21,6 +21,9 @@ public:
     // dst_tex must also be a D3D11 texture. Both must match the sizes given at Initialize.
     bool Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex);
 
+    // Fast CUDA colorspace conversion (e.g. BGRA <-> NV12)
+    bool ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex);
+
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);
 

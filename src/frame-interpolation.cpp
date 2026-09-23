@@ -59,18 +59,13 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     };
     
     TexConfig configs[] = {
-        // NoFlags fallback
-        { DXGI_FORMAT_R8G8B8A8_UNORM, 0, "RGBA+NoFlags" },
-        { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
-        // SHARED as fallback
-        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "RGBA+SHARED" },
-        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "BGRA+SHARED" },
-        // SHARED+NTHANDLE as last resort
-        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "RGBA+SHARED+NTHANDLE" },
-        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "BGRA+SHARED+NTHANDLE" },
+        // We MUST use NV12 because ARGBSurface is fundamentally unstable on many NVIDIA drivers and causes status=16.
+        { DXGI_FORMAT_NV12, 0, "NV12+NoFlags" },
+        { DXGI_FORMAT_NV12, D3D11_RESOURCE_MISC_SHARED, "NV12+SHARED" },
+        { DXGI_FORMAT_NV12, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "NV12+SHARED+NTHANDLE" },
     };
     
-    const int num_configs = 6;
+    const int num_configs = 3;
     // Try with 3 resources first (NvOFFRUC_MIN_RESOURCE=3), then 4
     int resource_counts[] = { 3, 4 };
     
@@ -193,48 +188,32 @@ void FrameInterpolation::Release()
     m_device.Reset();
 }
 
-Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Texture2D *src_tex, double timestamp)
-{
-    if (!m_enabled || !m_fruc_handle || !src_tex || !m_input_tex || !m_output_tex) {
-        return nullptr;
-    }
-
-    // We MUST use a ring buffer because NvOFFRUC keeps the input texture as a reference for the NEXT frame.
-    // If we overwrite the same texture, NvOFFRUC sees no movement and returns error 16.
-    ID3D11Texture2D* in_tex = nullptr;
-    ID3D11Texture2D* out_tex = nullptr;
-    
-    // We registered m_resource_count textures (3 or 4).
-    // Let's get them from an array. (We know m_input_tex, m_output_tex, m_interp_tex are the first 3).
-    // Wait, we need an array. We can just dynamically grab them.
+ID3D11Texture2D* FrameInterpolation::GetNextInputTexture() {
+    if (!m_resources_registered) return nullptr;
     if (m_resource_count >= 3) {
-        // Just rotate through the available resources.
-        // We need input and output to be different.
-        int in_idx = m_process_count % m_resource_count;
-        int out_idx = (m_process_count + (m_resource_count - 1)) % m_resource_count;
-        
-        ID3D11Texture2D* tex_array[4] = { m_input_tex.Get(), m_output_tex.Get(), m_interp_tex.Get(), nullptr };
-        // We only stored 3 in class members in 1.2.7. 
-        // Wait, m_interp_tex is the 3rd. If count is 4, we didn't store the 4th!
-        // That's fine, we will just use 3 since we only stored 3.
-        in_idx = m_process_count % 3;
-        out_idx = (m_process_count + 1) % 3; // +1 instead of -1 so it's always positive and different
-        
-        in_tex = tex_array[in_idx];
-        out_tex = tex_array[out_idx];
-    } else {
-        in_tex = m_input_tex.Get();
-        out_tex = m_output_tex.Get();
+        int in_idx = m_process_count % 3;
+        ID3D11Texture2D* tex_array[3] = { m_input_tex.Get(), m_output_tex.Get(), m_interp_tex.Get() };
+        return tex_array[in_idx];
     }
+    return m_input_tex.Get();
+}
 
-    // Copy the source texture into our registered input texture
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-    m_device->GetImmediateContext(&context);
-    if (!context) return nullptr;
-    context->CopyResource(in_tex, src_tex);
-    
-    // Flush to ensure CUDA can see the copy
-    context->Flush();
+ID3D11Texture2D* FrameInterpolation::GetNextOutputTexture() {
+    if (!m_resources_registered) return nullptr;
+    if (m_resource_count >= 3) {
+        int out_idx = (m_process_count + 1) % 3;
+        ID3D11Texture2D* tex_array[3] = { m_input_tex.Get(), m_output_tex.Get(), m_interp_tex.Get() };
+        return tex_array[out_idx];
+    }
+    return m_output_tex.Get();
+}
+
+bool FrameInterpolation::Process(double timestamp)
+{
+    if (!m_fruc_handle || !m_resources_registered) return false;
+
+    ID3D11Texture2D* in_tex = GetNextInputTexture();
+    ID3D11Texture2D* out_tex = GetNextOutputTexture();
 
     bool frame_repeated = false;
     bool out_frame_repeated = false;
@@ -243,7 +222,6 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     in_params.stFrameDataInput.pFrame = in_tex;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &frame_repeated;
-    // NvOFFRUC should natively handle the first frame
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
@@ -259,8 +237,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
             blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
                  m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0, in_tex, out_tex);
         }
-        Microsoft::WRL::ComPtr<ID3D11Texture2D> ret(out_tex);
-        return ret;
+        return true;
     }
 
     m_fail_count++;
@@ -271,5 +248,5 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
              (m_process_count == 1) ? 1 : 0, in_tex, out_tex);
     }
 
-    return nullptr;
+    return false;
 }

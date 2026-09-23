@@ -243,3 +243,29 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
 
     return true;
 }
+
+bool NvidiaVSR::ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
+{
+    if (!m_ready || !src_tex || !dst_tex) return false;
+
+    NvCVImage src_img, dst_img;
+    if (NvCVImage_InitFromD3D11Texture(&src_img, src_tex) != NVCV_SUCCESS) return false;
+    if (NvCVImage_InitFromD3D11Texture(&dst_img, dst_tex) != NVCV_SUCCESS) return false;
+
+    if (NvCVImage_MapResource(&src_img, m_stream) != NVCV_SUCCESS) return false;
+    if (NvCVImage_MapResource(&dst_img, m_stream) != NVCV_SUCCESS) {
+        NvCVImage_UnmapResource(&src_img, m_stream);
+        return false;
+    }
+
+    NvCV_Status status = NvCVImage_Transfer(&src_img, &dst_img, 1.0f, m_stream, nullptr);
+
+    NvCVImage_UnmapResource(&src_img, m_stream);
+    NvCVImage_UnmapResource(&dst_img, m_stream);
+
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace failed: %d", status);
+        return false;
+    }
+    return true;
+}

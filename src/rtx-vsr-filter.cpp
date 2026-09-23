@@ -378,44 +378,21 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     ID3D11Texture2D *fruc_src = nullptr;
                     gs_texture_t *fruc_obs_tex = nullptr;
                     
-                    if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
-                        // FRUC uses BGRA = same as VSR output, pass directly
-                        fruc_src = d3d11_dst;
-                    } else {
-                        // FRUC uses RGBA, need format conversion via texrender
-                        gs_texrender_reset(filter->fruc_render);
-                        if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                            gs_effect_set_texture(image, filter->output_texture);
-                            while (gs_effect_loop(def_effect, "Draw")) {
-                                gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
-                            }
-                            gs_texrender_end(filter->fruc_render);
-                        }
-                        fruc_obs_tex = gs_texrender_get_texture(filter->fruc_render);
-                        if (fruc_obs_tex) {
-                            fruc_src = (ID3D11Texture2D *)gs_texture_get_obj(fruc_obs_tex);
-                        }
-                    }
-                    
-                    if (fruc_src) {
+                    // FRUC input conversion (BGRA to NV12)
+                    ID3D11Texture2D* fruc_in_tex = filter->fruc->GetNextInputTexture();
+                    if (fruc_in_tex && filter->nvidia_vsr->ConvertColorspace(d3d11_dst, fruc_in_tex)) {
                         static double fruc_simulated_time = 0.0;
-                        // Use large integer-like values (e.g. milliseconds) to avoid divide-by-zero or precision issues inside NvOFFRUC
                         fruc_simulated_time += 33.333333;
                         
-                        auto fruc_out = filter->fruc->Process(fruc_src, fruc_simulated_time);
+                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         
-                        if (fruc_out) {
+                        if (fruc_success) {
                             filter->fruc_success_count++;
-                            // Copy FRUC output back
-                            auto context = filter->d3d11_interop->GetContext();
-                            if (context) {
-                                if (fruc_fmt == DXGI_FORMAT_B8G8R8A8_UNORM) {
-                                    context->CopyResource(d3d11_dst, fruc_out.Get());
-                                } else {
-                                    // For now, let's just copy it to d3d11_dst directly if typeless or just use VSR output if it fails.
-                                    // Actually we just don't copy if it's RGBA because it will fail CopyResource.
-                                    // We will fix color conversion later once we confirm the plugin doesn't return error 16.
-                                }
+                            
+                            ID3D11Texture2D* fruc_out_tex = filter->fruc->GetNextOutputTexture();
+                            if (fruc_out_tex) {
+                                // Convert FRUC output (NV12) back to OBS format (BGRA)
+                                filter->nvidia_vsr->ConvertColorspace(fruc_out_tex, d3d11_dst);
                             }
                             
                             // Cache the FRUC output

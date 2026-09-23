@@ -14,7 +14,9 @@ public:
     bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height);
     void Release();
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> Process(ID3D11Texture2D *src_tex, double timestamp);
+    ID3D11Texture2D* GetNextInputTexture();
+    ID3D11Texture2D* GetNextOutputTexture();
+    bool Process(double timestamp);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }
