@@ -249,11 +249,27 @@ bool NvidiaVSR::ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst
     if (!m_ready || !src_tex || !dst_tex) return false;
 
     NvCVImage src_img, dst_img;
-    if (NvCVImage_InitFromD3D11Texture(&src_img, src_tex) != NVCV_SUCCESS) return false;
-    if (NvCVImage_InitFromD3D11Texture(&dst_img, dst_tex) != NVCV_SUCCESS) return false;
+    NvCV_Status status = NvCVImage_InitFromD3D11Texture(&src_img, src_tex);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: InitFromD3D11Texture(src) failed: %d", status);
+        return false;
+    }
+    
+    status = NvCVImage_InitFromD3D11Texture(&dst_img, dst_tex);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: InitFromD3D11Texture(dst) failed: %d", status);
+        return false;
+    }
 
-    if (NvCVImage_MapResource(&src_img, m_stream) != NVCV_SUCCESS) return false;
-    if (NvCVImage_MapResource(&dst_img, m_stream) != NVCV_SUCCESS) {
+    status = NvCVImage_MapResource(&src_img, m_stream);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(src) failed: %d", status);
+        return false;
+    }
+    
+    status = NvCVImage_MapResource(&dst_img, m_stream);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(dst) failed: %d", status);
         NvCVImage_UnmapResource(&src_img, m_stream);
         return false;
     }
