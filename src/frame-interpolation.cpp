@@ -34,7 +34,7 @@ bool FrameInterpolation::LoadDLL()
     return true;
 }
 
-bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height)
+bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch)
 {
     m_device = d3d11_device;
     m_width = width;
@@ -121,9 +121,9 @@ void FrameInterpolation::Release()
 {
     if (m_resources_registered && m_unregister && m_fruc_handle) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
-        unreg.pArrResource[0] = m_input_tex.Get();
-        unreg.pArrResource[1] = m_output_tex.Get();
-        if (m_resource_count >= 3 && m_interp_tex) unreg.pArrResource[2] = m_interp_tex.Get();
+        for (int t = 0; t < m_resource_count; t++) {
+            unreg.pArrResource[t] = m_cuda_ptrs[t];
+        }
         unreg.uiCount = m_resource_count;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
@@ -138,10 +138,6 @@ void FrameInterpolation::Release()
         FreeLibrary(m_fruc_dll);
         m_fruc_dll = nullptr;
     }
-
-    m_input_tex.Reset();
-    m_output_tex.Reset();
-    m_interp_tex.Reset();
     m_device.Reset();
 }
 

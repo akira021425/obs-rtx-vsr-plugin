@@ -98,13 +98,13 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
 
     // Create FRUC NV12 GPU buffers
     for (int i = 0; i < 3; i++) {
-        status = NvCVImage_Create(dst_width, dst_height, NVCV_NV12, NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1, &m_fruc_nv12_gpu[i]);
+        status = NvCVImage_Create(dst_width, dst_height, NVCV_YUV420, NVCV_U8, NVCV_NV12, NVCV_GPU, 1, &m_fruc_nv12_gpu[i]);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC NV12 GPU image %d (status: %d)", i, status);
             Release();
             return false;
         }
-        status = NvCVImage_Alloc(m_fruc_nv12_gpu[i], dst_width, dst_height, NVCV_NV12, NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1);
+        status = NvCVImage_Alloc(m_fruc_nv12_gpu[i], dst_width, dst_height, NVCV_YUV420, NVCV_U8, NVCV_NV12, NVCV_GPU, 1);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC NV12 GPU image %d (status: %d)", i, status);
             Release();
