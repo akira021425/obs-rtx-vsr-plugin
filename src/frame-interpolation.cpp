@@ -42,22 +42,12 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
     if (!LoadDLL()) return false;
 
-    blog(LOG_INFO, "[RTX-VSR] FRUC: Creating handle (%ux%u, DirectX11, ARGBSurface)", width, height);
+    // We must create the handle AFTER we find a working texture configuration,
+    // because NvOFFRUCCreate requires eSurfaceFormat, which depends on the texture format.
+    // Wait, NvOFFRUCRegisterResource requires the handle!
+    // So we must create the handle for each config we try, or recreate it if the format changes!
+    // Actually, let's just try to create it inside the loop.
 
-    NvOFFRUC_CREATE_PARAM params = {};
-    params.uiWidth = width;
-    params.uiHeight = height;
-    params.pDevice = m_device.Get();
-    params.eResourceType = DirectX11Resource;
-    params.eSurfaceFormat = ARGBSurface;
-
-    NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
-    if (status != NvOFFRUC_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
-        Release();
-        return false;
-    }
-    blog(LOG_INFO, "[RTX-VSR] FRUC: NvOFFRUCCreate succeeded (handle=%p)", m_fruc_handle);
 
     // Try multiple texture configurations until one works
     // NvOFFRUC_MIN_RESOURCE=3: need 3 textures (frame N, frame N+1, interpolated output)
@@ -69,15 +59,15 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     };
     
     TexConfig configs[] = {
-        // NoFlags first - correct for same device, same process CUDA interop
-        { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
+        // NoFlags fallback
         { DXGI_FORMAT_R8G8B8A8_UNORM, 0, "RGBA+NoFlags" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
         // SHARED as fallback
-        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "BGRA+SHARED" },
         { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "RGBA+SHARED" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "BGRA+SHARED" },
         // SHARED+NTHANDLE as last resort
-        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "BGRA+SHARED+NTHANDLE" },
         { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "RGBA+SHARED+NTHANDLE" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "BGRA+SHARED+NTHANDLE" },
     };
     
     const int num_configs = 6;
@@ -88,11 +78,30 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         int count = resource_counts[rc];
         for (int i = 0; i < num_configs; i++) {
             // Clean up previous attempt
+            if (m_fruc_handle) {
+                m_destroy(m_fruc_handle);
+                m_fruc_handle = nullptr;
+            }
             m_input_tex.Reset();
             m_output_tex.Reset();
             m_interp_tex.Reset();
             
-            blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config [%d]: %s with %d resources", i, configs[i].desc, count);
+            NvOFFRUCSurfaceFormat surf_fmt = (configs[i].format == DXGI_FORMAT_NV12) ? NV12Surface : ARGBSurface;
+            
+            blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config [%d]: %s with %d resources (fmt=%d)", i, configs[i].desc, count, surf_fmt);
+            
+            NvOFFRUC_CREATE_PARAM params = {};
+            params.uiWidth = width;
+            params.uiHeight = height;
+            params.pDevice = m_device.Get();
+            params.eResourceType = DirectX11Resource;
+            params.eSurfaceFormat = surf_fmt;
+
+            NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
+            if (status != NvOFFRUC_SUCCESS) {
+                blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d for %s", status, configs[i].desc);
+                continue;
+            }
             
             D3D11_TEXTURE2D_DESC desc = {};
             desc.Width = width;
@@ -232,7 +241,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_tex;
-    in_params.stFrameDataInput.nTimeStamp = timestamp;
+    in_params.stFrameDataInput.nTimeStamp = (double)m_process_count;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &frame_repeated;
     
     // First frame: seed the internal cache, don't try to interpolate
