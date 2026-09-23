@@ -378,9 +378,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     ID3D11Texture2D *fruc_src = nullptr;
                     gs_texture_t *fruc_obs_tex = nullptr;
                     
-                    // FRUC input conversion (BGRA to NV12)
+                    // FRUC input conversion (BGRA to BGRA)
                     ID3D11Texture2D* fruc_in_tex = filter->fruc->GetNextInputTexture();
-                    if (fruc_in_tex && filter->nvidia_vsr->ConvertColorspace(d3d11_dst, fruc_in_tex)) {
+                    if (fruc_in_tex) {
+                        auto context = filter->d3d11_interop->GetContext();
+                        if (context) {
+                            context->CopyResource(fruc_in_tex, d3d11_dst);
+                        }
                         static double fruc_simulated_time = 0.0;
                         fruc_simulated_time += 33.333333;
                         
@@ -391,8 +395,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             
                             ID3D11Texture2D* fruc_out_tex = filter->fruc->GetNextOutputTexture();
                             if (fruc_out_tex) {
-                                // Convert FRUC output (NV12) back to OBS format (BGRA)
-                                filter->nvidia_vsr->ConvertColorspace(fruc_out_tex, d3d11_dst);
+                                // Copy FRUC output back to d3d11_dst
+                                if (context) {
+                                    context->CopyResource(d3d11_dst, fruc_out_tex);
+                                }
                             }
                             
                             // Cache the FRUC output

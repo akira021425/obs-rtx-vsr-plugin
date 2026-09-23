@@ -59,11 +59,10 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     };
     
     TexConfig configs[] = {
-        // Try R8G8B8A8_UNORM for ARGBSurface. We have fixed the vector singularity issue
-        // so it should not return status=16. R8G8B8A8 is supported by NvCVImage natively.
-        { DXGI_FORMAT_R8G8B8A8_UNORM, 0, "RGBA+NoFlags" },
-        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "RGBA+SHARED" },
-        { DXGI_FORMAT_R8G8B8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "RGBA+SHARED+NTHANDLE" },
+        // Try B8G8R8A8_UNORM for ARGBSurface. This is exactly what d3d11_dst uses, so we can use CopyResource.
+        { DXGI_FORMAT_B8G8R8A8_UNORM, 0, "BGRA+NoFlags" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED, "BGRA+SHARED" },
+        { DXGI_FORMAT_B8G8R8A8_UNORM, D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE, "BGRA+SHARED+NTHANDLE" },
     };
     
     const int num_configs = 3;

@@ -150,9 +150,10 @@ NvCVImage* NvidiaVSR::GetOrInitImage(ID3D11Texture2D* tex) {
     if (it != m_tex_map.end()) return it->second;
 
     NvCVImage* img = new NvCVImage();
+    memset(img, 0, sizeof(NvCVImage));
     NvCV_Status status = NvCVImage_InitFromD3D11Texture(img, tex);
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] GetOrInitImage: InitFromD3D11Texture failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] GetOrInitImage: InitFromD3D11Texture failed: %d for tex %p", status, tex);
         delete img;
         return nullptr;
     }
