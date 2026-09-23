@@ -399,7 +399,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     
                     if (fruc_src) {
                         static double fruc_simulated_time = 0.0;
-                        fruc_simulated_time += (1.0 / 30.0);
+                        // Use large integer-like values (e.g. milliseconds) to avoid divide-by-zero or precision issues inside NvOFFRUC
+                        fruc_simulated_time += 33.333333;
                         
                         auto fruc_out = filter->fruc->Process(fruc_src, fruc_simulated_time);
                         

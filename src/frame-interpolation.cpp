@@ -241,15 +241,10 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_tex;
-    in_params.stFrameDataInput.nTimeStamp = (double)m_process_count;
+    in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &frame_repeated;
-    
-    // First frame: seed the internal cache, don't try to interpolate
-    if (m_process_count == 0) {
-        in_params.bSkipWarp = 1;
-    } else {
-        in_params.bSkipWarp = 0;
-    }
+    // NvOFFRUC should natively handle the first frame
+    in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_tex;
