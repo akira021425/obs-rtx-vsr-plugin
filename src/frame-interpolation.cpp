@@ -190,11 +190,39 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
         return nullptr;
     }
 
+    // We MUST use a ring buffer because NvOFFRUC keeps the input texture as a reference for the NEXT frame.
+    // If we overwrite the same texture, NvOFFRUC sees no movement and returns error 16.
+    ID3D11Texture2D* in_tex = nullptr;
+    ID3D11Texture2D* out_tex = nullptr;
+    
+    // We registered m_resource_count textures (3 or 4).
+    // Let's get them from an array. (We know m_input_tex, m_output_tex, m_interp_tex are the first 3).
+    // Wait, we need an array. We can just dynamically grab them.
+    if (m_resource_count >= 3) {
+        // Just rotate through the available resources.
+        // We need input and output to be different.
+        int in_idx = m_process_count % m_resource_count;
+        int out_idx = (m_process_count + (m_resource_count - 1)) % m_resource_count;
+        
+        ID3D11Texture2D* tex_array[4] = { m_input_tex.Get(), m_output_tex.Get(), m_interp_tex.Get(), nullptr };
+        // We only stored 3 in class members in 1.2.7. 
+        // Wait, m_interp_tex is the 3rd. If count is 4, we didn't store the 4th!
+        // That's fine, we will just use 3 since we only stored 3.
+        in_idx = m_process_count % 3;
+        out_idx = (m_process_count + 1) % 3; // +1 instead of -1 so it's always positive and different
+        
+        in_tex = tex_array[in_idx];
+        out_tex = tex_array[out_idx];
+    } else {
+        in_tex = m_input_tex.Get();
+        out_tex = m_output_tex.Get();
+    }
+
     // Copy the source texture into our registered input texture
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
     m_device->GetImmediateContext(&context);
     if (!context) return nullptr;
-    context->CopyResource(m_input_tex.Get(), src_tex);
+    context->CopyResource(in_tex, src_tex);
     
     // Flush to ensure CUDA can see the copy
     context->Flush();
@@ -203,7 +231,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     bool out_frame_repeated = false;
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
-    in_params.stFrameDataInput.pFrame = m_input_tex.Get();
+    in_params.stFrameDataInput.pFrame = in_tex;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &frame_repeated;
     
@@ -215,7 +243,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     }
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
-    out_params.stFrameDataOutput.pFrame = m_output_tex.Get();
+    out_params.stFrameDataOutput.pFrame = out_tex;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
@@ -224,18 +252,19 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> FrameInterpolation::Process(ID3D11Textur
     if (status == NvOFFRUC_SUCCESS) {
         m_success_count++;
         if (m_process_count <= 3 || m_success_count % 300 == 0) {
-            blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d)",
-                 m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0);
+            blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
+                 m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0, in_tex, out_tex);
         }
-        return m_output_tex;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> ret(out_tex);
+        return ret;
     }
 
     m_fail_count++;
     // Log errors sparingly
     if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
-        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f, skipWarp=%d)",
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f, skipWarp=%d, in=%p, out=%p)",
              status, m_success_count, m_fail_count, m_process_count, timestamp,
-             (m_process_count == 1) ? 1 : 0);
+             (m_process_count == 1) ? 1 : 0, in_tex, out_tex);
     }
 
     return nullptr;
