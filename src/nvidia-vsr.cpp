@@ -96,6 +96,24 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
+    // Create FRUC NV12 GPU buffers
+    for (int i = 0; i < 3; i++) {
+        status = NvCVImage_Create(dst_width, dst_height, NVCV_NV12, NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1, &m_fruc_nv12_gpu[i]);
+        if (status != NVCV_SUCCESS) {
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC NV12 GPU image %d (status: %d)", i, status);
+            Release();
+            return false;
+        }
+        status = NvCVImage_Alloc(m_fruc_nv12_gpu[i], dst_width, dst_height, NVCV_NV12, NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1);
+        if (status != NVCV_SUCCESS) {
+            blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC NV12 GPU image %d (status: %d)", i, status);
+            Release();
+            return false;
+        }
+        m_fruc_cuda_ptrs[i] = m_fruc_nv12_gpu[i]->pixels;
+        m_fruc_cuda_pitch = m_fruc_nv12_gpu[i]->pitch;
+    }
+
     // 6. Wrapper NvCVImage objects for D3D11 textures will be created dynamically in Process()
 
 
@@ -132,6 +150,15 @@ void NvidiaVSR::Release()
     if (m_src_gpu) { NvCVImage_Destroy(m_src_gpu); m_src_gpu = nullptr; }
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
     if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
+
+    for (int i = 0; i < 3; i++) {
+        if (m_fruc_nv12_gpu[i]) {
+            NvCVImage_Destroy(m_fruc_nv12_gpu[i]);
+            m_fruc_nv12_gpu[i] = nullptr;
+        }
+        m_fruc_cuda_ptrs[i] = nullptr;
+    }
+    m_fruc_cuda_pitch = 0;
 
     if (m_effect) {
         NvVFX_DestroyEffect(m_effect);
@@ -248,34 +275,53 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     return true;
 }
 
-bool NvidiaVSR::ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
+bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx)
 {
-    if (!m_ready || !src_tex || !dst_tex) return false;
+    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
-    NvCVImage* src_img = GetOrInitImage(src_tex);
-    NvCVImage* dst_img = GetOrInitImage(dst_tex);
+    NvCVImage* src_img = GetOrInitImage(d3d11_dst);
+    NvCVImage* dst_img = m_fruc_nv12_gpu[fruc_idx];
     if (!src_img || !dst_img) return false;
 
     NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(src) failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: MapResource failed: %d", status);
         return false;
     }
     
-    status = NvCVImage_MapResource(dst_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(dst) failed: %d", status);
-        NvCVImage_UnmapResource(src_img, m_stream);
-        return false;
-    }
-
+    // Transfer from BGRA D3D11 to NV12 CUDA natively
     status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(src_img, m_stream);
+
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn failed during transfer: %d", status);
+        return false;
+    }
+    return true;
+}
+
+bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst)
+{
+    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
+
+    NvCVImage* src_img = m_fruc_nv12_gpu[fruc_idx];
+    NvCVImage* dst_img = GetOrInitImage(d3d11_dst);
+    if (!src_img || !dst_img) return false;
+
+    NvCV_Status status = NvCVImage_MapResource(dst_img, m_stream);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: MapResource failed: %d", status);
+        return false;
+    }
+    
+    // Transfer from NV12 CUDA back to BGRA D3D11 natively
+    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
+
     NvCVImage_UnmapResource(dst_img, m_stream);
 
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace failed during transfer: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during transfer: %d", status);
         return false;
     }
     return true;

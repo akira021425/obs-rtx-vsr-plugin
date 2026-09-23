@@ -23,7 +23,12 @@ public:
     bool Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex);
 
     // Fast CUDA colorspace conversion (e.g. BGRA <-> NV12)
-    bool ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex);
+    bool ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx);
+    bool ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst);
+
+    void** GetFrucCudaPointers() { return m_fruc_cuda_ptrs; }
+    int GetFrucCudaPitch() const { return m_fruc_cuda_pitch; }
+    NvCVImage* GetFrucNV12Image(int index) { return (index >= 0 && index < 3) ? m_fruc_nv12_gpu[index] : nullptr; }
 
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);
@@ -41,6 +46,10 @@ private:
     NvCVImage *m_dst_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
+    // FRUC NV12 GPU buffers
+    NvCVImage* m_fruc_nv12_gpu[3] = {nullptr, nullptr, nullptr};
+    void* m_fruc_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
+    int m_fruc_cuda_pitch = 0;
     // Cache for D3D11 wrapper images to avoid duplicate registration
     std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;
     NvCVImage* GetOrInitImage(ID3D11Texture2D* tex);

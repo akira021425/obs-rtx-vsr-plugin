@@ -11,11 +11,13 @@ public:
     FrameInterpolation();
     ~FrameInterpolation();
 
-    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height);
+    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch);
     void Release();
 
-    ID3D11Texture2D* GetNextInputTexture();
-    ID3D11Texture2D* GetNextOutputTexture();
+    void* GetNextInputPointer();
+    void* GetNextOutputPointer();
+    int GetNextInputIndex();
+    int GetNextOutputIndex();
     bool Process(double timestamp);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
@@ -39,11 +41,11 @@ private:
     bool m_enabled = true;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
-    DXGI_FORMAT m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    DXGI_FORMAT m_tex_format = DXGI_FORMAT_NV12;
 
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_input_tex;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_output_tex;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_interp_tex;
+    void* m_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
+    int m_cuda_pitch = 0;
+    
     bool m_resources_registered = false;
     uint32_t m_resource_count = 0;
     

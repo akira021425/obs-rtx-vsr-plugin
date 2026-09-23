@@ -243,17 +243,20 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
             gs_flush();
             
-            // FRUC init (before VSR)
-            if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
-            }
-
-            // VSR init
+            // VSR init (before FRUC, because VSR allocates the CUDA NV12 buffers for FRUC)
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
                 blog(LOG_ERROR, "[RTX-VSR] VSR initialization failed");
                 filter->vsr_failed = true;
+            } else {
+                void** cuda_ptrs = filter->nvidia_vsr->GetFrucCudaPointers();
+                int cuda_pitch = filter->nvidia_vsr->GetFrucCudaPitch();
+                
+                // FRUC init
+                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cuda_ptrs, cuda_pitch)) {
+                    blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
+                }
             }
-  
+
             filter->src_width = width;
             filter->src_height = height;
             filter->out_width = target_width;
@@ -378,13 +381,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     ID3D11Texture2D *fruc_src = nullptr;
                     gs_texture_t *fruc_obs_tex = nullptr;
                     
-                    // FRUC input conversion (BGRA to BGRA)
-                    ID3D11Texture2D* fruc_in_tex = filter->fruc->GetNextInputTexture();
-                    if (fruc_in_tex) {
-                        auto context = filter->d3d11_interop->GetContext();
-                        if (context) {
-                            context->CopyResource(fruc_in_tex, d3d11_dst);
-                        }
+                    // FRUC input conversion (BGRA to native CUDA NV12)
+                    int fruc_in_idx = filter->fruc->GetNextInputIndex();
+                    if (filter->nvidia_vsr->ConvertColorspaceFrucIn(d3d11_dst, fruc_in_idx)) {
                         static double fruc_simulated_time = 0.0;
                         fruc_simulated_time += 33.333333;
                         
@@ -393,13 +392,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         if (fruc_success) {
                             filter->fruc_success_count++;
                             
-                            ID3D11Texture2D* fruc_out_tex = filter->fruc->GetNextOutputTexture();
-                            if (fruc_out_tex) {
-                                // Copy FRUC output back to d3d11_dst
-                                if (context) {
-                                    context->CopyResource(d3d11_dst, fruc_out_tex);
-                                }
-                            }
+                            int fruc_out_idx = filter->fruc->GetNextOutputIndex();
+                            // Convert FRUC output (native CUDA NV12) back to BGRA d3d11_dst
+                            filter->nvidia_vsr->ConvertColorspaceFrucOut(fruc_out_idx, d3d11_dst);
                             
                             // Cache the FRUC output
                             if (!filter->fruc_cache_texture) {
