@@ -120,11 +120,15 @@ void NvidiaVSR::Release()
 {
     m_ready = false;
     m_images_bound = false;
-    m_last_src_tex = nullptr;
-    m_last_dst_tex = nullptr;
 
-    if (m_src_img) { delete m_src_img; m_src_img = nullptr; }
-    if (m_dst_img) { delete m_dst_img; m_dst_img = nullptr; }
+    for (auto& pair : m_tex_map) {
+        if (pair.second) {
+            NvCVImage_Destroy(pair.second);
+            delete pair.second;
+        }
+    }
+    m_tex_map.clear();
+
     if (m_src_gpu) { NvCVImage_Destroy(m_src_gpu); m_src_gpu = nullptr; }
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
     if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
@@ -138,6 +142,22 @@ void NvidiaVSR::Release()
         m_stream = nullptr;
     }
     m_device.Reset();
+}
+
+NvCVImage* NvidiaVSR::GetOrInitImage(ID3D11Texture2D* tex) {
+    if (!tex) return nullptr;
+    auto it = m_tex_map.find(tex);
+    if (it != m_tex_map.end()) return it->second;
+
+    NvCVImage* img = new NvCVImage();
+    NvCV_Status status = NvCVImage_InitFromD3D11Texture(img, tex);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] GetOrInitImage: InitFromD3D11Texture failed: %d", status);
+        delete img;
+        return nullptr;
+    }
+    m_tex_map[tex] = img;
+    return img;
 }
 
 void NvidiaVSR::SetQuality(int quality)
@@ -160,44 +180,27 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
 
     NvCV_Status status;
 
-    // 1. Bind D3D11 textures to wrapper NvCVImages (only if changed)
-    if (m_last_src_tex != src_tex) {
-        if (m_src_img) { delete m_src_img; m_src_img = nullptr; }
-        m_src_img = new NvCVImage();
-        status = NvCVImage_InitFromD3D11Texture(m_src_img, src_tex);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] InitFromD3D11Texture(src) failed: %d", status);
-            return false;
-        }
-        m_last_src_tex = src_tex;
-    }
-
-    if (m_last_dst_tex != dst_tex) {
-        if (m_dst_img) { delete m_dst_img; m_dst_img = nullptr; }
-        m_dst_img = new NvCVImage();
-        status = NvCVImage_InitFromD3D11Texture(m_dst_img, dst_tex);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] InitFromD3D11Texture(dst) failed: %d", status);
-            return false;
-        }
-        m_last_dst_tex = dst_tex;
-    }
+    // 1. Get or initialize wrapped D3D11 textures
+    NvCVImage* src_img = GetOrInitImage(src_tex);
+    NvCVImage* dst_img = GetOrInitImage(dst_tex);
+    
+    if (!src_img || !dst_img) return false;
 
     // 2. Map source texture, transfer to GPU staging buffer
-    status = NvCVImage_MapResource(m_src_img, m_stream);
+    status = NvCVImage_MapResource(src_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] MapResource(src) failed: %d", status);
         return false;
     }
 
-    status = NvCVImage_Transfer(m_src_img, m_src_gpu, 1.0f, m_stream, NULL);
+    status = NvCVImage_Transfer(src_img, m_src_gpu, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Transfer src->gpu failed: %d", status);
-        NvCVImage_UnmapResource(m_src_img, m_stream);
+        NvCVImage_UnmapResource(src_img, m_stream);
         return false;
     }
 
-    status = NvCVImage_UnmapResource(m_src_img, m_stream);
+    status = NvCVImage_UnmapResource(src_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] UnmapResource(src) failed: %d", status);
         return false;
@@ -211,31 +214,31 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     }
 
     // 4. Map destination texture, transfer result from GPU staging buffer
-    status = NvCVImage_MapResource(m_dst_img, m_stream);
+    status = NvCVImage_MapResource(dst_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] MapResource(dst) failed: %d", status);
         return false;
     }
 
     // 4. Transfer output from SDK GPU buffer back to D3D11 texture
-    // We cannot transfer RGBA (m_dst_gpu) directly to BGRA mapped D3D11 (m_dst_img) as it throws -9.
+    // We cannot transfer RGBA (m_dst_gpu) directly to BGRA mapped D3D11 (dst_img) as it throws -9.
     // However, CUDA-to-CUDA transfer from RGBA to BGRA works!
     status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->bgra_gpu failed: %d", status);
-        NvCVImage_UnmapResource(m_dst_img, m_stream);
+        NvCVImage_UnmapResource(dst_img, m_stream);
         return false;
     }
 
     // Now transfer BGRA to BGRA (pure CUDA to mapped D3D11)
-    status = NvCVImage_Transfer(m_dst_bgra_gpu, m_dst_img, 1.0f, m_stream, NULL);
+    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Transfer bgra_gpu->dst failed: %d", status);
-        NvCVImage_UnmapResource(m_dst_img, m_stream);
+        NvCVImage_UnmapResource(dst_img, m_stream);
         return false;
     }
 
-    status = NvCVImage_UnmapResource(m_dst_img, m_stream);
+    status = NvCVImage_UnmapResource(dst_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] UnmapResource(dst) failed: %d", status);
         return false;
@@ -248,36 +251,27 @@ bool NvidiaVSR::ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst
 {
     if (!m_ready || !src_tex || !dst_tex) return false;
 
-    NvCVImage src_img, dst_img;
-    NvCV_Status status = NvCVImage_InitFromD3D11Texture(&src_img, src_tex);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: InitFromD3D11Texture(src) failed: %d", status);
-        return false;
-    }
-    
-    status = NvCVImage_InitFromD3D11Texture(&dst_img, dst_tex);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: InitFromD3D11Texture(dst) failed: %d", status);
-        return false;
-    }
+    NvCVImage* src_img = GetOrInitImage(src_tex);
+    NvCVImage* dst_img = GetOrInitImage(dst_tex);
+    if (!src_img || !dst_img) return false;
 
-    status = NvCVImage_MapResource(&src_img, m_stream);
+    NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(src) failed: %d", status);
         return false;
     }
     
-    status = NvCVImage_MapResource(&dst_img, m_stream);
+    status = NvCVImage_MapResource(dst_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace: MapResource(dst) failed: %d", status);
-        NvCVImage_UnmapResource(&src_img, m_stream);
+        NvCVImage_UnmapResource(src_img, m_stream);
         return false;
     }
 
-    status = NvCVImage_Transfer(&src_img, &dst_img, 1.0f, m_stream, nullptr);
+    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
 
-    NvCVImage_UnmapResource(&src_img, m_stream);
-    NvCVImage_UnmapResource(&dst_img, m_stream);
+    NvCVImage_UnmapResource(src_img, m_stream);
+    NvCVImage_UnmapResource(dst_img, m_stream);
 
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace failed during transfer: %d", status);

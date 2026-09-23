@@ -6,6 +6,7 @@
 #include "nvVideoEffects.h"
 #include "nvCVImage.h"
 #include <string>
+#include <unordered_map>
 
 class NvidiaVSR {
 public:
@@ -36,14 +37,13 @@ private:
     CUstream m_stream = nullptr;
     
     // Persistent NvCVImage objects (heap-allocated, reused every frame)
-    NvCVImage *m_src_img = nullptr;  // Wraps source D3D11 texture
-    NvCVImage *m_dst_img = nullptr;  // Wraps destination D3D11 texture
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
-    ID3D11Texture2D *m_last_src_tex = nullptr;
-    ID3D11Texture2D *m_last_dst_tex = nullptr;
+    // Cache for D3D11 wrapper images to avoid duplicate registration
+    std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;
+    NvCVImage* GetOrInitImage(ID3D11Texture2D* tex);
     
     uint32_t m_src_width = 0;
     uint32_t m_src_height = 0;
