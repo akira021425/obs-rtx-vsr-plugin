@@ -23,6 +23,9 @@ struct rtx_vsr_data {
     gs_texture_t *vsr_cache_texture;
     bool has_cached_vsr;
     
+    // FRUC result caching for duplicate frames
+    gs_texture_t *fruc_cache_texture;
+    
     // Duplicate frame detection
     ID3D11Texture2D *hash_stage_d3d11;
     uint32_t last_hash[256];
@@ -60,6 +63,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->fruc = std::make_unique<FrameInterpolation>();
     data->output_texture = nullptr;
     data->vsr_cache_texture = nullptr;
+    data->fruc_cache_texture = nullptr;
     data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->fruc_render = gs_texrender_create(GS_RGBA, GS_ZS_NONE);
@@ -97,6 +101,7 @@ static void rtx_vsr_destroy(void *data)
     if (filter->hash_stage_d3d11) filter->hash_stage_d3d11->Release();
     if (filter->output_texture) gs_texture_destroy(filter->output_texture);
     if (filter->vsr_cache_texture) gs_texture_destroy(filter->vsr_cache_texture);
+    if (filter->fruc_cache_texture) gs_texture_destroy(filter->fruc_cache_texture);
     if (filter->is_initialized) filter->d3d11_interop->Release();
     obs_leave_graphics();
     
@@ -195,6 +200,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         filter->fruc->Release();
         if (filter->output_texture) { gs_texture_destroy(filter->output_texture); filter->output_texture = nullptr; }
         if (filter->vsr_cache_texture) { gs_texture_destroy(filter->vsr_cache_texture); filter->vsr_cache_texture = nullptr; }
+        if (filter->fruc_cache_texture) { gs_texture_destroy(filter->fruc_cache_texture); filter->fruc_cache_texture = nullptr; }
         if (filter->hash_stage_d3d11) { filter->hash_stage_d3d11->Release(); filter->hash_stage_d3d11 = nullptr; }
         filter->has_cached_vsr = false;
         filter->is_initialized = false;
