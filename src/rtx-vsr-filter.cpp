@@ -448,7 +448,6 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         }
     }
 
-log_and_return:
     // Periodic stats logging (every 10 seconds)
     uint64_t now = os_gettime_ns();
     if (filter->last_log_time > 0 && (now - filter->last_log_time) >= 10000000000ULL) {
