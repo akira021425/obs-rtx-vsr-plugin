@@ -274,13 +274,13 @@ bool NvidiaVSR::ConvertColorspace(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst
         return false;
     }
 
-    NvCV_Status status = NvCVImage_Transfer(&src_img, &dst_img, 1.0f, m_stream, nullptr);
+    status = NvCVImage_Transfer(&src_img, &dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(&src_img, m_stream);
     NvCVImage_UnmapResource(&dst_img, m_stream);
 
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertColorspace failed during transfer: %d", status);
         return false;
     }
     return true;
