@@ -45,6 +45,7 @@ private:
     void* m_cuArrayCreate = nullptr;
     void* m_cuMemcpy2DAsync = nullptr;
     void* m_cuArrayDestroy = nullptr;
+    void* m_cuCtxSynchronize = nullptr;
 
     void PushCudaContext();
     void PopCudaContext();

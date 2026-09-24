@@ -69,6 +69,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync_v2");
             if (!m_cuMemcpy2DAsync) m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync");
             m_cuArrayDestroy = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayDestroy");
+            m_cuCtxSynchronize = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSynchronize");
         }
     }
 
@@ -92,7 +93,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface;
+        NvOFFRUCSurfaceFormat surf_fmt = ARGBSurface;
         
         blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources", count);
         
@@ -125,12 +126,15 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             if (!m_cu_arrays[t]) {
                 CUDA_ARRAY_DESCRIPTOR desc = {};
                 desc.Width = width;
-                desc.Height = height * 3 / 2; // NV12
+                desc.Height = height; // ARGB is just height
                 desc.Format = 0x01; // CU_AD_FORMAT_UNSIGNED_INT8
-                desc.NumChannels = 1;
+                desc.NumChannels = 4; // ARGB has 4 channels
                 
                 typedef int (__stdcall *PFN_cuArrayCreate)(void**, const CUDA_ARRAY_DESCRIPTOR*);
-                ((PFN_cuArrayCreate)m_cuArrayCreate)(&m_cu_arrays[t], &desc);
+                int res = ((PFN_cuArrayCreate)m_cuArrayCreate)(&m_cu_arrays[t], &desc);
+                if (res != 0) {
+                    blog(LOG_ERROR, "[RTX-VSR] FRUC: cuArrayCreate failed: %d", res);
+                }
             }
             reg_param.pArrResource[t] = m_cu_arrays[t];
             m_cuda_ptrs[t] = cuda_ptrs[t]; // Keep device pointers for memcopy later
@@ -256,6 +260,12 @@ bool FrameInterpolation::Process(double timestamp)
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
     
+    // Sync before copying to make sure NvCVImage_Transfer is done
+    if (m_cuCtxSynchronize) {
+        typedef int (__stdcall *PFN_cuCtxSynchronize)();
+        ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
+    }
+    
     // Copy input device memory to CUDA array
     typedef struct CUDA_MEMCPY2D_st {
         size_t srcXInBytes, srcY;
@@ -282,11 +292,14 @@ bool FrameInterpolation::Process(double timestamp)
     cpy.srcPitch = m_cuda_pitch;
     cpy.dstMemoryType = 3; // CU_MEMORYTYPE_ARRAY
     cpy.dstArray = in_ptr;
-    cpy.WidthInBytes = m_width;
-    cpy.Height = m_height * 3 / 2; // NV12
+    cpy.WidthInBytes = m_width * 4;
+    cpy.Height = m_height;
     
     typedef int (__stdcall *PFN_cuMemcpy2DAsync)(const CUDA_MEMCPY2D*, void*);
-    ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy, nullptr);
+    int cpy_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy, nullptr);
+    if (cpy_res != 0) {
+        blog(LOG_ERROR, "[RTX-VSR] FRUC: cuMemcpy2D IN failed: %d", cpy_res);
+    }
 
     log_crash_step("FRUC Process: m_process");
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
@@ -299,9 +312,17 @@ bool FrameInterpolation::Process(double timestamp)
         cpy_out.dstMemoryType = 2; // CU_MEMORYTYPE_DEVICE
         cpy_out.dstDevice = out_dev_ptr;
         cpy_out.dstPitch = m_cuda_pitch;
-        cpy_out.WidthInBytes = m_width;
-        cpy_out.Height = m_height * 3 / 2;
-        ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy_out, nullptr);
+        cpy_out.WidthInBytes = m_width * 4;
+        cpy_out.Height = m_height;
+        int cpy_out_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy_out, nullptr);
+        if (cpy_out_res != 0) {
+            blog(LOG_ERROR, "[RTX-VSR] FRUC: cuMemcpy2D OUT failed: %d", cpy_out_res);
+        }
+        
+        if (m_cuCtxSynchronize) {
+            typedef int (__stdcall *PFN_cuCtxSynchronize)();
+            ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
+        }
     }
     
     log_crash_step("FRUC Process: PopContext");

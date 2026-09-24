@@ -105,18 +105,23 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
-    // Create FRUC NV12 GPU buffers
+    // m_dst_bgra_gpu is created for NVCV_RGBA, but we set its colorspace to Linear just to be explicit
+    if (m_dst_bgra_gpu) {
+        m_dst_bgra_gpu->colorspace = NVCV_COLORSPACE_LINEAR;
+    }
+
+    // Create FRUC RGBA GPU buffers
     for (int i = 0; i < 3; i++) {
-        status = NvCVImage_Create(dst_width, dst_height, NVCV_YUV420, NVCV_U8, NVCV_NV12, NVCV_GPU, 1, &m_fruc_nv12_gpu[i]);
+        status = NvCVImage_Create(dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_fruc_rgba_gpu[i]);
         if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC NV12 GPU image %d (status: %d)", i, status);
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC RGBA GPU image %d (status: %d)", i, status);
             Release();
             return false;
         }
         
-        m_fruc_nv12_gpu[i]->colorspace = NVCV_709 | NVCV_VIDEO_RANGE | NVCV_CHROMA_INTSTITIAL;
-        m_fruc_cuda_ptrs[i] = m_fruc_nv12_gpu[i]->pixels;
-        m_fruc_cuda_pitch = m_fruc_nv12_gpu[i]->pitch;
+        m_fruc_rgba_gpu[i]->colorspace = NVCV_COLORSPACE_LINEAR;
+        m_fruc_cuda_ptrs[i] = m_fruc_rgba_gpu[i]->pixels;
+        m_fruc_cuda_pitch = m_fruc_rgba_gpu[i]->pitch;
     }
 
     // 6. Wrapper NvCVImage objects for D3D11 textures will be created dynamically in Process()
@@ -157,9 +162,9 @@ void NvidiaVSR::Release()
     if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
 
     for (int i = 0; i < 3; i++) {
-        if (m_fruc_nv12_gpu[i]) {
-            NvCVImage_Destroy(m_fruc_nv12_gpu[i]);
-            m_fruc_nv12_gpu[i] = nullptr;
+        if (m_fruc_rgba_gpu[i]) {
+            NvCVImage_Destroy(m_fruc_rgba_gpu[i]);
+            m_fruc_rgba_gpu[i] = nullptr;
         }
         m_fruc_cuda_ptrs[i] = nullptr;
     }
@@ -298,7 +303,7 @@ bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx
     if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
     NvCVImage* src_img = GetOrInitImage(d3d11_dst);
-    NvCVImage* dst_img = m_fruc_nv12_gpu[fruc_idx];
+    NvCVImage* dst_img = m_fruc_rgba_gpu[fruc_idx];
     if (!src_img || !dst_img) return false;
 
     NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
@@ -307,7 +312,7 @@ bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx
         return false;
     }
     
-    // Transfer from BGRA D3D11 to NV12 CUDA natively
+    // Transfer from BGRA D3D11 to RGBA CUDA
     status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(src_img, m_stream);
@@ -323,7 +328,7 @@ bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_ds
 {
     if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
-    NvCVImage* src_img = m_fruc_nv12_gpu[fruc_idx];
+    NvCVImage* src_img = m_fruc_rgba_gpu[fruc_idx];
     NvCVImage* dst_img = GetOrInitImage(d3d11_dst);
     if (!src_img || !dst_img) return false;
 
@@ -333,16 +338,8 @@ bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_ds
         return false;
     }
     
-    // Transfer from NV12 CUDA to BGRA CUDA (GPU to GPU)
-    status = NvCVImage_Transfer(src_img, m_dst_bgra_gpu, 1.0f, m_stream, nullptr);
-    if (status != NVCV_SUCCESS) {
-        NvCVImage_UnmapResource(dst_img, m_stream);
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during NV12->BGRA transfer: %d", status);
-        return false;
-    }
-
-    // Transfer from BGRA CUDA to BGRA D3D11
-    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, nullptr);
+    // Transfer from RGBA CUDA to BGRA D3D11 natively
+    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(dst_img, m_stream);
 
