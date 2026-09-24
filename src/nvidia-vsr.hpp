@@ -28,7 +28,7 @@ public:
 
     void** GetFrucCudaPointers() { return m_fruc_cuda_ptrs; }
     int GetFrucCudaPitch() const { return m_fruc_cuda_pitch; }
-    NvCVImage* GetFrucNV12Image(int index) { return (index >= 0 && index < 3) ? m_fruc_nv12_gpu[index] : nullptr; }
+    NvCVImage* GetFrucRGBAImage(int index) { return (index >= 0 && index < 3) ? m_fruc_rgba_gpu[index] : nullptr; }
 
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);

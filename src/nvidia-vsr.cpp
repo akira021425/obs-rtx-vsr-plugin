@@ -107,7 +107,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
 
     // m_dst_bgra_gpu is created for NVCV_RGBA, but we set its colorspace to Linear just to be explicit
     if (m_dst_bgra_gpu) {
-        m_dst_bgra_gpu->colorspace = NVCV_COLORSPACE_LINEAR;
+        m_dst_bgra_gpu->colorspace = (NvCVImage_ColorSpace)0;
     }
 
     // Create FRUC RGBA GPU buffers
@@ -119,7 +119,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
             return false;
         }
         
-        m_fruc_rgba_gpu[i]->colorspace = NVCV_COLORSPACE_LINEAR;
+        m_fruc_rgba_gpu[i]->colorspace = (NvCVImage_ColorSpace)0;
         m_fruc_cuda_ptrs[i] = m_fruc_rgba_gpu[i]->pixels;
         m_fruc_cuda_pitch = m_fruc_rgba_gpu[i]->pitch;
     }
