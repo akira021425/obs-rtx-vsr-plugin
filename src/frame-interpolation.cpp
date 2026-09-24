@@ -67,11 +67,12 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = m_device.Get();
         if (cuda_ptrs) {
+            params.pDevice = nullptr;
             params.eResourceType = CudaResource;
             params.eCUDAResourceType = CudaResourceCuDevicePtr;
         } else {
+            params.pDevice = m_device.Get();
             params.eResourceType = DirectX11Resource;
         }
         params.eSurfaceFormat = surf_fmt;

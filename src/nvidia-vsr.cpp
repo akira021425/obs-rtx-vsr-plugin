@@ -89,12 +89,6 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_dst_bgra_gpu, dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst BGRA GPU image (status: %d)", status);
-        Release();
-        return false;
-    }
 
     // Create FRUC NV12 GPU buffers
     for (int i = 0; i < 3; i++) {
@@ -104,12 +98,9 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
             Release();
             return false;
         }
-        status = NvCVImage_Alloc(m_fruc_nv12_gpu[i], dst_width, dst_height, NVCV_YUV420, NVCV_U8, NVCV_NV12, NVCV_GPU, 1);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC NV12 GPU image %d (status: %d)", i, status);
-            Release();
-            return false;
-        }
+        
+        // Ensure colorspace is set for YUV transfers as required by NvCVImage_Transfer
+        m_fruc_nv12_gpu[i]->colorspace = NVCV_709 | NVCV_VIDEO_RANGE | NVCV_CHROMA_INTSTITIAL;
         m_fruc_cuda_ptrs[i] = m_fruc_nv12_gpu[i]->pixels;
         m_fruc_cuda_pitch = m_fruc_nv12_gpu[i]->pitch;
     }
