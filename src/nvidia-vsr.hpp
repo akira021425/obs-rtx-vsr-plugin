@@ -47,6 +47,7 @@ private:
     NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
     // FRUC NV12 GPU buffers
+    ID3D11Texture2D* m_fruc_tex[3] = {nullptr, nullptr, nullptr};
     NvCVImage* m_fruc_nv12_gpu[3] = {nullptr, nullptr, nullptr};
     void* m_fruc_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
     int m_fruc_cuda_pitch = 0;

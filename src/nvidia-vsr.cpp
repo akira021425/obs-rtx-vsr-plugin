@@ -105,19 +105,36 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
-    // Create FRUC NV12 GPU buffers
+    // Create FRUC NV12 D3D11 buffers
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = dst_width;
+    desc.Height = dst_height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_NV12;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    
     for (int i = 0; i < 3; i++) {
-        status = NvCVImage_Create(dst_width, dst_height, NVCV_YUV420, NVCV_U8, NVCV_NV12, NVCV_GPU, 1, &m_fruc_nv12_gpu[i]);
+        HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_fruc_tex[i]);
+        if (FAILED(hr)) {
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC NV12 D3D11 texture %d (hr: 0x%08X)", i, hr);
+            Release();
+            return false;
+        }
+        
+        m_fruc_nv12_gpu[i] = new NvCVImage();
+        status = NvCVImage_InitFromD3D11Texture(m_fruc_nv12_gpu[i], m_fruc_tex[i]);
         if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC NV12 GPU image %d (status: %d)", i, status);
+            blog(LOG_ERROR, "[RTX-VSR] Failed to init FRUC NV12 image %d (status: %d)", i, status);
             Release();
             return false;
         }
         
         // Ensure colorspace is set for YUV transfers as required by NvCVImage_Transfer
         m_fruc_nv12_gpu[i]->colorspace = NVCV_709 | NVCV_VIDEO_RANGE | NVCV_CHROMA_INTSTITIAL;
-        m_fruc_cuda_ptrs[i] = m_fruc_nv12_gpu[i]->pixels;
-        m_fruc_cuda_pitch = m_fruc_nv12_gpu[i]->pitch;
+        m_fruc_cuda_ptrs[i] = m_fruc_tex[i]; // Passing D3D11 texture pointer to FRUC!
     }
 
     // 6. Wrapper NvCVImage objects for D3D11 textures will be created dynamically in Process()
@@ -160,7 +177,12 @@ void NvidiaVSR::Release()
     for (int i = 0; i < 3; i++) {
         if (m_fruc_nv12_gpu[i]) {
             NvCVImage_Destroy(m_fruc_nv12_gpu[i]);
+            delete m_fruc_nv12_gpu[i];
             m_fruc_nv12_gpu[i] = nullptr;
+        }
+        if (m_fruc_tex[i]) {
+            m_fruc_tex[i]->Release();
+            m_fruc_tex[i] = nullptr;
         }
         m_fruc_cuda_ptrs[i] = nullptr;
     }

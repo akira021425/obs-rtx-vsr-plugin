@@ -92,14 +92,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        if (cuda_ptrs) {
-            params.pDevice = nullptr;
-            params.eResourceType = CudaResource;
-            params.eCUDAResourceType = CudaResourceCuDevicePtr;
-        } else {
-            params.pDevice = m_device.Get();
-            params.eResourceType = DirectX11Resource;
-        }
+        params.pDevice = m_device.Get();
+        params.eResourceType = DirectX11Resource;
         params.eSurfaceFormat = surf_fmt;
 
         PushCudaContext();
@@ -112,16 +106,10 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
-        if (cuda_ptrs) {
-            for (int t = 0; t < count; t++) {
-                reg_param.pArrResource[t] = cuda_ptrs[t];
-                m_cuda_ptrs[t] = cuda_ptrs[t];
-            }
-            m_cuda_pitch = cuda_pitch;
-        } else {
-            PopCudaContext();
-            blog(LOG_ERROR, "[RTX-VSR] FRUC: Expected CUDA pointers but got NULL");
-            return false;
+        // Pass D3D11 resources directly instead of CUDA pointers
+        for (int t = 0; t < count; t++) {
+            reg_param.pArrResource[t] = cuda_ptrs[t]; // cuda_ptrs actually contains D3D11 textures now!
+            m_cuda_ptrs[t] = cuda_ptrs[t];
         }
         
         reg_param.uiCount = count;
