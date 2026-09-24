@@ -42,6 +42,9 @@ private:
     HMODULE m_nvcuda_dll = nullptr;
     void* m_cuCtxPushCurrent = nullptr;
     void* m_cuCtxPopCurrent = nullptr;
+    void* m_cuArrayCreate = nullptr;
+    void* m_cuMemcpy2DAsync = nullptr;
+    void* m_cuArrayDestroy = nullptr;
 
     void PushCudaContext();
     void PopCudaContext();
@@ -53,6 +56,8 @@ private:
 
     void* m_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
     int m_cuda_pitch = 0;
+    
+    void* m_cu_arrays[4] = {nullptr, nullptr, nullptr, nullptr};
     
     bool m_resources_registered = false;
     uint32_t m_resource_count = 0;

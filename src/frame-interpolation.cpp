@@ -60,8 +60,15 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     if (!m_nvcuda_dll) {
         m_nvcuda_dll = LoadLibraryA("nvcuda.dll");
         if (m_nvcuda_dll) {
-            m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent");
-            m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent");
+            m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent_v2");
+            if (!m_cuCtxPushCurrent) m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent");
+            m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent_v2");
+            if (!m_cuCtxPopCurrent) m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent");
+            m_cuArrayCreate = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayCreate_v2");
+            if (!m_cuArrayCreate) m_cuArrayCreate = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayCreate");
+            m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync_v2");
+            if (!m_cuMemcpy2DAsync) m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync");
+            m_cuArrayDestroy = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayDestroy");
         }
     }
 
@@ -94,7 +101,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         params.uiHeight = height;
         params.pDevice = nullptr;
         params.eResourceType = CudaResource;
-        params.eCUDAResourceType = CudaResourceCuDevicePtr;
+        params.eCUDAResourceType = CudaResourceCuArray;
         params.eSurfaceFormat = surf_fmt;
 
         PushCudaContext();
@@ -107,9 +114,26 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
+        typedef struct CUDA_ARRAY_DESCRIPTOR_st {
+            size_t Width;
+            size_t Height;
+            int Format;
+            unsigned int NumChannels;
+        } CUDA_ARRAY_DESCRIPTOR;
+
         for (int t = 0; t < count; t++) {
-            reg_param.pArrResource[t] = cuda_ptrs[t];
-            m_cuda_ptrs[t] = cuda_ptrs[t];
+            if (!m_cu_arrays[t]) {
+                CUDA_ARRAY_DESCRIPTOR desc = {};
+                desc.Width = width;
+                desc.Height = height * 3 / 2; // NV12
+                desc.Format = 0x01; // CU_AD_FORMAT_UNSIGNED_INT8
+                desc.NumChannels = 1;
+                
+                typedef int (__stdcall *PFN_cuArrayCreate)(void**, const CUDA_ARRAY_DESCRIPTOR*);
+                ((PFN_cuArrayCreate)m_cuArrayCreate)(&m_cu_arrays[t], &desc);
+            }
+            reg_param.pArrResource[t] = m_cu_arrays[t];
+            m_cuda_ptrs[t] = cuda_ptrs[t]; // Keep device pointers for memcopy later
         }
         
         reg_param.uiCount = count;
@@ -146,6 +170,14 @@ void FrameInterpolation::Release()
         unreg.uiCount = m_resource_count;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
+    }
+
+    for (int t = 0; t < 4; t++) {
+        if (m_cu_arrays[t] && m_cuArrayDestroy) {
+            typedef int (__stdcall *PFN_cuArrayDestroy)(void*);
+            ((PFN_cuArrayDestroy)m_cuArrayDestroy)(m_cu_arrays[t]);
+            m_cu_arrays[t] = nullptr;
+        }
     }
 
     if (m_fruc_handle && m_destroy) {
@@ -199,8 +231,12 @@ bool FrameInterpolation::Process(double timestamp)
     log_crash_step("FRUC Process: Start");
     if (!m_fruc_handle || !m_resources_registered) return false;
 
-    void* in_ptr = GetNextInputPointer();
-    void* out_ptr = GetNextOutputPointer();
+    int in_idx = GetNextInputIndex();
+    int out_idx = GetNextOutputIndex();
+    void* in_ptr = m_cu_arrays[in_idx];
+    void* out_ptr = m_cu_arrays[out_idx];
+    void* in_dev_ptr = m_cuda_ptrs[in_idx];
+    void* out_dev_ptr = m_cuda_ptrs[out_idx];
 
     uint32_t frame_repeated = 0;
     uint32_t out_frame_repeated = 0;
@@ -208,20 +244,65 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitch;
+    in_params.stFrameDataInput.nCuSurfacePitch = 0; // Array doesn't need pitch
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_ptr;
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
+    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
 
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
     
+    // Copy input device memory to CUDA array
+    typedef struct CUDA_MEMCPY2D_st {
+        size_t srcXInBytes, srcY;
+        int srcMemoryType;
+        const void *srcHost;
+        void *srcDevice;
+        void *srcArray;
+        size_t srcPitch;
+
+        size_t dstXInBytes, dstY;
+        int dstMemoryType;
+        void *dstHost;
+        void *dstDevice;
+        void *dstArray;
+        size_t dstPitch;
+
+        size_t WidthInBytes;
+        size_t Height;
+    } CUDA_MEMCPY2D;
+
+    CUDA_MEMCPY2D cpy = {};
+    cpy.srcMemoryType = 2; // CU_MEMORYTYPE_DEVICE
+    cpy.srcDevice = in_dev_ptr;
+    cpy.srcPitch = m_cuda_pitch;
+    cpy.dstMemoryType = 3; // CU_MEMORYTYPE_ARRAY
+    cpy.dstArray = in_ptr;
+    cpy.WidthInBytes = m_width;
+    cpy.Height = m_height * 3 / 2; // NV12
+    
+    typedef int (__stdcall *PFN_cuMemcpy2DAsync)(const CUDA_MEMCPY2D*, void*);
+    ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy, nullptr);
+
     log_crash_step("FRUC Process: m_process");
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
+    
+    // Copy output array back to device memory
+    if (status == NvOFFRUC_SUCCESS) {
+        CUDA_MEMCPY2D cpy_out = {};
+        cpy_out.srcMemoryType = 3; // CU_MEMORYTYPE_ARRAY
+        cpy_out.srcArray = out_ptr;
+        cpy_out.dstMemoryType = 2; // CU_MEMORYTYPE_DEVICE
+        cpy_out.dstDevice = out_dev_ptr;
+        cpy_out.dstPitch = m_cuda_pitch;
+        cpy_out.WidthInBytes = m_width;
+        cpy_out.Height = m_height * 3 / 2;
+        ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy_out, nullptr);
+    }
     
     log_crash_step("FRUC Process: PopContext");
     PopCudaContext();
