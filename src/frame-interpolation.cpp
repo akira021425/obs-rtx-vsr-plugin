@@ -197,8 +197,17 @@ void* FrameInterpolation::GetNextOutputPointer() {
     return m_cuda_ptrs[GetNextOutputIndex()];
 }
 
+static void log_crash_step(const char* step) {
+    FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
+    if (f) {
+        fprintf(f, "%s\n", step);
+        fclose(f);
+    }
+}
+
 bool FrameInterpolation::Process(double timestamp)
 {
+    log_crash_step("FRUC Process: Start");
     if (!m_fruc_handle || !m_resources_registered) return false;
 
     void* in_ptr = GetNextInputPointer();
@@ -219,9 +228,16 @@ bool FrameInterpolation::Process(double timestamp)
     out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
+    log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
+    
+    log_crash_step("FRUC Process: m_process");
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
+    
+    log_crash_step("FRUC Process: PopContext");
     PopCudaContext();
+
+    log_crash_step("FRUC Process: Done");
 
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
