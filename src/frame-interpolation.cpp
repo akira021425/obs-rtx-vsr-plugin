@@ -1,4 +1,5 @@
 #include "frame-interpolation.hpp"
+#include <stdio.h>
 #include <obs-module.h>
 
 FrameInterpolation::FrameInterpolation()

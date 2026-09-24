@@ -1,4 +1,5 @@
 #include "nvidia-vsr.hpp"
+#include <stdio.h>
 #include "nvTransferD3D11.h"
 #include <obs-module.h>
 
