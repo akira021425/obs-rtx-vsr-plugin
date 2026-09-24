@@ -11,7 +11,7 @@ public:
     FrameInterpolation();
     ~FrameInterpolation();
 
-    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch);
+    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch, void* cu_ctx);
     void Release();
 
     void* GetNextInputPointer();
@@ -37,6 +37,14 @@ private:
     PtrToFuncNvOFFRUCUnregisterResource m_unregister = nullptr;
     PtrToFuncNvOFFRUCProcess m_process = nullptr;
     PtrToFuncNvOFFRUCDestroy m_destroy = nullptr;
+
+    void* m_cu_ctx = nullptr;
+    HMODULE m_nvcuda_dll = nullptr;
+    void* m_cuCtxPushCurrent = nullptr;
+    void* m_cuCtxPopCurrent = nullptr;
+
+    void PushCudaContext();
+    void PopCudaContext();
 
     bool m_enabled = true;
     uint32_t m_width = 0;

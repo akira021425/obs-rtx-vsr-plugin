@@ -58,6 +58,12 @@ private:
     uint32_t m_src_height = 0;
     uint32_t m_dst_width = 0;
     uint32_t m_dst_height = 0;
+
+    void* m_cu_ctx = nullptr;
+    HMODULE m_nvcuda_dll = nullptr;
+
+public:
+    void* GetCudaContext() const { return m_cu_ctx; }
     
     int m_quality = 4;
     bool m_artifact_reduction = false;

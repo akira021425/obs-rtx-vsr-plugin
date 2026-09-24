@@ -34,11 +34,35 @@ bool FrameInterpolation::LoadDLL()
     return true;
 }
 
-bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch)
+void FrameInterpolation::PushCudaContext() {
+    if (m_cuCtxPushCurrent && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+        ((PFN_cuCtxPushCurrent)m_cuCtxPushCurrent)(m_cu_ctx);
+    }
+}
+
+void FrameInterpolation::PopCudaContext() {
+    if (m_cuCtxPopCurrent && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+        void* dummy;
+        ((PFN_cuCtxPopCurrent)m_cuCtxPopCurrent)(&dummy);
+    }
+}
+
+bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch, void* cu_ctx)
 {
     m_device = d3d11_device;
     m_width = width;
     m_height = height;
+    m_cu_ctx = cu_ctx;
+
+    if (!m_nvcuda_dll) {
+        m_nvcuda_dll = LoadLibraryA("nvcuda.dll");
+        if (m_nvcuda_dll) {
+            m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent");
+            m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent");
+        }
+    }
 
     if (!LoadDLL()) return false;
 
@@ -77,8 +101,10 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         }
         params.eSurfaceFormat = surf_fmt;
 
+        PushCudaContext();
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
         if (status != NvOFFRUC_SUCCESS) {
+            PopCudaContext();
             blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
             continue;
         }
@@ -92,7 +118,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             }
             m_cuda_pitch = cuda_pitch;
         } else {
-            // Should not reach here because we always pass CUDA pointers now.
+            PopCudaContext();
             blog(LOG_ERROR, "[RTX-VSR] FRUC: Expected CUDA pointers but got NULL");
             return false;
         }
@@ -100,6 +126,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         reg_param.uiCount = count;
         
         status = m_register(m_fruc_handle, &reg_param);
+        PopCudaContext();
+        
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
@@ -120,6 +148,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
 void FrameInterpolation::Release()
 {
+    PushCudaContext();
     if (m_resources_registered && m_unregister && m_fruc_handle) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         for (uint32_t t = 0; t < m_resource_count; t++) {
@@ -134,6 +163,14 @@ void FrameInterpolation::Release()
         m_destroy(m_fruc_handle);
         m_fruc_handle = nullptr;
     }
+    PopCudaContext();
+
+    if (m_nvcuda_dll) {
+        FreeLibrary(m_nvcuda_dll);
+        m_nvcuda_dll = nullptr;
+    }
+    m_cuCtxPushCurrent = nullptr;
+    m_cuCtxPopCurrent = nullptr;
 
     if (m_fruc_dll) {
         FreeLibrary(m_fruc_dll);
@@ -182,7 +219,9 @@ bool FrameInterpolation::Process(double timestamp)
     out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
+    PushCudaContext();
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
+    PopCudaContext();
 
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {

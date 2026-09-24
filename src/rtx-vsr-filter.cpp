@@ -252,8 +252,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 int cuda_pitch = filter->nvidia_vsr->GetFrucCudaPitch();
                 
                 // FRUC init
-                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cuda_ptrs, cuda_pitch)) {
+                void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
+                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cuda_ptrs, cuda_pitch, cu_ctx)) {
                     blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
+
                 }
             }
 

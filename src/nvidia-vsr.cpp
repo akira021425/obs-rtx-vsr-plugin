@@ -32,6 +32,20 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
+    if (!m_nvcuda_dll) {
+        m_nvcuda_dll = LoadLibraryA("nvcuda.dll");
+        if (m_nvcuda_dll) {
+            typedef int (__stdcall *PFN_cuStreamGetCtx)(void* hStream, void** pctx);
+            PFN_cuStreamGetCtx cuStreamGetCtx = (PFN_cuStreamGetCtx)GetProcAddress(m_nvcuda_dll, "cuStreamGetCtx");
+            if (cuStreamGetCtx) {
+                int res = cuStreamGetCtx(m_stream, &m_cu_ctx);
+                if (res == 0 && m_cu_ctx) {
+                    blog(LOG_INFO, "[RTX-VSR] Successfully retrieved CUDA context: %p", m_cu_ctx);
+                }
+            }
+        }
+    }
+
     // 2. Create the Super Resolution effect
     status = NvVFX_CreateEffect(NVVFX_FX_SR_UPSCALE, &m_effect);
     if (status != NVCV_SUCCESS) {
@@ -159,6 +173,11 @@ void NvidiaVSR::Release()
         NvVFX_CudaStreamDestroy(m_stream);
         m_stream = nullptr;
     }
+    if (m_nvcuda_dll) {
+        FreeLibrary(m_nvcuda_dll);
+        m_nvcuda_dll = nullptr;
+    }
+    m_cu_ctx = nullptr;
     m_device.Reset();
 }
 
