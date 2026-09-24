@@ -85,7 +85,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface; // We now ONLY support NV12 for CUDA!
+        NvOFFRUCSurfaceFormat surf_fmt = ARGBSurface;
         
         blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources", count);
         

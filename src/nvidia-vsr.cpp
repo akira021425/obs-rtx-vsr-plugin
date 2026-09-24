@@ -105,13 +105,13 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
-    // Create FRUC NV12 D3D11 buffers
+    // Create FRUC ARGB D3D11 buffers
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = dst_width;
     desc.Height = dst_height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_NV12;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
@@ -319,71 +319,22 @@ static void log_crash_step(const char* step) {
 
 bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx)
 {
-    log_crash_step("ConvertFrucIn: Start");
-    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) {
-        log_crash_step("ConvertFrucIn: Invalid params");
-        return false;
-    }
-
-    log_crash_step("ConvertFrucIn: GetOrInitImage");
-    NvCVImage* src_img = GetOrInitImage(d3d11_dst);
-    NvCVImage* dst_img = m_fruc_nv12_gpu[fruc_idx];
-    if (!src_img || !dst_img) {
-        log_crash_step("ConvertFrucIn: Image null");
-        return false;
-    }
-
-    log_crash_step("ConvertFrucIn: MapResource");
-    NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: MapResource failed: %d", status);
-        log_crash_step("ConvertFrucIn: MapResource failed");
-        return false;
-    }
+    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
     
-    log_crash_step("ConvertFrucIn: Transfer");
-    // Transfer from BGRA D3D11 to NV12 CUDA natively
-    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
-
-    log_crash_step("ConvertFrucIn: UnmapResource");
-    NvCVImage_UnmapResource(src_img, m_stream);
-
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn failed during transfer: %d", status);
-        log_crash_step("ConvertFrucIn: Transfer failed");
-        return false;
-    }
-    log_crash_step("ConvertFrucIn: End");
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    m_device->GetImmediateContext(&context);
+    context->CopyResource(m_fruc_tex[fruc_idx], d3d11_dst);
+    
     return true;
 }
 
 bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst)
 {
-    log_crash_step("ConvertFrucOut: Start");
     if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
-    NvCVImage* src_img = m_fruc_nv12_gpu[fruc_idx];
-    NvCVImage* dst_img = GetOrInitImage(d3d11_dst);
-    if (!src_img || !dst_img) return false;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    m_device->GetImmediateContext(&context);
+    context->CopyResource(d3d11_dst, m_fruc_tex[fruc_idx]);
 
-    log_crash_step("ConvertFrucOut: MapResource");
-    NvCV_Status status = NvCVImage_MapResource(dst_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: MapResource failed: %d", status);
-        return false;
-    }
-    
-    log_crash_step("ConvertFrucOut: Transfer");
-    // Transfer from NV12 CUDA back to BGRA D3D11 natively
-    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
-
-    log_crash_step("ConvertFrucOut: UnmapResource");
-    NvCVImage_UnmapResource(dst_img, m_stream);
-
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during transfer: %d", status);
-        return false;
-    }
-    log_crash_step("ConvertFrucOut: End");
     return true;
 }
