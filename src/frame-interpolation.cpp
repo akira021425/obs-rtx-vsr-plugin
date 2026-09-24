@@ -85,15 +85,16 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        NvOFFRUCSurfaceFormat surf_fmt = ARGBSurface;
+        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface;
         
         blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources", count);
         
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = m_device.Get();
-        params.eResourceType = DirectX11Resource;
+        params.pDevice = nullptr;
+        params.eResourceType = CudaResource;
+        params.eCUDAResourceType = CudaResourceCuDevicePtr;
         params.eSurfaceFormat = surf_fmt;
 
         PushCudaContext();
@@ -106,9 +107,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
-        // Pass D3D11 resources directly instead of CUDA pointers
         for (int t = 0; t < count; t++) {
-            reg_param.pArrResource[t] = cuda_ptrs[t]; // cuda_ptrs actually contains D3D11 textures now!
+            reg_param.pArrResource[t] = cuda_ptrs[t];
             m_cuda_ptrs[t] = cuda_ptrs[t];
         }
         
@@ -202,20 +202,20 @@ bool FrameInterpolation::Process(double timestamp)
     void* in_ptr = GetNextInputPointer();
     void* out_ptr = GetNextOutputPointer();
 
-    bool frame_repeated = false;
-    bool out_frame_repeated = false;
+    uint32_t frame_repeated = 0;
+    uint32_t out_frame_repeated = 0;
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitch;
-    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &frame_repeated;
+    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_ptr;
     out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
-    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
+    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
 
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
