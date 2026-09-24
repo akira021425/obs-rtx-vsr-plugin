@@ -333,13 +333,21 @@ bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_ds
         return false;
     }
     
-    // Transfer from NV12 CUDA back to BGRA D3D11 natively
-    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
+    // Transfer from NV12 CUDA to BGRA CUDA (GPU to GPU)
+    status = NvCVImage_Transfer(src_img, m_dst_bgra_gpu, 1.0f, m_stream, nullptr);
+    if (status != NVCV_SUCCESS) {
+        NvCVImage_UnmapResource(dst_img, m_stream);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during NV12->BGRA transfer: %d", status);
+        return false;
+    }
+
+    // Transfer from BGRA CUDA to BGRA D3D11
+    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(dst_img, m_stream);
 
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during transfer: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut failed during GPU->D3D11 transfer: %d", status);
         return false;
     }
     return true;
