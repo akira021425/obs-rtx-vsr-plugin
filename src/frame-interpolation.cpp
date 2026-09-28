@@ -148,9 +148,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            m_tex_format = DXGI_FORMAT_NV12;
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with CUDA, %d resources", count);
-            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, CUDA NV12, %d res)", 
+            m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with CUDA CUarray, %d resources", count);
+            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, CUDA RGBA CUarray, %d res)", 
                  width, height, count);
             return true;
         }
