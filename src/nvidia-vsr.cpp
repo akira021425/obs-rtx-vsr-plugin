@@ -291,18 +291,10 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
         return false;
     }
 
-    // 4. Transfer output from SDK GPU buffer back to D3D11 texture
-    // We cannot transfer RGBA (m_dst_gpu) directly to BGRA mapped D3D11 (dst_img) as it throws -9.
-    // However, CUDA-to-CUDA transfer from RGBA to BGRA works!
+        // 4. Transfer output from SDK GPU buffer back to D3D11 texture
+    status = NvCVImage_Transfer(m_dst_gpu, dst_img, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->bgra_gpu failed: %d", status);
-        NvCVImage_UnmapResource(dst_img, m_stream);
-        return false;
-    }
-
-    // Now transfer BGRA to BGRA (pure CUDA to mapped D3D11)
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Transfer bgra_gpu->dst failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->dst failed: %d", status);
         NvCVImage_UnmapResource(dst_img, m_stream);
         return false;
     }
@@ -323,4 +315,5 @@ static void log_crash_step(const char* step) {
         fclose(f);
     }
 }
+
 
