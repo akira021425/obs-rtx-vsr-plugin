@@ -73,9 +73,6 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         hr = m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence));
         if (SUCCEEDED(hr)) {
             m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-            Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_ctx;
-            d3d11_device->GetImmediateContext(&immediate_ctx);
-            immediate_ctx.As(&m_context4);
         } else {
             blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to create D3D11 Fence (hr: 0x%X)", hr);
         }
@@ -231,6 +228,12 @@ bool FrameInterpolation::Process(double timestamp)
 {
     log_crash_step("FRUC Process: Start");
     if (!m_fruc_handle || !m_resources_registered) return false;
+
+    if (!m_context4 && m_device) {
+        Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_ctx;
+        m_device->GetImmediateContext(&immediate_ctx);
+        if (immediate_ctx) immediate_ctx.As(&m_context4);
+    }
 
     int in_idx = GetNextInputIndex();
     int out_idx = GetNextOutputIndex();
