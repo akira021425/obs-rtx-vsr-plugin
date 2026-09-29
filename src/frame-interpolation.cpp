@@ -95,7 +95,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         params.pDevice = d3d11_device.Get();
         params.eResourceType = DirectX11Resource;
         params.eCUDAResourceType = CudaResourceCuDevicePtr; // Ignored for DX11
-        params.eSurfaceFormat = NV12Surface; // NV12 textures
+        params.eSurfaceFormat = ARGBSurface; // BGRA textures
 
         // DO NOT push any context here. NvOFFRUC creates its own context during m_create.
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
