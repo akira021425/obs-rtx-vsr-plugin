@@ -36,16 +36,16 @@ bool FrameInterpolation::LoadDLL()
 }
 
 void FrameInterpolation::PushCudaContext() {
-    if (m_cuCtxGetCurrent) {
-        typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
-        ((PFN_cuCtxGetCurrent)m_cuCtxGetCurrent)(&m_saved_ctx);
+    if (m_cuCtxSetCurrent && m_fruc_ctx) {
+        typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
+        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_fruc_ctx);
     }
 }
 
 void FrameInterpolation::PopCudaContext() {
     if (m_cuCtxSetCurrent) {
         typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
-        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_saved_ctx);
+        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(nullptr);
     }
 }
 
@@ -97,10 +97,10 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         params.eCUDAResourceType = CudaResourceCuDevicePtr; // Ignored for DX11
         params.eSurfaceFormat = ARGBSurface; // BGRA textures, not NV12!
 
-        PushCudaContext();
+        // DO NOT push any context here. NvOFFRUC creates its own context during m_create.
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
+        
         if (status != NvOFFRUC_SUCCESS) {
-            PopCudaContext();
             blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
             return false;
         }
@@ -118,7 +118,6 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         reg_param.uiCount = count;
         
         status = m_register(m_fruc_handle, &reg_param);
-        PopCudaContext();
         
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
@@ -140,7 +139,6 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
 void FrameInterpolation::Release()
 {
-    PushCudaContext();
     if (m_resources_registered && m_unregister && m_fruc_handle) {
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         for (uint32_t t = 0; t < m_resource_count; t++) {
@@ -163,7 +161,6 @@ void FrameInterpolation::Release()
         m_destroy(m_fruc_handle);
         m_fruc_handle = nullptr;
     }
-    PopCudaContext();
 
     if (m_nvcuda_dll) {
         FreeLibrary(m_nvcuda_dll);
@@ -235,7 +232,6 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0;
     
     if (m_fence) {
         in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
@@ -252,28 +248,9 @@ bool FrameInterpolation::Process(double timestamp)
         out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
     }
 
-    log_crash_step("FRUC Process: PushContext");
-    PushCudaContext();
-    
-    // Sync before processing to make sure NvCVImage_Transfer is done
-    if (m_cuCtxSynchronize) {
-        typedef int (__stdcall *PFN_cuCtxSynchronize)();
-        ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
-    }
-    
     log_crash_step("FRUC Process: m_process");
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
     
-    if (status == NvOFFRUC_SUCCESS) {
-        if (m_cuCtxSynchronize) {
-            typedef int (__stdcall *PFN_cuCtxSynchronize)();
-            ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
-        }
-    }
-    
-    log_crash_step("FRUC Process: PopContext");
-    PopCudaContext();
-
     log_crash_step("FRUC Process: Done");
 
     m_process_count++;

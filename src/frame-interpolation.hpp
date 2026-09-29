@@ -43,7 +43,7 @@ private:
     HMODULE m_nvcuda_dll = nullptr;
     void* m_cuCtxGetCurrent = nullptr;
     void* m_cuCtxSetCurrent = nullptr;
-    void* m_saved_ctx = nullptr;
+    void* m_fruc_ctx = nullptr;
     void* m_cuArrayCreate = nullptr;
     void* m_cuMemcpy2DAsync = nullptr;
     void* m_cuArrayDestroy = nullptr;
