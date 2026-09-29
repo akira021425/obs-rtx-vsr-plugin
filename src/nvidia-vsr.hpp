@@ -47,7 +47,7 @@ private:
     NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
     
     // FRUC RGBA GPU buffers
-    NvCVImage* m_fruc_rgba_gpu[3] = {nullptr, nullptr, nullptr};
+    NvCVImage* m_fruc_nv12_gpu[3] = {nullptr, nullptr, nullptr};
     void* m_fruc_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
     int m_fruc_cuda_pitch = 0;
     // Cache for D3D11 wrapper images to avoid duplicate registration

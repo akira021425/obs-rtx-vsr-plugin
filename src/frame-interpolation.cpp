@@ -103,7 +103,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         params.pDevice = nullptr;
         params.eResourceType = CudaResource;
         params.eCUDAResourceType = CudaResourceCuArray;
-        params.eSurfaceFormat = surf_fmt;
+        params.eSurfaceFormat = NV12Surface; // Must use NV12
 
         PushCudaContext();
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
@@ -126,9 +126,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             if (!m_cu_arrays[t]) {
                 CUDA_ARRAY_DESCRIPTOR desc = {};
                 desc.Width = width;
-                desc.Height = height; // ARGB is just height
+                desc.Height = height * 3 / 2; // NV12 is 1.5x height
                 desc.Format = 0x01; // CU_AD_FORMAT_UNSIGNED_INT8
-                desc.NumChannels = 4; // ARGB has 4 channels
+                desc.NumChannels = 1; // NV12 is single channel plane
                 
                 typedef int (__stdcall *PFN_cuArrayCreate)(void**, const CUDA_ARRAY_DESCRIPTOR*);
                 int res = ((PFN_cuArrayCreate)m_cuArrayCreate)(&m_cu_arrays[t], &desc);
@@ -249,13 +249,13 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.pFrame = in_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // Array doesn't need pitch
-    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = 0; // Don't cast pointer!
+    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated; // Must be valid pointer!
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_ptr;
     out_params.stFrameDataOutput.nCuSurfacePitch = 0;
-    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = 0;
+    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated; // Must be valid pointer!
 
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
@@ -292,8 +292,8 @@ bool FrameInterpolation::Process(double timestamp)
     cpy.srcPitch = m_cuda_pitch;
     cpy.dstMemoryType = 3; // CU_MEMORYTYPE_ARRAY
     cpy.dstArray = in_ptr;
-    cpy.WidthInBytes = m_width * 4;
-    cpy.Height = m_height;
+    cpy.WidthInBytes = m_width; // NV12 width in bytes is just width
+    cpy.Height = m_height * 3 / 2; // NV12 height is 1.5x
     
     typedef int (__stdcall *PFN_cuMemcpy2DAsync)(const CUDA_MEMCPY2D*, void*);
     int cpy_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy, nullptr);
@@ -312,8 +312,8 @@ bool FrameInterpolation::Process(double timestamp)
         cpy_out.dstMemoryType = 2; // CU_MEMORYTYPE_DEVICE
         cpy_out.dstDevice = out_dev_ptr;
         cpy_out.dstPitch = m_cuda_pitch;
-        cpy_out.WidthInBytes = m_width * 4;
-        cpy_out.Height = m_height;
+        cpy_out.WidthInBytes = m_width;
+        cpy_out.Height = m_height * 3 / 2;
         int cpy_out_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy_out, nullptr);
         if (cpy_out_res != 0) {
             blog(LOG_ERROR, "[RTX-VSR] FRUC: cuMemcpy2D OUT failed: %d", cpy_out_res);
@@ -335,7 +335,7 @@ bool FrameInterpolation::Process(double timestamp)
         m_success_count++;
         if (m_process_count <= 3 || m_success_count % 300 == 0) {
             blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
-                 m_success_count, m_process_count, timestamp, out_params.stFrameDataOutput.bHasFrameRepetitionOccurred ? 1 : 0, in_ptr, out_ptr);
+                 m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0, in_ptr, out_ptr);
         }
         return true;
     }
