@@ -321,14 +321,23 @@ bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
     NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
     NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
-    if (!bgra_img || !rgba_img) return false;
+    if (!bgra_img || !rgba_img || !m_dst_bgra_gpu || !m_dst_gpu) return false;
+    
     NvCV_Status status;
     status = NvCVImage_MapResource(bgra_img, m_stream);
     if (status != NVCV_SUCCESS) return false;
+    
     status = NvCVImage_MapResource(rgba_img, m_stream);
     if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
     
-    status = NvCVImage_Transfer(bgra_img, rgba_img, 1.0f, m_stream, NULL);
+    // Convert BGRA (D3D11) -> BGRA (GPU) -> RGBA (GPU) -> RGBA (D3D11)
+    status = NvCVImage_Transfer(bgra_img, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
+    if (status == NVCV_SUCCESS) {
+        status = NvCVImage_Transfer(m_dst_bgra_gpu, m_dst_gpu, 1.0f, m_stream, NULL);
+        if (status == NVCV_SUCCESS) {
+            status = NvCVImage_Transfer(m_dst_gpu, rgba_img, 1.0f, m_stream, NULL);
+        }
+    }
     
     NvCVImage_UnmapResource(rgba_img, m_stream);
     NvCVImage_UnmapResource(bgra_img, m_stream);
@@ -339,14 +348,23 @@ bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
     NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
     NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
-    if (!bgra_img || !rgba_img) return false;
+    if (!bgra_img || !rgba_img || !m_dst_bgra_gpu || !m_dst_gpu) return false;
+    
     NvCV_Status status;
     status = NvCVImage_MapResource(bgra_img, m_stream);
     if (status != NVCV_SUCCESS) return false;
+    
     status = NvCVImage_MapResource(rgba_img, m_stream);
     if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
     
-    status = NvCVImage_Transfer(rgba_img, bgra_img, 1.0f, m_stream, NULL);
+    // Convert RGBA (D3D11) -> RGBA (GPU) -> BGRA (GPU) -> BGRA (D3D11)
+    status = NvCVImage_Transfer(rgba_img, m_dst_gpu, 1.0f, m_stream, NULL);
+    if (status == NVCV_SUCCESS) {
+        status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
+        if (status == NVCV_SUCCESS) {
+            status = NvCVImage_Transfer(m_dst_bgra_gpu, bgra_img, 1.0f, m_stream, NULL);
+        }
+    }
     
     NvCVImage_UnmapResource(rgba_img, m_stream);
     NvCVImage_UnmapResource(bgra_img, m_stream);

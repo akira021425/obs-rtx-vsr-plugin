@@ -44,7 +44,8 @@ private:
     // Persistent NvCVImage objects (heap-allocated, reused every frame)
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;
-    NvCVImage *m_staging_nv12_gpu = nullptr; // GPU staging buffer for NV12 conversion
+    NvCVImage *m_staging_nv12_gpu = nullptr;
+    NvCVImage *m_dst_bgra_gpu = nullptr; // GPU staging buffer for NV12 conversion
     
     // FRUC D3D11 NV12 buffers (for color conversion pipeline)
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_d3d11[3];
@@ -75,5 +76,6 @@ public:
     bool m_ready = false;
     bool m_images_bound = false;
 };
+
 
 
