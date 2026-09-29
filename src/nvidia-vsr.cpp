@@ -147,17 +147,18 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     }
 
     // Create separate RGBA textures for NvOFFRUC registration
-    // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface
+    // Create separate BGRA textures for NvOFFRUC registration
+    // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface (which maps to BGRA in DXGI)
     D3D11_TEXTURE2D_DESC rgba_desc = {};
     rgba_desc.Width = dst_width;
     rgba_desc.Height = dst_height;
     rgba_desc.MipLevels = 1;
     rgba_desc.ArraySize = 1;
-    rgba_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    rgba_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     rgba_desc.SampleDesc.Count = 1;
     rgba_desc.Usage = D3D11_USAGE_DEFAULT;
     rgba_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&rgba_desc, nullptr, &m_fruc_rgba[i]);
@@ -341,54 +342,18 @@ static void log_crash_step(const char* step) {
 
 bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
-    NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
-    if (!bgra_img || !rgba_img || !m_dst_bgra_gpu || !m_dst_gpu) return false;
+    if (!bgra_tex || !m_fruc_rgba[fruc_idx]) return false;
     
-    NvCV_Status status;
-    status = NvCVImage_MapResource(bgra_img, m_stream);
-    if (status != NVCV_SUCCESS) return false;
-    
-    status = NvCVImage_MapResource(rgba_img, m_stream);
-    if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
-    
-    // Convert BGRA (D3D11) -> BGRA (GPU) -> RGBA (GPU) -> RGBA (D3D11)
-    status = NvCVImage_Transfer(bgra_img, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
-    if (status == NVCV_SUCCESS) {
-        status = NvCVImage_Transfer(m_dst_bgra_gpu, m_dst_gpu, 1.0f, m_stream, NULL);
-        if (status == NVCV_SUCCESS) {
-            status = NvCVImage_Transfer(m_dst_gpu, rgba_img, 1.0f, m_stream, NULL);
-        }
-    }
-    
-    NvCVImage_UnmapResource(rgba_img, m_stream);
-    NvCVImage_UnmapResource(bgra_img, m_stream);
-    return status == NVCV_SUCCESS;
+    // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
+    m_context->CopyResource(m_fruc_rgba[fruc_idx].Get(), bgra_tex);
+    return true;
 }
 
 bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
-    NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
-    if (!bgra_img || !rgba_img || !m_dst_bgra_gpu || !m_dst_gpu) return false;
+    if (!bgra_tex || !m_fruc_rgba[fruc_idx]) return false;
     
-    NvCV_Status status;
-    status = NvCVImage_MapResource(bgra_img, m_stream);
-    if (status != NVCV_SUCCESS) return false;
-    
-    status = NvCVImage_MapResource(rgba_img, m_stream);
-    if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
-    
-    // Convert RGBA (D3D11) -> RGBA (GPU) -> BGRA (GPU) -> BGRA (D3D11)
-    status = NvCVImage_Transfer(rgba_img, m_dst_gpu, 1.0f, m_stream, NULL);
-    if (status == NVCV_SUCCESS) {
-        status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
-        if (status == NVCV_SUCCESS) {
-            status = NvCVImage_Transfer(m_dst_bgra_gpu, bgra_img, 1.0f, m_stream, NULL);
-        }
-    }
-    
-    NvCVImage_UnmapResource(rgba_img, m_stream);
-    NvCVImage_UnmapResource(bgra_img, m_stream);
-    return status == NVCV_SUCCESS;
+    // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
+    m_context->CopyResource(bgra_tex, m_fruc_rgba[fruc_idx].Get());
+    return true;
 }
