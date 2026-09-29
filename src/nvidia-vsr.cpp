@@ -19,6 +19,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     Release(); // Clean up any previous state
     
     m_device = d3d11_device;
+    m_device->GetImmediateContext(&m_context);
     m_src_width = src_width;
     m_src_height = src_height;
     m_dst_width = dst_width;
@@ -151,7 +152,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     bgra_desc.Height = dst_height;
     bgra_desc.MipLevels = 1;
     bgra_desc.ArraySize = 1;
-    bgra_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    bgra_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     bgra_desc.SampleDesc.Count = 1;
     bgra_desc.Usage = D3D11_USAGE_DEFAULT;
     bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -342,88 +343,18 @@ bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx
 {
     if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
-    NvCVImage* src_img = GetOrInitImage(d3d11_dst);
-    NvCVImage* dst_img = m_fruc_d3d11_mapped[fruc_idx];
-    if (!src_img || !dst_img) return false;
-
-    NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: MapResource(src) failed: %d", status);
-        return false;
-    }
+    // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
+    m_context->CopyResource(m_fruc_bgra[fruc_idx].Get(), d3d11_dst);
     
-    status = NvCVImage_MapResource(dst_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        NvCVImage_UnmapResource(src_img, m_stream);
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: MapResource(dst) failed: %d", status);
-        return false;
-    }
-    
-    // Stage 1: BGRA D3D11 -> BGRA CUDA staging (pure copy)
-    status = NvCVImage_Transfer(src_img, m_dst_bgra_gpu, 1.0f, m_stream, nullptr);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: D3D11->BGRA staging failed: %d", status);
-    } else {
-        // Stage 2: BGRA CUDA staging -> NV12 CUDA staging (format conversion)
-        status = NvCVImage_Transfer(m_dst_bgra_gpu, m_staging_nv12_gpu, 1.0f, m_stream, nullptr);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: BGRA staging->NV12 staging failed: %d", status);
-        } else {
-            // Stage 3: NV12 CUDA staging -> NV12 D3D11 (pure copy)
-            status = NvCVImage_Transfer(m_staging_nv12_gpu, dst_img, 1.0f, m_stream, nullptr);
-            if (status != NVCV_SUCCESS) {
-                blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: NV12 staging->D3D11 failed: %d", status);
-            }
-        }
-    }
-
-    NvCVImage_UnmapResource(dst_img, m_stream);
-    NvCVImage_UnmapResource(src_img, m_stream);
-
-    return status == NVCV_SUCCESS;
+    return true;
 }
 
 bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst)
 {
     if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
-    NvCVImage* src_img = m_fruc_d3d11_mapped[fruc_idx];
-    NvCVImage* dst_img = GetOrInitImage(d3d11_dst);
-    if (!src_img || !dst_img) return false;
+    // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
+    m_context->CopyResource(d3d11_dst, m_fruc_bgra[fruc_idx].Get());
 
-    NvCV_Status status = NvCVImage_MapResource(src_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: MapResource(src) failed: %d", status);
-        return false;
-    }
-    
-    status = NvCVImage_MapResource(dst_img, m_stream);
-    if (status != NVCV_SUCCESS) {
-        NvCVImage_UnmapResource(src_img, m_stream);
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: MapResource(dst) failed: %d", status);
-        return false;
-    }
-    
-    // Stage 1: NV12 D3D11 → NV12 CUDA staging (pure copy)
-    status = NvCVImage_Transfer(src_img, m_staging_nv12_gpu, 1.0f, m_stream, nullptr);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: D3D11 NV12->NV12 staging failed: %d", status);
-    } else {
-        // Stage 2: NV12 CUDA staging → BGRA CUDA staging (format conversion)
-        status = NvCVImage_Transfer(m_staging_nv12_gpu, m_dst_bgra_gpu, 1.0f, m_stream, nullptr);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: NV12 staging->BGRA staging failed: %d", status);
-        } else {
-            // Stage 3: BGRA CUDA staging → BGRA D3D11 (pure copy)
-            status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, nullptr);
-            if (status != NVCV_SUCCESS) {
-                blog(LOG_ERROR, "[RTX-VSR] ConvertFrucOut: BGRA staging->D3D11 failed: %d", status);
-            }
-        }
-    }
-
-    NvCVImage_UnmapResource(dst_img, m_stream);
-    NvCVImage_UnmapResource(src_img, m_stream);
-
-    return status == NVCV_SUCCESS;
+    return true;
 }

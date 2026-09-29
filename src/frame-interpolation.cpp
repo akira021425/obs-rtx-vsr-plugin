@@ -295,7 +295,7 @@ bool FrameInterpolation::Process(double timestamp)
     if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
         blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f, skipWarp=%d, in=%p, out=%p)",
              status, m_success_count, m_fail_count, m_process_count, timestamp,
-             (m_process_count == 1) ? 1 : 0, in_ptr, out_ptr);
+             (m_process_count == 1) ? 1 : 0, in_dev_ptr, out_dev_ptr);
     }
 
     return false;

@@ -36,6 +36,7 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
     
     NvVFX_Handle m_effect = nullptr;
     CUstream m_stream = nullptr;
