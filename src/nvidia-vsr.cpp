@@ -146,7 +146,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     }
 
     // Create separate BGRA textures for NvOFFRUC registration
-    // NvOFFRUC with DirectX11Resource requires SHARED and ARGBSurface
+    // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface
     D3D11_TEXTURE2D_DESC bgra_desc = {};
     bgra_desc.Width = dst_width;
     bgra_desc.Height = dst_height;
@@ -156,7 +156,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     bgra_desc.SampleDesc.Count = 1;
     bgra_desc.Usage = D3D11_USAGE_DEFAULT;
     bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&bgra_desc, nullptr, &m_fruc_bgra[i]);
