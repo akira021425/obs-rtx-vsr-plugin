@@ -128,7 +128,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED; // REQUIRED for CUDA interop inside NvOFFRUC!
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE; // REQUIRED for NvOFFRUC!
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_fruc_d3d11[i]);
@@ -332,21 +332,39 @@ static void log_crash_step(const char* step) {
 }
 
 
-bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx) {
+bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* rgba_tex, int fruc_idx) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!bgra_tex || !m_fruc_bgra[fruc_idx]) return false;
+    if (!rgba_tex || !m_fruc_d3d11_mapped[fruc_idx]) return false;
     
-    // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
-    m_context->CopyResource(m_fruc_bgra[fruc_idx].Get(), bgra_tex);
-    return true;
+    NvCVImage* rgba_img = GetOrInitImage(rgba_tex);
+    NvCVImage* nv12_img = m_fruc_d3d11_mapped[fruc_idx];
+    
+    NvCVImage_MapResource(rgba_img, m_stream);
+    NvCVImage_MapResource(nv12_img, m_stream);
+    
+    NvCV_Status status = NvCVImage_Transfer(rgba_img, nv12_img, 1.0f, m_stream, NULL);
+    
+    NvCVImage_UnmapResource(nv12_img, m_stream);
+    NvCVImage_UnmapResource(rgba_img, m_stream);
+    
+    return status == NVCV_SUCCESS;
 }
 
-bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
+bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* rgba_tex) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!bgra_tex || !m_fruc_bgra[fruc_idx]) return false;
+    if (!rgba_tex || !m_fruc_d3d11_mapped[fruc_idx]) return false;
     
-    // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
-    m_context->CopyResource(bgra_tex, m_fruc_bgra[fruc_idx].Get());
-    return true;
+    NvCVImage* rgba_img = GetOrInitImage(rgba_tex);
+    NvCVImage* nv12_img = m_fruc_d3d11_mapped[fruc_idx];
+    
+    NvCVImage_MapResource(nv12_img, m_stream);
+    NvCVImage_MapResource(rgba_img, m_stream);
+    
+    NvCV_Status status = NvCVImage_Transfer(nv12_img, rgba_img, 1.0f, m_stream, NULL);
+    
+    NvCVImage_UnmapResource(rgba_img, m_stream);
+    NvCVImage_UnmapResource(nv12_img, m_stream);
+    
+    return status == NVCV_SUCCESS;
 }
 

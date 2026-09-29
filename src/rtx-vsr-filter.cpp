@@ -250,7 +250,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             } else {
                 ID3D11Texture2D* d3d11_textures[3];
                 for (int i = 0; i < 3; i++) {
-                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucBgraTexture(i);
+                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucD3D11Texture(i);
                 }
                 
                 // FRUC init
