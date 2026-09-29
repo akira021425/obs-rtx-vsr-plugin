@@ -98,18 +98,6 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
-    // Create an intermediate BGRA GPU buffer for safe transfer to mapped D3D11
-    status = NvCVImage_Create(dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_dst_bgra_gpu);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create dst BGRA GPU image (status: %d)", status);
-        Release();
-        return false;
-    }
-
-    // m_dst_bgra_gpu is created for NVCV_RGBA, but we set its colorspace to Linear just to be explicit
-    if (m_dst_bgra_gpu) {
-        m_dst_bgra_gpu->colorspace = 0;
-    }
 
     status = NvCVImage_Create(dst_width, dst_height, (NvCVImage_PixelFormat)NVCV_NV12, (NvCVImage_ComponentType)NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1, &m_staging_nv12_gpu);
     if (status != NVCV_SUCCESS) {
@@ -145,23 +133,23 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         }
     }
 
-    // Create separate BGRA textures for NvOFFRUC registration
+    // Create separate RGBA textures for NvOFFRUC registration
     // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface
-    D3D11_TEXTURE2D_DESC bgra_desc = {};
-    bgra_desc.Width = dst_width;
-    bgra_desc.Height = dst_height;
-    bgra_desc.MipLevels = 1;
-    bgra_desc.ArraySize = 1;
-    bgra_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    bgra_desc.SampleDesc.Count = 1;
-    bgra_desc.Usage = D3D11_USAGE_DEFAULT;
-    bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    D3D11_TEXTURE2D_DESC rgba_desc = {};
+    rgba_desc.Width = dst_width;
+    rgba_desc.Height = dst_height;
+    rgba_desc.MipLevels = 1;
+    rgba_desc.ArraySize = 1;
+    rgba_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    rgba_desc.SampleDesc.Count = 1;
+    rgba_desc.Usage = D3D11_USAGE_DEFAULT;
+    rgba_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
     for (int i = 0; i < 3; i++) {
-        HRESULT hr = m_device->CreateTexture2D(&bgra_desc, nullptr, &m_fruc_bgra[i]);
+        HRESULT hr = m_device->CreateTexture2D(&rgba_desc, nullptr, &m_fruc_rgba[i]);
         if (FAILED(hr)) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC BGRA texture %d: 0x%08X", i, hr);
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC RGBA texture %d: 0x%08X", i, hr);
             Release();
             return false;
         }
@@ -202,13 +190,12 @@ void NvidiaVSR::Release()
 
     if (m_src_gpu) { NvCVImage_Destroy(m_src_gpu); m_src_gpu = nullptr; }
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
-    if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
 
     if (m_staging_nv12_gpu) { NvCVImage_Destroy(m_staging_nv12_gpu); m_staging_nv12_gpu = nullptr; }
     for (int i = 0; i < 3; i++) {
         m_fruc_d3d11_mapped[i] = nullptr; // cleaned up by m_tex_map
         m_fruc_d3d11[i].Reset();
-        m_fruc_bgra[i].Reset();
+        m_fruc_rgba[i].Reset();
     }
 
     if (m_effect) {
@@ -307,7 +294,6 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     // 4. Transfer output from SDK GPU buffer back to D3D11 texture
     // We cannot transfer RGBA (m_dst_gpu) directly to BGRA mapped D3D11 (dst_img) as it throws -9.
     // However, CUDA-to-CUDA transfer from RGBA to BGRA works!
-    status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->bgra_gpu failed: %d", status);
         NvCVImage_UnmapResource(dst_img, m_stream);
@@ -315,7 +301,6 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     }
 
     // Now transfer BGRA to BGRA (pure CUDA to mapped D3D11)
-    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Transfer bgra_gpu->dst failed: %d", status);
         NvCVImage_UnmapResource(dst_img, m_stream);
@@ -339,22 +324,3 @@ static void log_crash_step(const char* step) {
     }
 }
 
-bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx)
-{
-    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
-
-    // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
-    m_context->CopyResource(m_fruc_bgra[fruc_idx].Get(), d3d11_dst);
-    
-    return true;
-}
-
-bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst)
-{
-    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
-
-    // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
-    m_context->CopyResource(d3d11_dst, m_fruc_bgra[fruc_idx].Get());
-
-    return true;
-}

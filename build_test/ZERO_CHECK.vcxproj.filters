@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\arai5\AndroidStudioProjects\OCVUltimate\obs-rtx-vsr\build_test\CMakeFiles\1ec35c4fca3db50459bfe797ad3d2ac7\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{946EA889-464F-3C2D-B9E6-108F122E5DED}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

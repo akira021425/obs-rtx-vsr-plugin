@@ -16,7 +16,7 @@ struct rtx_vsr_data {
     std::unique_ptr<FrameInterpolation> fruc;
     
     gs_texrender_t *texrender;       // For capturing source into a texture
-    gs_texrender_t *fruc_render;     // For converting BGRA->RGBA for FRUC input
+    gs_texrender_t *fruc_render;     // For converting RGBA->RGBA for FRUC input
     gs_texture_t *output_texture;    // The upscaled output texture
     
     // VSR result caching
@@ -65,8 +65,8 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->vsr_cache_texture = nullptr;
     data->fruc_cache_texture = nullptr;
     data->has_cached_vsr = false;
-    data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
-    data->fruc_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->texrender = gs_texrender_create(GS_RGBA_UNORM, GS_ZS_NONE);
+    data->fruc_render = gs_texrender_create(GS_RGBA_UNORM, GS_ZS_NONE);
     data->hash_stage_d3d11 = nullptr;
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
@@ -230,15 +230,15 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             HRESULT hr = d3d11_dev->CreateTexture2D(&desc, nullptr, &filter->hash_stage_d3d11);
             blog(LOG_INFO, "[RTX-VSR] Hash staging texture: hr=0x%08X, ptr=%p", hr, filter->hash_stage_d3d11);
 
-            // Output texture (BGRA)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+            // Output texture (RGBA)
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
                 obs_source_skip_video_filter(filter->context);
                 return;
             }
-            blog(LOG_INFO, "[RTX-VSR] Output texture created: %ux%u BGRA, d3d11=%p",
+            blog(LOG_INFO, "[RTX-VSR] Output texture created: %ux%u RGBA, d3d11=%p",
                  target_width, target_height, gs_texture_get_obj(filter->output_texture));
 
             gs_flush();
@@ -250,7 +250,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             } else {
                 ID3D11Texture2D* d3d11_textures[3];
                 for (int i = 0; i < 3; i++) {
-                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucBgraTexture(i);
+                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucRgbaTexture(i);
                 }
                 
                 // FRUC init
@@ -346,7 +346,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (success) {
                     filter->vsr_count++;
                     if (!filter->vsr_cache_texture) {
-                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                     }
                     if (filter->vsr_cache_texture) {
                         ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
@@ -376,12 +376,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     // This gives true 60fps: alternating interpolated + original frames.
                     // Do nothing - d3d11_dst already contains the VSR/cached output.
                 } else {
-                    // New frame: copy BGRA to FRUC input, process, copy output back
+                    // New frame: copy RGBA to FRUC input, process, copy output back
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
-                    // Copy VSR output (BGRA) directly to FRUC input texture (also BGRA)
-                    ID3D11Texture2D* fruc_in_tex = filter->nvidia_vsr->GetFrucBgraTexture(fruc_in_idx);
+                    // Copy VSR output (RGBA) directly to FRUC input texture (also RGBA)
+                    ID3D11Texture2D* fruc_in_tex = filter->nvidia_vsr->GetFrucRgbaTexture(fruc_in_idx);
                     auto context = filter->d3d11_interop->GetContext();
                     if (context && fruc_in_tex) {
                         context->CopyResource(fruc_in_tex, d3d11_dst);
@@ -395,8 +395,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         if (fruc_success) {
                             filter->fruc_success_count++;
                             
-                            // Copy FRUC output (BGRA) back to d3d11_dst
-                            ID3D11Texture2D* fruc_out_tex = filter->nvidia_vsr->GetFrucBgraTexture(fruc_out_idx);
+                            // Copy FRUC output (RGBA) back to d3d11_dst
+                            ID3D11Texture2D* fruc_out_tex = filter->nvidia_vsr->GetFrucRgbaTexture(fruc_out_idx);
                             if (fruc_out_tex) {
                                 context->CopyResource(d3d11_dst, fruc_out_tex);
                             }
