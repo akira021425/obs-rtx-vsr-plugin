@@ -92,17 +92,15 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface; // D3D11 NV12 format!
-        
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (DirectX11Resource)", count);
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (DirectX11Resource, ARGBSurface)", count);
         
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = d3d11_device.Get(); // Must pass the ID3D11Device
-        params.eResourceType = DirectX11Resource; // Use D3D11!
+        params.pDevice = d3d11_device.Get();
+        params.eResourceType = DirectX11Resource;
         params.eCUDAResourceType = CudaResourceCuDevicePtr; // Ignored for DX11
-        params.eSurfaceFormat = surf_fmt;
+        params.eSurfaceFormat = ARGBSurface; // BGRA textures, not NV12!
 
         PushCudaContext();
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
@@ -119,7 +117,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         
         for (int t = 0; t < count; t++) {
             reg_param.pArrResource[t] = d3d11_textures[t];
-            m_cuda_ptrs[t] = d3d11_textures[t]; // save it to m_cuda_ptrs for Process
+            m_cuda_ptrs[t] = d3d11_textures[t];
         }
         
         reg_param.uiCount = count;
@@ -130,9 +128,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            m_tex_format = DXGI_FORMAT_NV12;
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource, %d resources", count);
-            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, D3D11 NV12, %d res)", 
+            m_tex_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource (ARGB), %d resources", count);
+            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, D3D11 BGRA, %d res)", 
                  width, height, count);
             return true;
         }
@@ -240,7 +238,7 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = 0; // Not needed for D3D11
+    in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
     in_params.bSkipWarp = 0;
     
@@ -250,7 +248,7 @@ bool FrameInterpolation::Process(double timestamp)
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
-    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
+    out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
 
     if (m_fence) {
