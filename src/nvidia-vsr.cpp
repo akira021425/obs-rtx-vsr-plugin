@@ -151,11 +151,11 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     bgra_desc.Height = dst_height;
     bgra_desc.MipLevels = 1;
     bgra_desc.ArraySize = 1;
-    bgra_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    bgra_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     bgra_desc.SampleDesc.Count = 1;
     bgra_desc.Usage = D3D11_USAGE_DEFAULT;
     bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED; // Removed SHARED_NTHANDLE so NvCVImage can map it if needed later
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&bgra_desc, nullptr, &m_fruc_bgra[i]);
