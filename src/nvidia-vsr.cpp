@@ -157,7 +157,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     rgba_desc.SampleDesc.Count = 1;
     rgba_desc.Usage = D3D11_USAGE_DEFAULT;
     rgba_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&rgba_desc, nullptr, &m_fruc_rgba[i]);
