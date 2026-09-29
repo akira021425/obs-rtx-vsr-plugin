@@ -250,6 +250,7 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
+    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // Skip warping for the very first frame to initialize state
     
     if (m_context4 && m_fence) {
         // Signal the fence from D3D11 so NvOFFRUC waits for the input texture copy to complete
@@ -284,6 +285,12 @@ bool FrameInterpolation::Process(double timestamp)
 
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
+        if (m_process_count == 1) {
+            // First frame: optical flow state was initialized, but no valid frame was interpolated.
+            // Return false so the caller doesn't try to draw the output.
+            return false;
+        }
+
         m_success_count++;
         if (m_process_count <= 3 || m_success_count % 300 == 0) {
             blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
