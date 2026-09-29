@@ -36,17 +36,16 @@ bool FrameInterpolation::LoadDLL()
 }
 
 void FrameInterpolation::PushCudaContext() {
-    if (m_cuCtxPushCurrent && m_cu_ctx) {
-        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
-        ((PFN_cuCtxPushCurrent)m_cuCtxPushCurrent)(m_cu_ctx);
+    if (m_cuCtxGetCurrent) {
+        typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
+        ((PFN_cuCtxGetCurrent)m_cuCtxGetCurrent)(&m_saved_ctx);
     }
 }
 
 void FrameInterpolation::PopCudaContext() {
-    if (m_cuCtxPopCurrent && m_cu_ctx) {
-        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
-        void* dummy;
-        ((PFN_cuCtxPopCurrent)m_cuCtxPopCurrent)(&dummy);
+    if (m_cuCtxSetCurrent) {
+        typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
+        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_saved_ctx);
     }
 }
 
@@ -60,10 +59,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     if (!m_nvcuda_dll) {
         m_nvcuda_dll = LoadLibraryA("nvcuda.dll");
         if (m_nvcuda_dll) {
-            m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent_v2");
-            if (!m_cuCtxPushCurrent) m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent");
-            m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent_v2");
-            if (!m_cuCtxPopCurrent) m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent");
+            m_cuCtxGetCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxGetCurrent");
+            m_cuCtxSetCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSetCurrent");
             m_cuCtxSynchronize = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSynchronize");
         }
     }
@@ -172,8 +169,8 @@ void FrameInterpolation::Release()
         FreeLibrary(m_nvcuda_dll);
         m_nvcuda_dll = nullptr;
     }
-    m_cuCtxPushCurrent = nullptr;
-    m_cuCtxPopCurrent = nullptr;
+    m_cuCtxGetCurrent = nullptr;
+    m_cuCtxSetCurrent = nullptr;
 
     if (m_fruc_dll) {
         FreeLibrary(m_fruc_dll);
