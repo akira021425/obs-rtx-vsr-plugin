@@ -376,11 +376,16 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     // This gives true 60fps: alternating interpolated + original frames.
                     // Do nothing - d3d11_dst already contains the VSR/cached output.
                 } else {
-                    // New frame: feed to FRUC and display the interpolated result
+                    // New frame: copy BGRA to FRUC input, process, copy output back
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
-                    int fruc_out_idx = filter->fruc->GetNextOutputIndex(); // Save BEFORE Process increments counter!
+                    int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
-                    if (filter->nvidia_vsr->ConvertColorspaceFrucIn(d3d11_dst, fruc_in_idx)) {
+                    // Copy VSR output (BGRA) directly to FRUC input texture (also BGRA)
+                    ID3D11Texture2D* fruc_in_tex = filter->nvidia_vsr->GetFrucBgraTexture(fruc_in_idx);
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context && fruc_in_tex) {
+                        context->CopyResource(fruc_in_tex, d3d11_dst);
+                        
                         static double fruc_simulated_time = 0.0;
                         fruc_simulated_time += 33.333333;
                         
@@ -389,8 +394,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         if (fruc_success) {
                             filter->fruc_success_count++;
                             
-                            // Convert FRUC output back to BGRA d3d11_dst
-                            filter->nvidia_vsr->ConvertColorspaceFrucOut(fruc_out_idx, d3d11_dst);
+                            // Copy FRUC output (BGRA) back to d3d11_dst
+                            ID3D11Texture2D* fruc_out_tex = filter->nvidia_vsr->GetFrucBgraTexture(fruc_out_idx);
+                            if (fruc_out_tex) {
+                                context->CopyResource(d3d11_dst, fruc_out_tex);
+                            }
                         }
                     }
                 }
