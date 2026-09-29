@@ -291,10 +291,18 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
         return false;
     }
 
-        // 4. Transfer output from SDK GPU buffer back to D3D11 texture
-    status = NvCVImage_Transfer(m_dst_gpu, dst_img, 1.0f, m_stream, NULL);
+    // 4. Transfer output from SDK GPU buffer back to D3D11 texture
+    // Convert RGBA GPU to BGRA GPU to avoid NVCV_ERR_UNIMPLEMENTED
+    status = NvCVImage_Transfer(m_dst_gpu, m_dst_bgra_gpu, 1.0f, m_stream, NULL);
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Transfer gpu->dst failed: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] Transfer m_dst_gpu->m_dst_bgra_gpu failed: %d", status);
+        NvCVImage_UnmapResource(dst_img, m_stream);
+        return false;
+    }
+    
+    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, NULL);
+    if (status != NVCV_SUCCESS) {
+        blog(LOG_ERROR, "[RTX-VSR] Transfer m_dst_bgra_gpu->dst failed: %d", status);
         NvCVImage_UnmapResource(dst_img, m_stream);
         return false;
     }
