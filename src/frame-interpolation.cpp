@@ -73,6 +73,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         hr = m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence));
         if (SUCCEEDED(hr)) {
             m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_ctx;
+            d3d11_device->GetImmediateContext(&immediate_ctx);
+            immediate_ctx.As(&m_context4);
         } else {
             blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to create D3D11 Fence (hr: 0x%X)", hr);
         }
@@ -245,7 +248,10 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     
-    if (m_fence) {
+    if (m_context4 && m_fence) {
+        // Signal the fence from D3D11 so NvOFFRUC waits for the input texture copy to complete
+        m_fence_value++;
+        m_context4->Signal(m_fence.Get(), m_fence_value);
         in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
     }
     
@@ -255,7 +261,8 @@ bool FrameInterpolation::Process(double timestamp)
     out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
-    if (m_fence) {
+    if (m_context4 && m_fence) {
+        // Assign the fence value for NvOFFRUC to signal when it completes
         m_fence_value++;
         out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
     }
@@ -264,6 +271,11 @@ bool FrameInterpolation::Process(double timestamp)
     PushCudaContext(); // Pushes m_fruc_ctx
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
     PopCudaContext();  // Pops it back to NULL
+    
+    if (m_context4 && m_fence) {
+        // Wait on the D3D11 side for NvOFFRUC to complete so the output texture is ready for drawing
+        m_context4->Wait(m_fence.Get(), m_fence_value);
+    }
     
     log_crash_step("FRUC Process: Done");
 
