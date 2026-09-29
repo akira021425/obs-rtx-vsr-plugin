@@ -2,6 +2,7 @@
 
 #include <obs-module.h>
 #include <d3d11.h>
+#include <d3d11_4.h>
 #include <wrl/client.h>
 #include "NvOFFRUC.h"
 #include <windows.h>
@@ -59,6 +60,13 @@ private:
     int m_cuda_pitch = 0;
     
     void* m_cu_arrays[4] = {nullptr, nullptr, nullptr, nullptr};
+    
+    // D3D11 fence for synchronization
+    Microsoft::WRL::ComPtr<ID3D11Device5> m_device5;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext4> m_context4;
+    Microsoft::WRL::ComPtr<ID3D11Fence> m_fence;
+    HANDLE m_fence_event = nullptr;
+    uint64_t m_fence_value = 0;
     
     bool m_resources_registered = false;
     uint32_t m_resource_count = 0;

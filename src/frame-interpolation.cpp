@@ -70,6 +70,19 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
     if (!LoadDLL()) return false;
 
+    // Initialize D3D11 fence for synchronization (required by NvOFFRUC for DirectX11Resource)
+    HRESULT hr = d3d11_device.As(&m_device5);
+    if (SUCCEEDED(hr) && m_device5) {
+        hr = m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence));
+        if (SUCCEEDED(hr)) {
+            m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+        } else {
+            blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to create D3D11 Fence (hr: 0x%X)", hr);
+        }
+    } else {
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to get ID3D11Device5 for Fence (hr: 0x%X)", hr);
+    }
+
     int resource_counts[] = { 3, 4 };
     
     for (int rc = 0; rc < 2; rc++) {
@@ -100,6 +113,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         }
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
+        if (m_fence) {
+            reg_param.pD3D11FenceObj = m_fence.Get();
+        }
         
         for (int t = 0; t < count; t++) {
             reg_param.pArrResource[t] = d3d11_textures[t];
@@ -167,6 +183,15 @@ void FrameInterpolation::Release()
         FreeLibrary(m_fruc_dll);
         m_fruc_dll = nullptr;
     }
+    
+    if (m_fence_event) {
+        CloseHandle(m_fence_event);
+        m_fence_event = nullptr;
+    }
+    m_fence.Reset();
+    m_context4.Reset();
+    m_device5.Reset();
+    
     m_device.Reset();
 }
 
@@ -219,10 +244,19 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
     in_params.bSkipWarp = 0;
     
+    if (m_fence) {
+        in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
+    }
+    
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
     out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
+
+    if (m_fence) {
+        m_fence_value++;
+        out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
+    }
 
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
