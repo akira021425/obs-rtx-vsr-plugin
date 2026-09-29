@@ -26,6 +26,8 @@ public:
 
     ID3D11Texture2D* GetFrucD3D11Texture(int index) { return (index >= 0 && index < 3) ? m_fruc_d3d11[index].Get() : nullptr; }
     ID3D11Texture2D* GetFrucRgbaTexture(int index) { return (index >= 0 && index < 3) ? m_fruc_rgba[index].Get() : nullptr; }
+    bool TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx);
+    bool TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex);
 
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);
@@ -73,3 +75,5 @@ public:
     bool m_ready = false;
     bool m_images_bound = false;
 };
+
+

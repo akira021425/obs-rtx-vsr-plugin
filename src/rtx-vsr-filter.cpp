@@ -65,8 +65,8 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->vsr_cache_texture = nullptr;
     data->fruc_cache_texture = nullptr;
     data->has_cached_vsr = false;
-    data->texrender = gs_texrender_create(GS_RGBA_UNORM, GS_ZS_NONE);
-    data->fruc_render = gs_texrender_create(GS_RGBA_UNORM, GS_ZS_NONE);
+    data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    data->fruc_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     data->hash_stage_d3d11 = nullptr;
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
@@ -231,7 +231,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             blog(LOG_INFO, "[RTX-VSR] Hash staging texture: hr=0x%08X, ptr=%p", hr, filter->hash_stage_d3d11);
 
             // Output texture (RGBA)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
@@ -346,7 +346,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (success) {
                     filter->vsr_count++;
                     if (!filter->vsr_cache_texture) {
-                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                     }
                     if (filter->vsr_cache_texture) {
                         ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
@@ -381,10 +381,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
                     // Copy VSR output (RGBA) directly to FRUC input texture (also RGBA)
-                    ID3D11Texture2D* fruc_in_tex = filter->nvidia_vsr->GetFrucRgbaTexture(fruc_in_idx);
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context && fruc_in_tex) {
-                        context->CopyResource(fruc_in_tex, d3d11_dst);
+                    if (filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx)) {
                         
                         static double fruc_simulated_time = 0.0;
                         // 10,000,000 units = 1 second. 30 fps input = 333,333 units per frame.
@@ -396,10 +393,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             filter->fruc_success_count++;
                             
                             // Copy FRUC output (RGBA) back to d3d11_dst
-                            ID3D11Texture2D* fruc_out_tex = filter->nvidia_vsr->GetFrucRgbaTexture(fruc_out_idx);
-                            if (fruc_out_tex) {
-                                context->CopyResource(d3d11_dst, fruc_out_tex);
-                            }
+                            filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_dst);
                         }
                     }
                 }
@@ -465,3 +459,4 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+

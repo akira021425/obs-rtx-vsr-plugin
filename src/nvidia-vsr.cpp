@@ -317,3 +317,38 @@ static void log_crash_step(const char* step) {
 }
 
 
+bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx) {
+    if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
+    NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
+    NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
+    if (!bgra_img || !rgba_img) return false;
+    NvCV_Status status;
+    status = NvCVImage_MapResource(bgra_img, m_stream);
+    if (status != NVCV_SUCCESS) return false;
+    status = NvCVImage_MapResource(rgba_img, m_stream);
+    if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
+    
+    status = NvCVImage_Transfer(bgra_img, rgba_img, 1.0f, m_stream, NULL);
+    
+    NvCVImage_UnmapResource(rgba_img, m_stream);
+    NvCVImage_UnmapResource(bgra_img, m_stream);
+    return status == NVCV_SUCCESS;
+}
+
+bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
+    if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
+    NvCVImage* bgra_img = GetOrInitImage(bgra_tex);
+    NvCVImage* rgba_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
+    if (!bgra_img || !rgba_img) return false;
+    NvCV_Status status;
+    status = NvCVImage_MapResource(bgra_img, m_stream);
+    if (status != NVCV_SUCCESS) return false;
+    status = NvCVImage_MapResource(rgba_img, m_stream);
+    if (status != NVCV_SUCCESS) { NvCVImage_UnmapResource(bgra_img, m_stream); return false; }
+    
+    status = NvCVImage_Transfer(rgba_img, bgra_img, 1.0f, m_stream, NULL);
+    
+    NvCVImage_UnmapResource(rgba_img, m_stream);
+    NvCVImage_UnmapResource(bgra_img, m_stream);
+    return status == NVCV_SUCCESS;
+}
