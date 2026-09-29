@@ -146,24 +146,23 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         }
     }
 
-    // Create separate RGBA textures for NvOFFRUC registration
     // Create separate BGRA textures for NvOFFRUC registration
     // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface (which maps to BGRA in DXGI)
-    D3D11_TEXTURE2D_DESC rgba_desc = {};
-    rgba_desc.Width = dst_width;
-    rgba_desc.Height = dst_height;
-    rgba_desc.MipLevels = 1;
-    rgba_desc.ArraySize = 1;
-    rgba_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    rgba_desc.SampleDesc.Count = 1;
-    rgba_desc.Usage = D3D11_USAGE_DEFAULT;
-    rgba_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    D3D11_TEXTURE2D_DESC bgra_desc = {};
+    bgra_desc.Width = dst_width;
+    bgra_desc.Height = dst_height;
+    bgra_desc.MipLevels = 1;
+    bgra_desc.ArraySize = 1;
+    bgra_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    bgra_desc.SampleDesc.Count = 1;
+    bgra_desc.Usage = D3D11_USAGE_DEFAULT;
+    bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
     for (int i = 0; i < 3; i++) {
-        HRESULT hr = m_device->CreateTexture2D(&rgba_desc, nullptr, &m_fruc_rgba[i]);
+        HRESULT hr = m_device->CreateTexture2D(&bgra_desc, nullptr, &m_fruc_bgra[i]);
         if (FAILED(hr)) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC RGBA texture %d: 0x%08X", i, hr);
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC BGRA texture %d: 0x%08X", i, hr);
             Release();
             return false;
         }
@@ -210,7 +209,7 @@ void NvidiaVSR::Release()
     for (int i = 0; i < 3; i++) {
         m_fruc_d3d11_mapped[i] = nullptr; // cleaned up by m_tex_map
         m_fruc_d3d11[i].Reset();
-        m_fruc_rgba[i].Reset();
+        m_fruc_bgra[i].Reset();
     }
 
     if (m_effect) {
@@ -335,19 +334,19 @@ static void log_crash_step(const char* step) {
 
 bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!bgra_tex || !m_fruc_rgba[fruc_idx]) return false;
+    if (!bgra_tex || !m_fruc_bgra[fruc_idx]) return false;
     
     // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
-    m_context->CopyResource(m_fruc_rgba[fruc_idx].Get(), bgra_tex);
+    m_context->CopyResource(m_fruc_bgra[fruc_idx].Get(), bgra_tex);
     return true;
 }
 
 bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!bgra_tex || !m_fruc_rgba[fruc_idx]) return false;
+    if (!bgra_tex || !m_fruc_bgra[fruc_idx]) return false;
     
     // Both textures are DXGI_FORMAT_B8G8R8A8_UNORM, so we can just copy
-    m_context->CopyResource(bgra_tex, m_fruc_rgba[fruc_idx].Get());
+    m_context->CopyResource(bgra_tex, m_fruc_bgra[fruc_idx].Get());
     return true;
 }
 
