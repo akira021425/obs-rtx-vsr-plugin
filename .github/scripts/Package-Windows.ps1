@@ -58,6 +58,15 @@ function Package {
 
     Remove-Item @RemoveArgs
 
+    Log-Group "Generating NSIS Installer for ${ProductName}..."
+    if (!(Get-Command makensis -ErrorAction SilentlyContinue)) {
+        choco install nsis -y
+        $env:Path += ";C:\Program Files (x86)\NSIS"
+    }
+    Invoke-External makensis "/DCONFIG=$Configuration" installer.nsi
+    Move-Item -Path "obs-rtx-vsr-1.0.0-windows-x64.exe" -Destination "${ProjectRoot}/release/${Configuration}/${OutputName}-installer.exe" -Force -ErrorAction SilentlyContinue
+    Log-Group
+
     Log-Group "Archiving ${ProductName}..."
     $CompressArgs = @{
         Path = (Get-ChildItem -Path "${ProjectRoot}/release/${Configuration}" -Exclude "${OutputName}*.*")
@@ -66,15 +75,6 @@ function Package {
         Verbose = ($Env:CI -ne $null)
     }
     Compress-Archive -Force @CompressArgs
-    Log-Group
-
-    Log-Group "Generating NSIS Installer for ${ProductName}..."
-    if (!(Get-Command makensis -ErrorAction SilentlyContinue)) {
-        choco install nsis -y
-        $env:Path += ";C:\Program Files (x86)\NSIS"
-    }
-    Invoke-External makensis "/DCONFIG=$Configuration" installer.nsi
-    Move-Item -Path "obs-rtx-vsr-1.0.0-windows-x64.exe" -Destination "${ProjectRoot}/release/${OutputName}.exe" -Force -ErrorAction SilentlyContinue
     Log-Group
 }
 
