@@ -16,7 +16,7 @@ struct rtx_vsr_data {
     std::unique_ptr<FrameInterpolation> fruc;
     
     gs_texrender_t *texrender;       // For capturing source into a texture
-    gs_texrender_t *fruc_render;     // For converting RGBA->RGBA for FRUC input
+         // For converting RGBA->RGBA for FRUC input
     gs_texture_t *output_texture;    // The upscaled output texture
     
     // VSR result caching
@@ -66,7 +66,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->fruc_cache_texture = nullptr;
     data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
-    data->fruc_render = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
+    
     data->hash_stage_d3d11 = nullptr;
     memset(data->last_hash, 0, sizeof(data->last_hash));
     data->is_initialized = false;
@@ -97,7 +97,7 @@ static void rtx_vsr_destroy(void *data)
 
     obs_enter_graphics();
     if (filter->texrender) gs_texrender_destroy(filter->texrender);
-    if (filter->fruc_render) gs_texrender_destroy(filter->fruc_render);
+    
     if (filter->hash_stage_d3d11) filter->hash_stage_d3d11->Release();
     if (filter->output_texture) gs_texture_destroy(filter->output_texture);
     if (filter->vsr_cache_texture) gs_texture_destroy(filter->vsr_cache_texture);
@@ -250,7 +250,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             } else {
                 ID3D11Texture2D* d3d11_textures[3];
                 for (int i = 0; i < 3; i++) {
-                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucBgraTexture(i);
+                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucRgbaTexture(i);
                 }
                 
                 // FRUC init
@@ -384,45 +384,23 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
-                    gs_texrender_reset(filter->fruc_render);
-                    if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
-                        gs_matrix_push();
-                        gs_ortho(0.0f, (float)target_width, 0.0f, (float)target_height, -100.0f, 100.0f);
-                        gs_blend_state_push();
-                        gs_blend_function(GS_BLEND_ONE, GS_BLEND_ZERO);
+                    // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
+                    bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx);
+                    if (t_to_fruc) {
+                        static double fruc_simulated_time = 0.0;
+                        fruc_simulated_time += 333333.333333;
+                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         
-                        gs_effect_set_texture(image, filter->output_texture);
-                        while (gs_effect_loop(def_effect, "Draw")) {
-                            gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
-                        }
-                        
-                        gs_blend_state_pop();
-                        gs_matrix_pop();
-                        gs_texrender_end(filter->fruc_render);
-                        
-                        gs_texture_t* bgra_obs_tex = gs_texrender_get_texture(filter->fruc_render);
-                        if (bgra_obs_tex) {
-                            ID3D11Texture2D* d3d11_bgra = (ID3D11Texture2D*)gs_texture_get_obj(bgra_obs_tex);
-                            if (d3d11_bgra) {
-                                bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_bgra, fruc_in_idx);
-                                if (t_to_fruc) {
-                                    static double fruc_simulated_time = 0.0;
-                                    fruc_simulated_time += 333333.333333;
-                                    bool fruc_success = filter->fruc->Process(fruc_simulated_time);
-                                    
-                                    if (fruc_success) {
-                                        filter->fruc_success_count++;
-                                        
-                                        if (!filter->fruc_cache_texture) {
-                                            filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
-                                        }
-                                        if (filter->fruc_cache_texture) {
-                                            ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
-                                            if (d3d11_fruc_out) {
-                                                filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_fruc_out);
-                                            }
-                                        }
-                                    }
+                        if (fruc_success) {
+                            filter->fruc_success_count++;
+                            
+                            if (!filter->fruc_cache_texture) {
+                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                            }
+                            if (filter->fruc_cache_texture) {
+                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
+                                if (d3d11_fruc_out) {
+                                    filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_fruc_out);
                                 }
                             }
                         }
