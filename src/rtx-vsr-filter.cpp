@@ -386,10 +386,18 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     
                     gs_texrender_reset(filter->fruc_render);
                     if (gs_texrender_begin(filter->fruc_render, target_width, target_height)) {
+                        gs_matrix_push();
+                        gs_ortho(0.0f, (float)target_width, 0.0f, (float)target_height, -100.0f, 100.0f);
+                        gs_blend_state_push();
+                        gs_blend_function(GS_BLEND_ONE, GS_BLEND_ZERO);
+                        
                         gs_effect_set_texture(image, filter->output_texture);
                         while (gs_effect_loop(def_effect, "Draw")) {
                             gs_draw_sprite(filter->output_texture, 0, target_width, target_height);
                         }
+                        
+                        gs_blend_state_pop();
+                        gs_matrix_pop();
                         gs_texrender_end(filter->fruc_render);
                         
                         gs_texture_t* bgra_obs_tex = gs_texrender_get_texture(filter->fruc_render);
