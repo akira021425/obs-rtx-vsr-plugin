@@ -158,7 +158,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     bgra_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
     bgra_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&bgra_desc, nullptr, &m_fruc_bgra[i]);
         if (FAILED(hr)) {
             blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC BGRA texture %d: 0x%08X", i, hr);
@@ -341,7 +341,7 @@ static void log_crash_step(const char* step) {
 
 bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx)
 {
-    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 4) return false;
+    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
     // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
     m_context->CopyResource(m_fruc_bgra[fruc_idx].Get(), d3d11_dst);
@@ -351,7 +351,7 @@ bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx
 
 bool NvidiaVSR::ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst)
 {
-    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 4) return false;
+    if (!m_ready || !d3d11_dst || fruc_idx < 0 || fruc_idx >= 3) return false;
 
     // We can just use D3D11 CopyResource directly since both are B8G8R8A8_UNORM!
     m_context->CopyResource(d3d11_dst, m_fruc_bgra[fruc_idx].Get());

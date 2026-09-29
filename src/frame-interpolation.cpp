@@ -83,7 +83,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to get ID3D11Device5 for Fence (hr: 0x%X)", hr);
     }
 
-    int count = 4;
+    int count = 3;
     {
         if (m_fruc_handle) {
             m_destroy(m_fruc_handle);
@@ -154,7 +154,7 @@ void FrameInterpolation::Release()
         m_resources_registered = false;
     }
 
-    for (int t = 0; t < 4; t++) {
+    for (int t = 0; t < 3; t++) {
         if (m_cu_arrays[t] && m_cuArrayDestroy) {
             typedef int (__stdcall *PFN_cuArrayDestroy)(void*);
             ((PFN_cuArrayDestroy)m_cuArrayDestroy)(m_cu_arrays[t]);
@@ -192,15 +192,14 @@ void FrameInterpolation::Release()
 }
 
 int FrameInterpolation::GetNextInputIndex() {
-    if (!m_resources_registered || m_resource_count < 4) return 0;
-    // Input indices: 0 and 1
-    return m_process_count % 2;
+    if (!m_resources_registered || m_resource_count < 3) return 1;
+    // Input indices: 1 and 2
+    return 1 + (m_process_count % 2);
 }
 
 int FrameInterpolation::GetNextOutputIndex() {
-    if (!m_resources_registered || m_resource_count < 4) return 2;
-    // Output indices: 2 and 3
-    return 2 + (m_process_count % 2);
+    // Output index: always 0
+    return 0;
 }
 
 void* FrameInterpolation::GetNextInputPointer() {
