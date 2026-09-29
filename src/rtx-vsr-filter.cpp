@@ -231,7 +231,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             blog(LOG_INFO, "[RTX-VSR] Hash staging texture: hr=0x%08X, ptr=%p", hr, filter->hash_stage_d3d11);
 
             // Output texture (RGBA)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
             if (!filter->output_texture) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
@@ -349,7 +349,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (success) {
                     filter->vsr_count++;
                     if (!filter->vsr_cache_texture) {
-                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_BGRA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        filter->vsr_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                     }
                     if (filter->vsr_cache_texture) {
                         ID3D11Texture2D *cache_d3d11 = (ID3D11Texture2D *)gs_texture_get_obj(filter->vsr_cache_texture);
@@ -471,6 +471,8 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
 
 
 

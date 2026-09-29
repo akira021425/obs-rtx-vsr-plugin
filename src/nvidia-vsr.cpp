@@ -154,7 +154,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     rgba_desc.Height = dst_height;
     rgba_desc.MipLevels = 1;
     rgba_desc.ArraySize = 1;
-    rgba_desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    rgba_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     rgba_desc.SampleDesc.Count = 1;
     rgba_desc.Usage = D3D11_USAGE_DEFAULT;
     rgba_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -357,3 +357,4 @@ bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex) {
     m_context->CopyResource(bgra_tex, m_fruc_rgba[fruc_idx].Get());
     return true;
 }
+

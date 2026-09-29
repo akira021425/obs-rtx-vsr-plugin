@@ -131,7 +131,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            m_tex_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
             blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource (ARGB), %d resources", count);
             blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, D3D11 BGRA, %d res)", 
                  width, height, count);
@@ -309,3 +309,4 @@ bool FrameInterpolation::Process(double timestamp)
 
     return false;
 }
+
