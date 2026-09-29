@@ -312,13 +312,22 @@ bool NvidiaVSR::ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx
         return false;
     }
     
-    // Transfer from BGRA D3D11 to RGBA CUDA
-    status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
+    // Two-stage transfer to avoid D3D11 conversion bugs
+    // Stage 1: BGRA D3D11 -> BGRA CUDA staging (pure copy)
+    status = NvCVImage_Transfer(src_img, m_dst_bgra_gpu, 1.0f, m_stream, nullptr);
+    if (status != NVCV_SUCCESS) {
+        NvCVImage_UnmapResource(src_img, m_stream);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: D3D11->BGRA staging failed: %d", status);
+        return false;
+    }
+
+    // Stage 2: BGRA CUDA staging -> RGBA CUDA (format conversion, GPU-to-GPU)
+    status = NvCVImage_Transfer(m_dst_bgra_gpu, dst_img, 1.0f, m_stream, nullptr);
 
     NvCVImage_UnmapResource(src_img, m_stream);
 
     if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn failed during transfer: %d", status);
+        blog(LOG_ERROR, "[RTX-VSR] ConvertFrucIn: BGRA staging->RGBA failed: %d", status);
         return false;
     }
     return true;
