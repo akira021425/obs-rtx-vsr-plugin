@@ -387,7 +387,8 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         context->CopyResource(fruc_in_tex, d3d11_dst);
                         
                         static double fruc_simulated_time = 0.0;
-                        fruc_simulated_time += 33.333333;
+                        // 10,000,000 units = 1 second. 30 fps input = 333,333 units per frame.
+                        fruc_simulated_time += 333333.333333;
                         
                         bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         

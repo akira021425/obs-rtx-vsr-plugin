@@ -248,6 +248,7 @@ bool FrameInterpolation::Process(double timestamp)
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
+    out_params.stFrameDataOutput.nTimeStamp = timestamp - (333333.333333 / 2.0); // Output timestamp is exactly halfway between frames
     out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4; // BGRA pitch
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
 
