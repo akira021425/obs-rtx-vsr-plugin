@@ -126,6 +126,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED; // REQUIRED for CUDA interop inside NvOFFRUC!
 
     for (int i = 0; i < 3; i++) {
         HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_fruc_d3d11[i]);
