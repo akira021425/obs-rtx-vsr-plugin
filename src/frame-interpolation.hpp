@@ -56,7 +56,7 @@ private:
     uint32_t m_height = 0;
     DXGI_FORMAT m_tex_format = DXGI_FORMAT_NV12;
 
-    void* m_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
+    void* m_cuda_ptrs[4] = {nullptr, nullptr, nullptr, nullptr};
     int m_cuda_pitch = 0;
     
     void* m_cu_arrays[4] = {nullptr, nullptr, nullptr, nullptr};

@@ -51,8 +51,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_d3d11[3];
     NvCVImage* m_fruc_d3d11_mapped[3] = {nullptr, nullptr, nullptr};
     
-    // FRUC D3D11 BGRA buffers (for NvOFFRUC registration - separate from NV12)
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_bgra[3];
+    // FRUC D3D11 BGRA buffers (for NvOFFRUC registration)
+    // 0, 1: Inputs
+    // 2, 3: Outputs
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_bgra[4];
     
     // Cache for D3D11 wrapper images to avoid duplicate registration
     std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;

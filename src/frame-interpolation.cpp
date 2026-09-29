@@ -83,10 +83,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to get ID3D11Device5 for Fence (hr: 0x%X)", hr);
     }
 
-    int resource_counts[] = { 3, 4 };
-    
-    for (int rc = 0; rc < 2; rc++) {
-        int count = resource_counts[rc];
+    int count = 4;
+    {
         if (m_fruc_handle) {
             m_destroy(m_fruc_handle);
             m_fruc_handle = nullptr;
@@ -107,7 +105,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status != NvOFFRUC_SUCCESS) {
             PopCudaContext();
             blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
-            continue;
+            return false;
         }
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
@@ -194,13 +192,15 @@ void FrameInterpolation::Release()
 }
 
 int FrameInterpolation::GetNextInputIndex() {
-    if (!m_resources_registered || m_resource_count < 3) return 0;
-    return m_process_count % 3;
+    if (!m_resources_registered || m_resource_count < 4) return 0;
+    // Input indices: 0 and 1
+    return m_process_count % 2;
 }
 
 int FrameInterpolation::GetNextOutputIndex() {
-    if (!m_resources_registered || m_resource_count < 3) return 1;
-    return (m_process_count + 1) % 3;
+    if (!m_resources_registered || m_resource_count < 4) return 2;
+    // Output indices: 2 and 3
+    return 2 + (m_process_count % 2);
 }
 
 void* FrameInterpolation::GetNextInputPointer() {
