@@ -50,7 +50,7 @@ void FrameInterpolation::PopCudaContext() {
     }
 }
 
-bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch, void* cu_ctx)
+bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, ID3D11Texture2D** d3d11_textures, void* cu_ctx)
 {
     m_device = d3d11_device;
     m_width = width;
@@ -64,30 +64,16 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             if (!m_cuCtxPushCurrent) m_cuCtxPushCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPushCurrent");
             m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent_v2");
             if (!m_cuCtxPopCurrent) m_cuCtxPopCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxPopCurrent");
-            m_cuArrayCreate = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayCreate_v2");
-            if (!m_cuArrayCreate) m_cuArrayCreate = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayCreate");
-            m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync_v2");
-            if (!m_cuMemcpy2DAsync) m_cuMemcpy2DAsync = (void*)GetProcAddress(m_nvcuda_dll, "cuMemcpy2DAsync");
-            m_cuArrayDestroy = (void*)GetProcAddress(m_nvcuda_dll, "cuArrayDestroy");
             m_cuCtxSynchronize = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSynchronize");
         }
     }
 
     if (!LoadDLL()) return false;
 
-    // We must create the handle AFTER we find a working texture configuration,
-    // because NvOFFRUCCreate requires eSurfaceFormat, which depends on the texture format.
-    // Wait, NvOFFRUCRegisterResource requires the handle!
-    // So we must create the handle for each config we try, or recreate it if the format changes!
-    // Actually, let's just try to create it inside the loop.
-
-
-    // Try with 3 resources first (NvOFFRUC_MIN_RESOURCE=3), then 4
     int resource_counts[] = { 3, 4 };
     
     for (int rc = 0; rc < 2; rc++) {
         int count = resource_counts[rc];
-        // Clean up previous attempt
         if (m_fruc_handle) {
             m_destroy(m_fruc_handle);
             m_fruc_handle = nullptr;
@@ -116,10 +102,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
         for (int t = 0; t < count; t++) {
-            // For DirectX11Resource, pArrResource is the array of ID3D11Texture2D*!
-            // We get these from NvidiaVSR's GetFrucD3D11Texture
-            reg_param.pArrResource[t] = cuda_ptrs[t]; // we pass ID3D11Texture2D* via the cuda_ptrs argument!
-            m_cuda_ptrs[t] = cuda_ptrs[t]; // save it to m_cuda_ptrs for Process
+            reg_param.pArrResource[t] = d3d11_textures[t];
+            m_cuda_ptrs[t] = d3d11_textures[t]; // save it to m_cuda_ptrs for Process
         }
         
         reg_param.uiCount = count;

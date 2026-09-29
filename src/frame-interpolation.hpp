@@ -11,7 +11,7 @@ public:
     FrameInterpolation();
     ~FrameInterpolation();
 
-    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, void** cuda_ptrs, int cuda_pitch, void* cu_ctx);
+    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, ID3D11Texture2D** d3d11_textures, void* cu_ctx);
     void Release();
 
     void* GetNextInputPointer();
