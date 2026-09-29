@@ -26,9 +26,7 @@ public:
     bool ConvertColorspaceFrucIn(ID3D11Texture2D *d3d11_dst, int fruc_idx);
     bool ConvertColorspaceFrucOut(int fruc_idx, ID3D11Texture2D *d3d11_dst);
 
-    void** GetFrucCudaPointers() { return m_fruc_cuda_ptrs; }
-    int GetFrucCudaPitch() const { return m_fruc_cuda_pitch; }
-    NvCVImage* GetFrucRGBAImage(int index) { return (index >= 0 && index < 3) ? m_fruc_rgba_gpu[index] : nullptr; }
+    ID3D11Texture2D* GetFrucD3D11Texture(int index) { return (index >= 0 && index < 3) ? m_fruc_d3d11[index].Get() : nullptr; }
 
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);
@@ -45,11 +43,11 @@ private:
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr;  // GPU staging buffer for SDK output (RGBA)
+    NvCVImage *m_staging_nv12_gpu = nullptr; // GPU staging buffer for NV12 conversion
     
-    // FRUC RGBA GPU buffers
-    NvCVImage* m_fruc_rgba_gpu[3] = {nullptr, nullptr, nullptr};
-    void* m_fruc_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
-    int m_fruc_cuda_pitch = 0;
+    // FRUC D3D11 NV12 buffers
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_d3d11[3];
+    NvCVImage* m_fruc_d3d11_mapped[3] = {nullptr, nullptr, nullptr};
     // Cache for D3D11 wrapper images to avoid duplicate registration
     std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;
     NvCVImage* GetOrInitImage(ID3D11Texture2D* tex);

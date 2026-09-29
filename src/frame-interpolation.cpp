@@ -93,16 +93,16 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface; // Use NV12 for proper optical flow
+        NvOFFRUCSurfaceFormat surf_fmt = NV12Surface; // D3D11 NV12 format!
         
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources", count);
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (DirectX11Resource)", count);
         
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = nullptr;
-        params.eResourceType = CudaResource;
-        params.eCUDAResourceType = CudaResourceCuDevicePtr; // Use device pointers instead of arrays
+        params.pDevice = d3d11_device.Get(); // Must pass the ID3D11Device
+        params.eResourceType = DirectX11Resource; // Use D3D11!
+        params.eCUDAResourceType = CudaResourceCuDevicePtr; // Ignored for DX11
         params.eSurfaceFormat = surf_fmt;
 
         PushCudaContext();
@@ -116,10 +116,10 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
         for (int t = 0; t < count; t++) {
-            // Since we use CudaResourceCuDevicePtr, pArrResource just takes the device pointers directly!
-            // No need for CUarrays or cuArrayCreate.
-            reg_param.pArrResource[t] = cuda_ptrs[t];
-            m_cuda_ptrs[t] = cuda_ptrs[t];
+            // For DirectX11Resource, pArrResource is the array of ID3D11Texture2D*!
+            // We get these from NvidiaVSR's GetFrucD3D11Texture
+            reg_param.pArrResource[t] = cuda_ptrs[t]; // we pass ID3D11Texture2D* via the cuda_ptrs argument!
+            m_cuda_ptrs[t] = cuda_ptrs[t]; // save it to m_cuda_ptrs for Process
         }
         
         reg_param.uiCount = count;
@@ -130,9 +130,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            m_tex_format = DXGI_FORMAT_NV12; // Update for log info only, not used for CudaResource
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with CUDA DevicePtr, %d resources", count);
-            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, CUDA NV12 DevicePtr, %d res)", 
+            m_tex_format = DXGI_FORMAT_NV12;
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource, %d resources", count);
+            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, D3D11 NV12, %d res)", 
                  width, height, count);
             return true;
         }
@@ -227,16 +227,17 @@ bool FrameInterpolation::Process(double timestamp)
     uint32_t frame_repeated = 0;
     uint32_t out_frame_repeated = 0;
 
+    // For DirectX11Resource, in_dev_ptr and out_dev_ptr hold the ID3D11Texture2D*
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitch;
+    in_params.stFrameDataInput.nCuSurfacePitch = 0; // Not needed for D3D11
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
+    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
 
     log_crash_step("FRUC Process: PushContext");
