@@ -100,6 +100,12 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         // DO NOT push any context here. NvOFFRUC creates its own context during m_create.
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
         
+        // Capture the context that NvOFFRUC just created and left on the thread!
+        if (status == NvOFFRUC_SUCCESS && m_cuCtxGetCurrent) {
+            typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
+            ((PFN_cuCtxGetCurrent)m_cuCtxGetCurrent)(&m_fruc_ctx);
+        }
+        
         if (status != NvOFFRUC_SUCCESS) {
             blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
             return false;
@@ -118,6 +124,9 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         reg_param.uiCount = count;
         
         status = m_register(m_fruc_handle, &reg_param);
+        
+        // Pop NvOFFRUC's context off the thread so it doesn't break VSR's NvCVImage_Transfer!
+        PopCudaContext();
         
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
@@ -140,6 +149,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 void FrameInterpolation::Release()
 {
     if (m_resources_registered && m_unregister && m_fruc_handle) {
+        PushCudaContext();
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         for (uint32_t t = 0; t < m_resource_count; t++) {
             unreg.pArrResource[t] = m_cuda_ptrs[t];
@@ -147,6 +157,7 @@ void FrameInterpolation::Release()
         unreg.uiCount = m_resource_count;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
+        PopCudaContext();
     }
 
     for (int t = 0; t < 3; t++) {
@@ -168,6 +179,7 @@ void FrameInterpolation::Release()
     }
     m_cuCtxGetCurrent = nullptr;
     m_cuCtxSetCurrent = nullptr;
+    m_fruc_ctx = nullptr;
 
     if (m_fruc_dll) {
         FreeLibrary(m_fruc_dll);
@@ -249,7 +261,9 @@ bool FrameInterpolation::Process(double timestamp)
     }
 
     log_crash_step("FRUC Process: m_process");
+    PushCudaContext(); // Pushes m_fruc_ctx
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
+    PopCudaContext();  // Pops it back to NULL
     
     log_crash_step("FRUC Process: Done");
 
