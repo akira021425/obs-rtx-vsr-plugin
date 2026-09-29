@@ -226,16 +226,15 @@ bool FrameInterpolation::Process(double timestamp)
     void* in_dev_ptr = m_cuda_ptrs[in_idx];
     void* out_dev_ptr = m_cuda_ptrs[out_idx];
 
-    uint32_t frame_repeated = 0;
-    uint32_t out_frame_repeated = 0;
+    bool out_frame_repeated = false;
 
     // For DirectX11Resource, in_dev_ptr and out_dev_ptr hold the ID3D11Texture2D*
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
-    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = (bool*)&frame_repeated;
-    in_params.bSkipWarp = 0;
+    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
+    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0;
     
     if (m_fence) {
         in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
@@ -245,7 +244,7 @@ bool FrameInterpolation::Process(double timestamp)
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
     out_params.stFrameDataOutput.nTimeStamp = timestamp - (333333.333333 / 2.0); // Output timestamp is exactly halfway between frames
     out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4; // BGRA pitch
-    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = (bool*)&out_frame_repeated;
+    out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
     if (m_fence) {
         m_fence_value++;
