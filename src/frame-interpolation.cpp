@@ -102,8 +102,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         params.uiHeight = height;
         params.pDevice = nullptr;
         params.eResourceType = CudaResource;
-        params.eCUDAResourceType = CudaResourceCuDevicePtr; // Try device pointers instead of arrays
-        params.eSurfaceFormat = ARGBSurface;
+        params.eCUDAResourceType = CudaResourceCuArray;
+        params.eSurfaceFormat = surf_fmt;
 
         PushCudaContext();
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
@@ -115,9 +115,29 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
+        typedef struct CUDA_ARRAY_DESCRIPTOR_st {
+            size_t Width;
+            size_t Height;
+            int Format;
+            unsigned int NumChannels;
+        } CUDA_ARRAY_DESCRIPTOR;
+
         for (int t = 0; t < count; t++) {
-            reg_param.pArrResource[t] = cuda_ptrs[t];
-            m_cuda_ptrs[t] = cuda_ptrs[t]; // Keep device pointers
+            if (!m_cu_arrays[t]) {
+                CUDA_ARRAY_DESCRIPTOR desc = {};
+                desc.Width = width;
+                desc.Height = height; // ARGB is just height
+                desc.Format = 0x01; // CU_AD_FORMAT_UNSIGNED_INT8
+                desc.NumChannels = 4; // ARGB has 4 channels
+                
+                typedef int (__stdcall *PFN_cuArrayCreate)(void**, const CUDA_ARRAY_DESCRIPTOR*);
+                int res = ((PFN_cuArrayCreate)m_cuArrayCreate)(&m_cu_arrays[t], &desc);
+                if (res != 0) {
+                    blog(LOG_ERROR, "[RTX-VSR] FRUC: cuArrayCreate failed: %d", res);
+                }
+            }
+            reg_param.pArrResource[t] = m_cu_arrays[t];
+            m_cuda_ptrs[t] = cuda_ptrs[t]; // Keep device pointers for memcopy later
         }
         
         reg_param.uiCount = count;
@@ -156,7 +176,13 @@ void FrameInterpolation::Release()
         m_resources_registered = false;
     }
 
-    // Arrays are no longer used
+    for (int t = 0; t < 4; t++) {
+        if (m_cu_arrays[t] && m_cuArrayDestroy) {
+            typedef int (__stdcall *PFN_cuArrayDestroy)(void*);
+            ((PFN_cuArrayDestroy)m_cuArrayDestroy)(m_cu_arrays[t]);
+            m_cu_arrays[t] = nullptr;
+        }
+    }
 
     if (m_fruc_handle && m_destroy) {
         m_destroy(m_fruc_handle);
@@ -211,6 +237,8 @@ bool FrameInterpolation::Process(double timestamp)
 
     int in_idx = GetNextInputIndex();
     int out_idx = GetNextOutputIndex();
+    void* in_ptr = m_cu_arrays[in_idx];
+    void* out_ptr = m_cu_arrays[out_idx];
     void* in_dev_ptr = m_cuda_ptrs[in_idx];
     void* out_dev_ptr = m_cuda_ptrs[out_idx];
 
@@ -218,25 +246,79 @@ bool FrameInterpolation::Process(double timestamp)
     uint32_t out_frame_repeated = 0;
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
-    in_params.stFrameDataInput.pFrame = in_dev_ptr;
+    in_params.stFrameDataInput.pFrame = in_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitch; // Set the pitch!
-    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = 0; // Don't cast pointer, pass 0
+    in_params.stFrameDataInput.nCuSurfacePitch = 0; // Array doesn't need pitch
+    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = 0; // Don't cast pointer!
     in_params.bSkipWarp = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
-    out_params.stFrameDataOutput.pFrame = out_dev_ptr;
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitch;
+    out_params.stFrameDataOutput.pFrame = out_ptr;
+    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = 0;
 
     log_crash_step("FRUC Process: PushContext");
     PushCudaContext();
     
+    // Sync before copying to make sure NvCVImage_Transfer is done
+    if (m_cuCtxSynchronize) {
+        typedef int (__stdcall *PFN_cuCtxSynchronize)();
+        ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
+    }
+    
+    // Copy input device memory to CUDA array
+    typedef struct CUDA_MEMCPY2D_st {
+        size_t srcXInBytes, srcY;
+        int srcMemoryType;
+        const void *srcHost;
+        void *srcDevice;
+        void *srcArray;
+        size_t srcPitch;
+
+        size_t dstXInBytes, dstY;
+        int dstMemoryType;
+        void *dstHost;
+        void *dstDevice;
+        void *dstArray;
+        size_t dstPitch;
+
+        size_t WidthInBytes;
+        size_t Height;
+    } CUDA_MEMCPY2D;
+
+    CUDA_MEMCPY2D cpy = {};
+    cpy.srcMemoryType = 2; // CU_MEMORYTYPE_DEVICE
+    cpy.srcDevice = in_dev_ptr;
+    cpy.srcPitch = m_cuda_pitch;
+    cpy.dstMemoryType = 3; // CU_MEMORYTYPE_ARRAY
+    cpy.dstArray = in_ptr;
+    cpy.WidthInBytes = m_width * 4;
+    cpy.Height = m_height;
+    
+    typedef int (__stdcall *PFN_cuMemcpy2DAsync)(const CUDA_MEMCPY2D*, void*);
+    int cpy_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy, nullptr);
+    if (cpy_res != 0) {
+        blog(LOG_ERROR, "[RTX-VSR] FRUC: cuMemcpy2D IN failed: %d", cpy_res);
+    }
+
     log_crash_step("FRUC Process: m_process");
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
     
-    // Output is already in device memory, just sync context
+    // Copy output array back to device memory
     if (status == NvOFFRUC_SUCCESS) {
+        CUDA_MEMCPY2D cpy_out = {};
+        cpy_out.srcMemoryType = 3; // CU_MEMORYTYPE_ARRAY
+        cpy_out.srcArray = out_ptr;
+        cpy_out.dstMemoryType = 2; // CU_MEMORYTYPE_DEVICE
+        cpy_out.dstDevice = out_dev_ptr;
+        cpy_out.dstPitch = m_cuda_pitch;
+        cpy_out.WidthInBytes = m_width * 4;
+        cpy_out.Height = m_height;
+        int cpy_out_res = ((PFN_cuMemcpy2DAsync)m_cuMemcpy2DAsync)(&cpy_out, nullptr);
+        if (cpy_out_res != 0) {
+            blog(LOG_ERROR, "[RTX-VSR] FRUC: cuMemcpy2D OUT failed: %d", cpy_out_res);
+        }
+        
         if (m_cuCtxSynchronize) {
             typedef int (__stdcall *PFN_cuCtxSynchronize)();
             ((PFN_cuCtxSynchronize)m_cuCtxSynchronize)();
@@ -253,7 +335,7 @@ bool FrameInterpolation::Process(double timestamp)
         m_success_count++;
         if (m_process_count <= 3 || m_success_count % 300 == 0) {
             blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
-                 m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0, in_dev_ptr, out_dev_ptr);
+                 m_success_count, m_process_count, timestamp, out_params.stFrameDataOutput.bHasFrameRepetitionOccurred ? 1 : 0, in_ptr, out_ptr);
         }
         return true;
     }
@@ -263,7 +345,7 @@ bool FrameInterpolation::Process(double timestamp)
     if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
         blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f, skipWarp=%d, in=%p, out=%p)",
              status, m_success_count, m_fail_count, m_process_count, timestamp,
-             (m_process_count == 1) ? 1 : 0, in_dev_ptr, out_dev_ptr);
+             (m_process_count == 1) ? 1 : 0, in_ptr, out_ptr);
     }
 
     return false;
