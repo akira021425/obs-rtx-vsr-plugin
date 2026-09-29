@@ -322,12 +322,15 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     for (int y = 0; y < 16; ++y) {
                         memcpy(&current_hash[y * 16], pixel_data + y * linesize, 64);
                     }
-                    d3d_context->Unmap(filter->hash_stage_d3d11, 0);
-                    
-                    if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
+                    d3d_context->Unmap(filter->hash_stage_d3d11, 0);                    if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
                         is_new_frame = false;
                     } else {
                         memcpy(filter->last_hash, current_hash, sizeof(current_hash));
+                    }
+                    if (filter->frame_count <= 600) {
+                        uint64_t sum = 0;
+                        for (int i=0; i<256; i++) sum += current_hash[i];
+                        blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu is_new=%d hash_sum=%llu", filter->frame_count, is_new_frame, sum);
                     }
                 }
             }
@@ -381,19 +384,28 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
                     // Copy VSR output (RGBA) directly to FRUC input texture (also RGBA)
-                    if (filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx)) {
+                    bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx);
+                    if (filter->frame_count <= 600) {
+                        blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu TransferToFruc=%d", filter->frame_count, t_to_fruc);
+                    }
+                    if (t_to_fruc) {
                         
                         static double fruc_simulated_time = 0.0;
                         // 10,000,000 units = 1 second. 30 fps input = 333,333 units per frame.
-                        fruc_simulated_time += 333333.333333;
+                        fruc_simulated_time += 333333.333333;                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         
-                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
-                        
+                        if (filter->frame_count <= 600) {
+                            blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu FRUC success=%d", filter->frame_count, fruc_success);
+                        }
+
                         if (fruc_success) {
                             filter->fruc_success_count++;
                             
                             // Copy FRUC output (RGBA) back to d3d11_dst
-                            filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_dst);
+                            bool t_success = filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_dst);
+                            if (filter->frame_count <= 600) {
+                                blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu TransferFromFruc=%d", filter->frame_count, t_success);
+                            }
                         }
                     }
                 }
@@ -459,4 +471,8 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
+
+
 
