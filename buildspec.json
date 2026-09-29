@@ -14,7 +14,7 @@
             "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
             "label": "Pre-Built obs-deps",
             "hashes": {
-                "macos": "495687e63383d1a287684b6e2e9bfe246bb8f156fe265926afb1a325af1edd2a",
+                "macos": "495687e63383d1.2.7784b6e2e9bfe246bb8f156fe265926afb1a325af1edd2a",
                 "windows-x64": "c8c642c1070dc31ce9a0f1e4cef5bb992f4bff4882255788b5da12129e85caa7"
             }
         },
@@ -38,7 +38,7 @@
     },
     "name": "obs-rtx-vsr",
     "displayName": "OBS RTX VSR",
-    "version": "1.2.76",
+    "version": "1.2.77",
     "author": "Antigravity",
     "website": "https://github.com",
     "email": "me@example.com"
