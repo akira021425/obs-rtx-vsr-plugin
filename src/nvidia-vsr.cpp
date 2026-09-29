@@ -119,32 +119,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         return false;
     }
 
-    D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = dst_width;
-    desc.Height = dst_height;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_NV12;
-    desc.SampleDesc.Count = 1;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE; // REQUIRED for NvOFFRUC!
-
-    for (int i = 0; i < 3; i++) {
-        HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_fruc_d3d11[i]);
-        if (FAILED(hr)) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create D3D11 NV12 texture %d: 0x%08X", i, hr);
-            Release();
-            return false;
-        }
-        
-        m_fruc_d3d11_mapped[i] = GetOrInitImage(m_fruc_d3d11[i].Get());
-        if (!m_fruc_d3d11_mapped[i]) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to init NvCVImage for D3D11 NV12 texture %d", i);
-            Release();
-            return false;
-        }
-    }
+    // Removed NV12 init
 
     // Create separate BGRA textures for NvOFFRUC registration
     // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface (which maps to BGRA in DXGI)
