@@ -290,7 +290,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         return;
     }
 
-    gs_effect_t *def_effect = obs_get_base_effect(OBS_EFFECT_DEFAULT);
+    gs_effect_t *def_effect = obs_get_base_effect(OBS_EFFECT_OPAQUE);
     gs_eparam_t *image = gs_effect_get_param_by_name(def_effect, "image");
 
     bool success = false;
