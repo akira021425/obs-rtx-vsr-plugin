@@ -277,12 +277,7 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     
     if (m_context4 && m_fence) {
-        // Signal the fence after the input copy, then FLUSH so the copy + signal are
-        // actually submitted to the GPU before NvOFFRUC (CUDA) waits on the fence.
-        m_fence_value++;
-        m_context4->Signal(m_fence.Get(), m_fence_value);
-        m_context4->Flush();
-        in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
+        // No longer needed for CudaResource
     }
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
@@ -292,8 +287,7 @@ bool FrameInterpolation::Process(double timestamp)
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
     if (m_context4 && m_fence) {
-        m_fence_value++;
-        out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
+        // No longer needed for CudaResource
     }
 
     PushCudaContext();
@@ -301,8 +295,7 @@ bool FrameInterpolation::Process(double timestamp)
     PopCudaContext();
     
     if (m_context4 && m_fence) {
-        // GPU-side wait so subsequent D3D11 reads of the output texture happen after FRUC finishes
-        m_context4->Wait(m_fence.Get(), m_fence_value);
+        // No longer needed for CudaResource
     }
 
     m_process_count++;

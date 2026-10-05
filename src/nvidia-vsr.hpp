@@ -43,7 +43,6 @@ private:
     // Persistent NvCVImage objects (heap-allocated, reused every frame)
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;
-    NvCVImage *m_staging_nv12_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr; // GPU staging buffer for NV12 conversion
     
     // FRUC CUDA Native buffers (for NvOFFRUC CudaResource)

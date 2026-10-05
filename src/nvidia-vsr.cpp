@@ -112,20 +112,19 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
     }
 
 
-    status = NvCVImage_Create(dst_width, dst_height, (NvCVImage_PixelFormat)NVCV_NV12, (NvCVImage_ComponentType)NVCV_U8, NVCV_PLANAR, NVCV_GPU, 1, &m_staging_nv12_gpu);
-    if (status != NVCV_SUCCESS) {
-        blog(LOG_ERROR, "[RTX-VSR] Failed to create NV12 staging image (status: %d)", status);
-        Release();
-        return false;
-    }
 
-    // Removed NV12 init
 
     // Create native CUDA buffers for FRUC (BGRA format mapping to ARGBSurface in NvOFFRUC)
     for (int i = 0; i < 3; i++) {
         status = NvCVImage_Create(dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_fruc_cv[i]);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC CUDA native buffer %d: %d", i, status);
+            Release();
+            return false;
+        }
+        status = NvCVImage_Alloc(m_fruc_cv[i], dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+        if (status != NVCV_SUCCESS) {
+            blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC CUDA native buffer %d: %d", i, status);
             Release();
             return false;
         }
@@ -166,7 +165,7 @@ void NvidiaVSR::Release()
     if (m_dst_gpu) { NvCVImage_Destroy(m_dst_gpu); m_dst_gpu = nullptr; }
     if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
 
-    if (m_staging_nv12_gpu) { NvCVImage_Destroy(m_staging_nv12_gpu); m_staging_nv12_gpu = nullptr; }
+
     for (int i = 0; i < 3; i++) {
         if (m_fruc_cv[i]) {
             NvCVImage_Destroy(m_fruc_cv[i]);
