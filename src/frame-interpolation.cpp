@@ -36,16 +36,16 @@ bool FrameInterpolation::LoadDLL()
 }
 
 void FrameInterpolation::PushCudaContext() {
-    if (m_cuCtxSetCurrent && m_fruc_ctx) {
+    if (m_cuCtxSetCurrent && m_cu_ctx) {
         typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
-        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_fruc_ctx);
+        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_cu_ctx);
     }
 }
 
 void FrameInterpolation::PopCudaContext() {
-    if (m_cuCtxSetCurrent) {
+    if (m_cuCtxSetCurrent && m_cu_ctx) {
         typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
-        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(nullptr);
+        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_cu_ctx);
     }
 }
 
