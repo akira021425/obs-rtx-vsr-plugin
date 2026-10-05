@@ -78,7 +78,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_src_gpu, src_width, src_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    status = NvCVImage_Alloc(m_src_gpu, src_width, src_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc src GPU image (status: %d)", status);
         Release();
@@ -91,7 +91,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_dst_gpu, dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    status = NvCVImage_Alloc(m_dst_gpu, dst_width, dst_height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst GPU image (status: %d)", status);
         Release();
@@ -104,7 +104,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
         Release();
         return false;
     }
-    status = NvCVImage_Alloc(m_dst_bgra_gpu, dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+    status = NvCVImage_Alloc(m_dst_bgra_gpu, dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] Failed to alloc dst BGRA GPU image (status: %d)", status);
         Release();
@@ -122,7 +122,7 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
             Release();
             return false;
         }
-        status = NvCVImage_Alloc(m_fruc_cv[i], dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1);
+        status = NvCVImage_Alloc(m_fruc_cv[i], dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
         if (status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC CUDA native buffer %d: %d", i, status);
             Release();
@@ -306,6 +306,14 @@ bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* rgba_tex, int fruc_idx) {
     NvCV_Status status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
     
     NvCVImage_UnmapResource(src_img, m_stream);
+
+    if (m_nvcuda_dll && m_stream) {
+        typedef int (__stdcall *PFN_cuStreamSynchronize)(void*);
+        PFN_cuStreamSynchronize cuStreamSynchronize = (PFN_cuStreamSynchronize)GetProcAddress(m_nvcuda_dll, "cuStreamSynchronize");
+        if (cuStreamSynchronize) {
+            cuStreamSynchronize(m_stream);
+        }
+    }
 
     return status == NVCV_SUCCESS;
 }
