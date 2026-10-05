@@ -65,8 +65,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.Format = m_tex_format;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
     for (int i = 0; i < 3; i++) {
         if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_tex[i]))) {
