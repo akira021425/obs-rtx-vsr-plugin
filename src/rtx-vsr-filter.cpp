@@ -190,12 +190,17 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     uint32_t target_width = (uint32_t)(width * filter->resolution_scale);
     uint32_t target_height = (uint32_t)(height * filter->resolution_scale);
 
+    void (*log_step)(const char*) = [](const char* s) {
+        FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
+        if (f) { fprintf(f, "%s\n", s); fclose(f); }
+    };
+
+    log_step("render start");
+
     // Check if source resolution changed
     if (filter->is_initialized && (filter->src_width != width || filter->src_height != height ||
                                     filter->out_width != target_width || filter->out_height != target_height)) {
-        blog(LOG_INFO, "[RTX-VSR] Resolution changed: %ux%u->%ux%u => %ux%u->%ux%u, reinitializing",
-             filter->src_width, filter->src_height, filter->out_width, filter->out_height,
-             width, height, target_width, target_height);
+        log_step("resolution changed");
         filter->nvidia_vsr->Release();
         filter->fruc->Release();
         if (filter->output_texture) { gs_texture_destroy(filter->output_texture); filter->output_texture = nullptr; }
@@ -207,8 +212,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         filter->vsr_failed = false;
     }
 
+    log_step("before init");
+
     // One-time initialization
     if (!filter->is_initialized && !filter->vsr_failed) {
+        log_step("init start");
         blog(LOG_INFO, "[RTX-VSR] Initializing: source=%ux%u, output=%ux%u, scale=%.2f",
              width, height, target_width, target_height, filter->resolution_scale);
              
@@ -244,9 +252,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             gs_flush();
             
             // VSR init (before FRUC, because VSR allocates the CUDA NV12 buffers for FRUC)
+            log_step("init vsr calling");
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
+                log_step("init vsr failed");
                 blog(LOG_ERROR, "[RTX-VSR] VSR initialization failed");
+                filter->vsr_failed = true;
             } else {
+                log_step("init vsr success, calling fruc");
                 NvCVImage* cv_images[3];
                 for (int i = 0; i < 3; i++) {
                     cv_images[i] = filter->nvidia_vsr->GetFrucCudaImage(i);
@@ -255,10 +267,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 // FRUC init
                 void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
                 if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cv_images, cu_ctx)) {
+                    log_step("init fruc failed");
                     blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
 
                 }
+                log_step("init fruc done");
             }
+            log_step("init all done");
 
             filter->src_width = width;
             filter->src_height = height;
@@ -390,6 +405,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             }
 
             // ===== FRUC processing =====
+            log_step("fruc start");
             if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
                 filter->fruc_attempt_count++;
                 
@@ -397,21 +413,27 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     // Duplicate frame: show the ORIGINAL VSR output (already in d3d11_dst).
                     // This gives true 60fps: alternating interpolated + original frames.
                     // Do nothing - d3d11_dst already contains the VSR/cached output.
+                    log_step("fruc duplicate");
                 } else {
                     // New frame: copy RGBA to FRUC input, process, copy output back
+                    log_step("fruc new");
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
                     // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
+                    log_step("fruc transfer in");
                     bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx);
                     if (t_to_fruc) {
+                        log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
                         fruc_base_time += 333333; // 100ns units for 30fps
                         double fruc_simulated_time = (double)fruc_base_time;
                         bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         
                         if (fruc_success) {
+                            log_step("fruc success");
                             filter->fruc_success_count++;
+                            
                             
                             if (!filter->fruc_cache_texture) {
                                 filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
