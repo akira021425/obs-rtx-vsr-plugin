@@ -203,12 +203,33 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     if (!m_ready || !m_effect || !src_tex || !dst_tex) return false;
 
     NvCV_Status status;
+    
+    struct CudaContextGuard {
+        HMODULE nvcuda;
+        bool pushed;
+        CudaContextGuard(HMODULE lib, void* ctx) : nvcuda(lib), pushed(false) {
+            if (nvcuda && ctx) {
+                typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                PFN_cuCtxPushCurrent push = (PFN_cuCtxPushCurrent)GetProcAddress(nvcuda, "cuCtxPushCurrent");
+                if (push) { push(ctx); pushed = true; }
+            }
+        }
+        ~CudaContextGuard() {
+            if (pushed && nvcuda) {
+                typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                PFN_cuCtxPopCurrent pop = (PFN_cuCtxPopCurrent)GetProcAddress(nvcuda, "cuCtxPopCurrent");
+                if (pop) { void* tmp; pop(&tmp); }
+            }
+        }
+    } ctxGuard(m_nvcuda_dll, m_cu_ctx);
 
     // 1. Get or initialize wrapped D3D11 textures
     NvCVImage* src_img = GetOrInitImage(src_tex);
     NvCVImage* dst_img = GetOrInitImage(dst_tex);
     
-    if (!src_img || !dst_img) return false;
+    if (!src_img || !dst_img) {
+        return false;
+    }
 
     // 2. Map source texture, transfer to GPU staging buffer
     status = NvCVImage_MapResource(src_img, m_stream);
