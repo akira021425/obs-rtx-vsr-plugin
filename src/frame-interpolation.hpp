@@ -76,6 +76,17 @@ private:
     uint64_t m_process_count = 0;
     uint64_t m_success_count = 0;
     uint64_t m_fail_count = 0;
+    uint64_t m_interp_count = 0;   // FRUC produced a real interpolated frame
+    uint64_t m_repeat_count = 0;   // FRUC fell back to frame repetition
+
+    // Diagnostics: tiny staging texture to read back center pixels of FRUC textures
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_diag_stage;
+    uint64_t DiagSum(ID3D11Texture2D* tex);
     
     bool LoadDLL();
+
+public:
+    uint64_t GetInterpCount() const { return m_interp_count; }
+    uint64_t GetRepeatCount() const { return m_repeat_count; }
 };
+

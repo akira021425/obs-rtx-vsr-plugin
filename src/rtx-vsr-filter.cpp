@@ -328,7 +328,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     } else {
                         memcpy(filter->last_hash, current_hash, sizeof(current_hash));
                     }
-                    if (filter->frame_count <= 600) {
+                    if (filter->frame_count <= 60) {
                         uint64_t sum = 0;
                         for (int i=0; i<256; i++) sum += current_hash[i];
                         blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu is_new=%d hash_sum=%llu", filter->frame_count, is_new_frame, sum);
@@ -430,9 +430,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // Periodic stats logging (every 10 seconds)
     uint64_t now = os_gettime_ns();
     if (filter->last_log_time > 0 && (now - filter->last_log_time) >= 10000000000ULL) {
-        blog(LOG_INFO, "[RTX-VSR] Stats: frames=%llu new=%llu dup=%llu vsr=%llu fruc_try=%llu fruc_ok=%llu",
+        blog(LOG_INFO, "[RTX-VSR] Stats: frames=%llu new=%llu dup=%llu vsr=%llu fruc_try=%llu fruc_ok=%llu fruc_interp=%llu fruc_repeat=%llu",
              filter->frame_count, filter->new_frame_count, filter->dup_frame_count,
-             filter->vsr_count, filter->fruc_attempt_count, filter->fruc_success_count);
+             filter->vsr_count, filter->fruc_attempt_count, filter->fruc_success_count,
+             filter->fruc->GetInterpCount(), filter->fruc->GetRepeatCount());
         filter->last_log_time = now;
     }
 }

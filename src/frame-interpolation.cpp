@@ -191,6 +191,7 @@ void FrameInterpolation::Release()
         m_fence_event = nullptr;
     }
     m_fence.Reset();
+    m_diag_stage.Reset();
     m_context4.Reset();
     m_device5.Reset();
     
@@ -216,18 +217,49 @@ void* FrameInterpolation::GetNextOutputPointer() {
     return m_cuda_ptrs[GetNextOutputIndex()];
 }
 
-static void log_crash_step(const char* step) {
-    FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
-    if (f) {
-        fprintf(f, "%s\n", step);
-        fclose(f);
+// Reads back a 16x16 block from the center of a FRUC texture and returns a checksum.
+// Used only for a limited number of frames to verify that FRUC receives distinct inputs.
+uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
+{
+    if (!tex || !m_device || !m_context4) return 0;
+    if (!m_diag_stage) {
+        D3D11_TEXTURE2D_DESC src_desc = {};
+        tex->GetDesc(&src_desc);
+        D3D11_TEXTURE2D_DESC desc = {};
+        desc.Width = 16;
+        desc.Height = 16;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = src_desc.Format;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_STAGING;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_diag_stage))) return 0;
     }
+    D3D11_BOX box;
+    box.left = m_width / 2 - 8;
+    box.right = m_width / 2 + 8;
+    box.top = m_height / 2 - 8;
+    box.bottom = m_height / 2 + 8;
+    box.front = 0;
+    box.back = 1;
+    m_context4->CopySubresourceRegion(m_diag_stage.Get(), 0, 0, 0, 0, tex, 0, &box);
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    uint64_t sum = 0;
+    if (SUCCEEDED(m_context4->Map(m_diag_stage.Get(), 0, D3D11_MAP_READ, 0, &mapped))) {
+        for (int y = 0; y < 16; ++y) {
+            const uint8_t* row = (const uint8_t*)mapped.pData + y * mapped.RowPitch;
+            for (int x = 0; x < 64; ++x) sum += (uint64_t)row[x] * (uint64_t)(x + 1 + y * 64);
+        }
+        m_context4->Unmap(m_diag_stage.Get(), 0);
+    }
+    return sum;
 }
 
 bool FrameInterpolation::Process(double timestamp)
 {
-    log_crash_step("FRUC Process: Start");
     if (!m_fruc_handle || !m_resources_registered) return false;
+
 
     if (!m_context4 && m_device) {
         Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_ctx;
@@ -237,74 +269,88 @@ bool FrameInterpolation::Process(double timestamp)
 
     int in_idx = GetNextInputIndex();
     int out_idx = GetNextOutputIndex();
-    void* in_ptr = m_cu_arrays[in_idx];
-    void* out_ptr = m_cu_arrays[out_idx];
+    int prev_idx = (in_idx == 1) ? 2 : 1;
     void* in_dev_ptr = m_cuda_ptrs[in_idx];
     void* out_dev_ptr = m_cuda_ptrs[out_idx];
 
+    // Diagnostics only for the first frames and periodically afterwards
+    const bool diag = (m_process_count < 20) || (m_process_count % 600 == 0);
+    uint64_t sum_in = 0, sum_prev = 0, sum_out = 0;
+    if (diag) {
+        sum_in = DiagSum((ID3D11Texture2D*)m_cuda_ptrs[in_idx]);
+        sum_prev = DiagSum((ID3D11Texture2D*)m_cuda_ptrs[prev_idx]);
+    }
+
     bool out_frame_repeated = false;
 
-    // For DirectX11Resource, in_dev_ptr and out_dev_ptr hold the ID3D11Texture2D*
+    // For DirectX11Resource, pFrame holds the ID3D11Texture2D*
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4; // BGRA pitch
+    in_params.stFrameDataInput.nCuSurfacePitch = 0;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // Skip warping for the very first frame to initialize state
+    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     
     if (m_context4 && m_fence) {
-        // Signal the fence from D3D11 so NvOFFRUC waits for the input texture copy to complete
+        // Signal the fence after the input copy, then FLUSH so the copy + signal are
+        // actually submitted to the GPU before NvOFFRUC (CUDA) waits on the fence.
         m_fence_value++;
         m_context4->Signal(m_fence.Get(), m_fence_value);
+        m_context4->Flush();
         in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
     }
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
-    out_params.stFrameDataOutput.nTimeStamp = timestamp - (333333.333333 / 2.0); // Output timestamp is exactly halfway between frames
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4; // BGRA pitch
+    out_params.stFrameDataOutput.nTimeStamp = timestamp - (333333.333333 / 2.0); // halfway between prev and current
+    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
     if (m_context4 && m_fence) {
-        // Assign the fence value for NvOFFRUC to signal when it completes
         m_fence_value++;
         out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
     }
 
-    log_crash_step("FRUC Process: m_process");
-    PushCudaContext(); // Pushes m_fruc_ctx
+    PushCudaContext();
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
-    PopCudaContext();  // Pops it back to NULL
+    PopCudaContext();
     
     if (m_context4 && m_fence) {
-        // Wait on the D3D11 side for NvOFFRUC to complete so the output texture is ready for drawing
+        // GPU-side wait so subsequent D3D11 reads of the output texture happen after FRUC finishes
         m_context4->Wait(m_fence.Get(), m_fence_value);
     }
-    
-    log_crash_step("FRUC Process: Done");
 
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
+        if (diag) {
+            sum_out = DiagSum((ID3D11Texture2D*)out_dev_ptr);
+            blog(LOG_INFO, "[RTX-VSR-FRUC-DIAG] n=%llu repeated=%d in[%d]=%llu prev[%d]=%llu out=%llu %s%s",
+                 m_process_count, out_frame_repeated ? 1 : 0,
+                 in_idx, sum_in, prev_idx, sum_prev, sum_out,
+                 (sum_in == sum_prev) ? "IN==PREV " : "",
+                 (sum_out == sum_prev) ? "OUT==PREV" : ((sum_out == sum_in) ? "OUT==IN" : "OUT=NEW"));
+        }
+
         if (m_process_count == 1) {
-            // First frame: optical flow state was initialized, but no valid frame was interpolated.
-            // Return false so the caller doesn't try to draw the output.
+            // First frame: state initialized only, nothing interpolated yet
             return false;
         }
 
         m_success_count++;
-        if (m_process_count <= 3 || m_success_count % 300 == 0) {
-            blog(LOG_INFO, "[RTX-VSR] FRUC: Process OK (success=%llu, total=%llu, ts=%.3f, repeated=%d, in=%p, out=%p)",
-                 m_success_count, m_process_count, timestamp, out_frame_repeated ? 1 : 0, in_dev_ptr, out_dev_ptr);
+        if (out_frame_repeated) m_repeat_count++;
+        else m_interp_count++;
+
+        if (m_success_count % 300 == 0) {
+            blog(LOG_INFO, "[RTX-VSR] FRUC: success=%llu interpolated=%llu repeated=%llu",
+                 m_success_count, m_interp_count, m_repeat_count);
         }
         return true;
     }
 
     m_fail_count++;
-    // Log errors sparingly
     if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
-        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f, skipWarp=%d, in=%p, out=%p)",
-             status, m_success_count, m_fail_count, m_process_count, timestamp,
-             (m_process_count == 1) ? 1 : 0, in_dev_ptr, out_dev_ptr);
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f)",
+             status, m_success_count, m_fail_count, m_process_count, timestamp);
     }
 
     return false;
