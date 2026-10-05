@@ -121,29 +121,15 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
 
     // Removed NV12 init
 
-    // Create separate BGRA textures for NvOFFRUC registration
-    // NvOFFRUC with DirectX11Resource requires SHARED|SHARED_NTHANDLE and ARGBSurface (which maps to BGRA in DXGI)
-    D3D11_TEXTURE2D_DESC rgba_desc = {};
-    rgba_desc.Width = dst_width;
-    rgba_desc.Height = dst_height;
-    rgba_desc.MipLevels = 1;
-    rgba_desc.ArraySize = 1;
-    rgba_desc.Format = DXGI_FORMAT_NV12;
-    rgba_desc.SampleDesc.Count = 1;
-    rgba_desc.Usage = D3D11_USAGE_DEFAULT;
-    rgba_desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    rgba_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
-
+    // Create native CUDA buffers for FRUC (BGRA format mapping to ARGBSurface in NvOFFRUC)
     for (int i = 0; i < 3; i++) {
-        HRESULT hr = m_device->CreateTexture2D(&rgba_desc, nullptr, &m_fruc_rgba[i]);
-        if (FAILED(hr)) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC BGRA texture %d: 0x%08X", i, hr);
+        status = NvCVImage_Create(dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_fruc_cv[i]);
+        if (status != NVCV_SUCCESS) {
+            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC CUDA native buffer %d: %d", i, status);
             Release();
             return false;
         }
     }
-
-    // 6. Wrapper NvCVImage objects for D3D11 textures will be created dynamically in Process()
 
 
     // 7. Bind the GPU staging images to the effect (done ONCE, not every frame)
@@ -182,9 +168,10 @@ void NvidiaVSR::Release()
 
     if (m_staging_nv12_gpu) { NvCVImage_Destroy(m_staging_nv12_gpu); m_staging_nv12_gpu = nullptr; }
     for (int i = 0; i < 3; i++) {
-        m_fruc_d3d11_mapped[i] = nullptr; // cleaned up by m_tex_map
-        m_fruc_d3d11[i].Reset();
-        m_fruc_rgba[i].Reset();
+        if (m_fruc_cv[i]) {
+            NvCVImage_Destroy(m_fruc_cv[i]);
+            m_fruc_cv[i] = nullptr;
+        }
     }
 
     if (m_effect) {
@@ -309,21 +296,16 @@ static void log_crash_step(const char* step) {
 
 bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* rgba_tex, int fruc_idx) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!rgba_tex || !m_fruc_rgba[fruc_idx]) return false;
+    if (!rgba_tex || !m_fruc_cv[fruc_idx]) return false;
     
     NvCVImage* src_img = GetOrInitImage(rgba_tex);
-    NvCVImage* dst_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
+    NvCVImage* dst_img = m_fruc_cv[fruc_idx];
     if (!src_img || !dst_img) return false;
 
     if (NvCVImage_MapResource(src_img, m_stream) != NVCV_SUCCESS) return false;
-    if (NvCVImage_MapResource(dst_img, m_stream) != NVCV_SUCCESS) {
-        NvCVImage_UnmapResource(src_img, m_stream);
-        return false;
-    }
 
     NvCV_Status status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
     
-    NvCVImage_UnmapResource(dst_img, m_stream);
     NvCVImage_UnmapResource(src_img, m_stream);
 
     return status == NVCV_SUCCESS;
@@ -331,22 +313,17 @@ bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* rgba_tex, int fruc_idx) {
 
 bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* rgba_tex) {
     if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!rgba_tex || !m_fruc_rgba[fruc_idx]) return false;
+    if (!rgba_tex || !m_fruc_cv[fruc_idx]) return false;
 
-    NvCVImage* src_img = GetOrInitImage(m_fruc_rgba[fruc_idx].Get());
+    NvCVImage* src_img = m_fruc_cv[fruc_idx];
     NvCVImage* dst_img = GetOrInitImage(rgba_tex);
     if (!src_img || !dst_img) return false;
 
-    if (NvCVImage_MapResource(src_img, m_stream) != NVCV_SUCCESS) return false;
-    if (NvCVImage_MapResource(dst_img, m_stream) != NVCV_SUCCESS) {
-        NvCVImage_UnmapResource(src_img, m_stream);
-        return false;
-    }
+    if (NvCVImage_MapResource(dst_img, m_stream) != NVCV_SUCCESS) return false;
 
     NvCV_Status status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
     
     NvCVImage_UnmapResource(dst_img, m_stream);
-    NvCVImage_UnmapResource(src_img, m_stream);
 
     return status == NVCV_SUCCESS;
 }

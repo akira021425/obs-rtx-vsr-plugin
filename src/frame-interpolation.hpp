@@ -6,13 +6,14 @@
 #include <wrl/client.h>
 #include "NvOFFRUC.h"
 #include <windows.h>
+#include "nvCVImage.h"
 
 class FrameInterpolation {
 public:
     FrameInterpolation();
     ~FrameInterpolation();
 
-    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, ID3D11Texture2D** d3d11_textures, void* cu_ctx);
+    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, NvCVImage** cv_images, void* cu_ctx);
     void Release();
 
     void* GetNextInputPointer();
@@ -58,6 +59,7 @@ private:
     DXGI_FORMAT m_tex_format = DXGI_FORMAT_NV12;
 
     void* m_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
+    size_t m_cuda_pitches[3] = {0, 0, 0};
     int m_cuda_pitch = 0;
     
     void* m_cu_arrays[3] = {nullptr, nullptr, nullptr};

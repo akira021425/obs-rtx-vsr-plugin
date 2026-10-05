@@ -49,7 +49,7 @@ void FrameInterpolation::PopCudaContext() {
     }
 }
 
-bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, ID3D11Texture2D** d3d11_textures, void* cu_ctx)
+bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, NvCVImage** cv_images, void* cu_ctx)
 {
     m_device = d3d11_device;
     m_width = width;
@@ -67,19 +67,6 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 
     if (!LoadDLL()) return false;
 
-    // Initialize D3D11 fence for synchronization (required by NvOFFRUC for DirectX11Resource)
-    HRESULT hr = d3d11_device.As(&m_device5);
-    if (SUCCEEDED(hr) && m_device5) {
-        hr = m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence));
-        if (SUCCEEDED(hr)) {
-            m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        } else {
-            blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to create D3D11 Fence (hr: 0x%X)", hr);
-        }
-    } else {
-        blog(LOG_WARNING, "[RTX-VSR] FRUC: Failed to get ID3D11Device5 for Fence (hr: 0x%X)", hr);
-    }
-
     int count = 3;
     {
         if (m_fruc_handle) {
@@ -87,15 +74,15 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (DirectX11Resource, ARGBSurface)", count);
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (CudaResource, ARGBSurface)", count);
         
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = d3d11_device.Get();
-        params.eResourceType = DirectX11Resource;
-        params.eCUDAResourceType = CudaResourceCuDevicePtr; // Ignored for DX11
-        params.eSurfaceFormat = NV12Surface; // NV12 textures
+        params.pDevice = cu_ctx; // For CudaResource, pDevice is the CUcontext
+        params.eResourceType = CudaResource;
+        params.eCUDAResourceType = CudaResourceCuDevicePtr; 
+        params.eSurfaceFormat = ARGBSurface; // Using BGRA CUdeviceptr
 
         // DO NOT push any context here. NvOFFRUC creates its own context during m_create.
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
@@ -112,13 +99,11 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         }
         
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
-        if (m_fence) {
-            reg_param.pD3D11FenceObj = m_fence.Get();
-        }
         
         for (int t = 0; t < count; t++) {
-            reg_param.pArrResource[t] = d3d11_textures[t];
-            m_cuda_ptrs[t] = d3d11_textures[t];
+            reg_param.pArrResource[t] = cv_images[t]->pixels; // CUdeviceptr
+            m_cuda_ptrs[t] = cv_images[t]->pixels;
+            m_cuda_pitches[t] = cv_images[t]->pitch;
         }
         
         reg_param.uiCount = count;
@@ -131,10 +116,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource (ARGB), %d resources", count);
-            blog(LOG_INFO, "[RTX-VSR] NVIDIA Frame Interpolation initialized (%ux%u, D3D11 BGRA, %d res)", 
-                 width, height, count);
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with CudaResource (ARGB), %d resources", count);
             return true;
         }
         
@@ -276,10 +258,7 @@ bool FrameInterpolation::Process(double timestamp)
     // Diagnostics only for the first frames and periodically afterwards
     const bool diag = (m_process_count < 20) || (m_process_count % 600 == 0);
     uint64_t sum_in = 0, sum_prev = 0, sum_out = 0;
-    if (diag) {
-        sum_in = DiagSum((ID3D11Texture2D*)m_cuda_ptrs[in_idx]);
-        sum_prev = DiagSum((ID3D11Texture2D*)m_cuda_ptrs[prev_idx]);
-    }
+    // DiagSum is disabled because inputs are now CUdeviceptr, not ID3D11Texture2D
 
     bool out_frame_repeated = false;
 
@@ -289,11 +268,11 @@ bool FrameInterpolation::Process(double timestamp)
         out_timestamp = timestamp; // Same as input for first frame
     }
 
-    // For DirectX11Resource, pFrame holds the ID3D11Texture2D*
+    // For CudaResourceCuDevicePtr, pFrame holds the CUdeviceptr
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = 0;
+    in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitches[in_idx];
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     
@@ -309,7 +288,7 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
     out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
-    out_params.stFrameDataOutput.nCuSurfacePitch = 0;
+    out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitches[out_idx];
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 
     if (m_context4 && m_fence) {
@@ -329,12 +308,12 @@ bool FrameInterpolation::Process(double timestamp)
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
         if (diag) {
-            sum_out = DiagSum((ID3D11Texture2D*)out_dev_ptr);
-            blog(LOG_INFO, "[RTX-VSR-FRUC-DIAG] n=%llu repeated=%d in[%d]=%llu prev[%d]=%llu out=%llu %s%s",
-                 m_process_count, out_frame_repeated ? 1 : 0,
-                 in_idx, sum_in, prev_idx, sum_prev, sum_out,
-                 (sum_in == sum_prev) ? "IN==PREV " : "",
-                 (sum_out == sum_prev) ? "OUT==PREV" : ((sum_out == sum_in) ? "OUT==IN" : "OUT=NEW"));
+            // sum_out = DiagSum((ID3D11Texture2D*)out_dev_ptr);
+            // blog(LOG_INFO, "[RTX-VSR-FRUC-DIAG] n=%llu repeated=%d in[%d]=%llu prev[%d]=%llu out=%llu %s%s",
+            //     m_process_count, out_frame_repeated ? 1 : 0,
+            //     in_idx, sum_in, prev_idx, sum_prev, sum_out,
+            //     (sum_in == sum_prev) ? "IN==PREV " : "",
+            //     (sum_out == sum_prev) ? "OUT==PREV" : ((sum_out == sum_in) ? "OUT==IN" : "OUT=NEW"));
         }
 
         if (m_process_count == 1) {

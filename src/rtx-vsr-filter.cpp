@@ -246,16 +246,15 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             // VSR init (before FRUC, because VSR allocates the CUDA NV12 buffers for FRUC)
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
                 blog(LOG_ERROR, "[RTX-VSR] VSR initialization failed");
-                filter->vsr_failed = true;
             } else {
-                ID3D11Texture2D* d3d11_textures[3];
+                NvCVImage* cv_images[3];
                 for (int i = 0; i < 3; i++) {
-                    d3d11_textures[i] = filter->nvidia_vsr->GetFrucRgbaTexture(i);
+                    cv_images[i] = filter->nvidia_vsr->GetFrucCudaImage(i);
                 }
                 
                 // FRUC init
                 void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
-                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, d3d11_textures, cu_ctx)) {
+                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cv_images, cu_ctx)) {
                     blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
 
                 }

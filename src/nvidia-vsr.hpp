@@ -24,8 +24,7 @@ public:
 
     // Fast CUDA colorspace conversion (e.g. BGRA <-> NV12)
 
-    ID3D11Texture2D* GetFrucD3D11Texture(int index) { return (index >= 0 && index < 3) ? m_fruc_d3d11[index].Get() : nullptr; }
-    ID3D11Texture2D* GetFrucRgbaTexture(int index) { return (index >= 0 && index < 3) ? m_fruc_rgba[index].Get() : nullptr; }
+    NvCVImage* GetFrucCudaImage(int index) { return (index >= 0 && index < 3) ? m_fruc_cv[index] : nullptr; }
     bool TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx);
     bool TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex);
 
@@ -47,15 +46,9 @@ private:
     NvCVImage *m_staging_nv12_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr; // GPU staging buffer for NV12 conversion
     
-    // FRUC D3D11 NV12 buffers (for color conversion pipeline)
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_d3d11[3];
-    NvCVImage* m_fruc_d3d11_mapped[3] = {nullptr, nullptr, nullptr};
-    
-    // FRUC D3D11 BGRA buffers (for NvOFFRUC registration)
-    // 0: Output
-    // 1, 2: Inputs
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_fruc_rgba[3];
-    
+    // FRUC CUDA Native buffers (for NvOFFRUC CudaResource)
+    NvCVImage *m_fruc_cv[3] = {nullptr, nullptr, nullptr};
+
     // Cache for D3D11 wrapper images to avoid duplicate registration
     std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;
     NvCVImage* GetOrInitImage(ID3D11Texture2D* tex);
