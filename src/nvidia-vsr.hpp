@@ -24,10 +24,6 @@ public:
 
     // Fast CUDA colorspace conversion (e.g. BGRA <-> NV12)
 
-    NvCVImage* GetFrucCudaImage(int index) { return (index >= 0 && index < 3) ? m_fruc_cv[index] : nullptr; }
-    bool TransferToFruc(ID3D11Texture2D* bgra_tex, int fruc_idx);
-    bool TransferFromFruc(int fruc_idx, ID3D11Texture2D* bgra_tex);
-
     void SetQuality(int quality); // 1: Low, 2: Medium, 3: High, 4: Ultra
     void SetArtifactReduction(bool enable);
 
@@ -44,9 +40,6 @@ private:
     NvCVImage *m_src_gpu = nullptr;  // GPU staging buffer for SDK input (RGBA)
     NvCVImage *m_dst_gpu = nullptr;
     NvCVImage *m_dst_bgra_gpu = nullptr; // GPU staging buffer for NV12 conversion
-    
-    // FRUC CUDA Native buffers (for NvOFFRUC CudaResource)
-    NvCVImage *m_fruc_cv[3] = {nullptr, nullptr, nullptr};
 
     // Cache for D3D11 wrapper images to avoid duplicate registration
     std::unordered_map<ID3D11Texture2D*, NvCVImage*> m_tex_map;

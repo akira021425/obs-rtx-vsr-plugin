@@ -13,13 +13,12 @@ public:
     FrameInterpolation();
     ~FrameInterpolation();
 
-    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, NvCVImage** cv_images, void* cu_ctx);
+    bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height);
     void Release();
 
-    void* GetNextInputPointer();
-    void* GetNextOutputPointer();
     int GetNextInputIndex();
     int GetNextOutputIndex();
+    ID3D11Texture2D* GetTexture(int index) { return m_tex[index].Get(); }
     bool Process(double timestamp);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
@@ -31,6 +30,9 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_tex[3];
+    
     NvOFFRUCHandle m_fruc_handle = nullptr;
     HMODULE m_fruc_dll = nullptr;
 
@@ -40,30 +42,11 @@ private:
     PtrToFuncNvOFFRUCProcess m_process = nullptr;
     PtrToFuncNvOFFRUCDestroy m_destroy = nullptr;
 
-    void* m_cu_ctx = nullptr;
-    HMODULE m_nvcuda_dll = nullptr;
-    void* m_cuCtxGetCurrent = nullptr;
-    void* m_cuCtxSetCurrent = nullptr;
-    void* m_fruc_ctx = nullptr;
-    void* m_cuArrayCreate = nullptr;
-    void* m_cuMemcpy2DAsync = nullptr;
-    void* m_cuArrayDestroy = nullptr;
-    void* m_cuCtxSynchronize = nullptr;
-
-    void PushCudaContext();
-    void PopCudaContext();
-
     bool m_enabled = true;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
-    DXGI_FORMAT m_tex_format = DXGI_FORMAT_NV12;
+    DXGI_FORMAT m_tex_format = DXGI_FORMAT_B8G8R8A8_UNORM;
 
-    void* m_cuda_ptrs[3] = {nullptr, nullptr, nullptr};
-    size_t m_cuda_pitches[3] = {0, 0, 0};
-    int m_cuda_pitch = 0;
-    
-    void* m_cu_arrays[3] = {nullptr, nullptr, nullptr};
-    
     // D3D11 fence for synchronization
     Microsoft::WRL::ComPtr<ID3D11Device5> m_device5;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext4> m_context4;

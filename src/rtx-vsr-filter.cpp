@@ -259,20 +259,14 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 filter->vsr_failed = true;
             } else {
                 log_step("init vsr success, calling fruc");
-                NvCVImage* cv_images[3];
-                for (int i = 0; i < 3; i++) {
-                    cv_images[i] = filter->nvidia_vsr->GetFrucCudaImage(i);
-                }
                 
                 // FRUC init
-                void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
                 char buf[256];
-                snprintf(buf, sizeof(buf), "init fruc calling (cu_ctx=%p, d3d=%p)", cu_ctx, d3d11_dev.Get());
+                snprintf(buf, sizeof(buf), "init fruc calling (d3d=%p)", d3d11_dev.Get());
                 log_step(buf);
-                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cv_images, cu_ctx)) {
+                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
                     log_step("init fruc failed");
                     blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
-
                 }
                 log_step("init fruc done");
             }
@@ -425,8 +419,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     
                     // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
                     log_step("fruc transfer in");
-                    bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx);
-                    if (t_to_fruc) {
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
+                        
                         log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
                         fruc_base_time += 333333; // 100ns units for 30fps
@@ -437,14 +433,13 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             log_step("fruc success");
                             filter->fruc_success_count++;
                             
-                            
                             if (!filter->fruc_cache_texture) {
                                 filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                             }
                             if (filter->fruc_cache_texture) {
                                 ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
                                 if (d3d11_fruc_out) {
-                                    filter->nvidia_vsr->TransferFromFruc(fruc_out_idx, d3d11_fruc_out);
+                                    context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
                                 }
                             }
                         }

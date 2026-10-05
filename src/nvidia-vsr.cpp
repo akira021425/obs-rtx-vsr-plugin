@@ -114,22 +114,6 @@ bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
 
 
 
-    // Create native CUDA buffers for FRUC (BGRA format mapping to ARGBSurface in NvOFFRUC)
-    for (int i = 0; i < 3; i++) {
-        status = NvCVImage_Create(dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 1, &m_fruc_cv[i]);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to create FRUC CUDA native buffer %d: %d", i, status);
-            Release();
-            return false;
-        }
-        status = NvCVImage_Alloc(m_fruc_cv[i], dst_width, dst_height, NVCV_BGRA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
-        if (status != NVCV_SUCCESS) {
-            blog(LOG_ERROR, "[RTX-VSR] Failed to alloc FRUC CUDA native buffer %d: %d", i, status);
-            Release();
-            return false;
-        }
-    }
-
 
     // 7. Bind the GPU staging images to the effect (done ONCE, not every frame)
     NvVFX_SetImage(m_effect, NVVFX_INPUT_IMAGE, m_src_gpu);
@@ -166,12 +150,6 @@ void NvidiaVSR::Release()
     if (m_dst_bgra_gpu) { NvCVImage_Destroy(m_dst_bgra_gpu); m_dst_bgra_gpu = nullptr; }
 
 
-    for (int i = 0; i < 3; i++) {
-        if (m_fruc_cv[i]) {
-            NvCVImage_Destroy(m_fruc_cv[i]);
-            m_fruc_cv[i] = nullptr;
-        }
-    }
 
     if (m_effect) {
         NvVFX_DestroyEffect(m_effect);
@@ -282,56 +260,5 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     }
 
     return true;
-}
-
-static void log_crash_step(const char* step) {
-    FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
-    if (f) {
-        fprintf(f, "%s\n", step);
-        fclose(f);
-    }
-}
-
-
-bool NvidiaVSR::TransferToFruc(ID3D11Texture2D* rgba_tex, int fruc_idx) {
-    if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!rgba_tex || !m_fruc_cv[fruc_idx]) return false;
-    
-    NvCVImage* src_img = GetOrInitImage(rgba_tex);
-    NvCVImage* dst_img = m_fruc_cv[fruc_idx];
-    if (!src_img || !dst_img) return false;
-
-    if (NvCVImage_MapResource(src_img, m_stream) != NVCV_SUCCESS) return false;
-
-    NvCV_Status status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
-    
-    NvCVImage_UnmapResource(src_img, m_stream);
-
-    if (m_nvcuda_dll && m_stream) {
-        typedef int (__stdcall *PFN_cuStreamSynchronize)(void*);
-        PFN_cuStreamSynchronize cuStreamSynchronize = (PFN_cuStreamSynchronize)GetProcAddress(m_nvcuda_dll, "cuStreamSynchronize");
-        if (cuStreamSynchronize) {
-            cuStreamSynchronize(m_stream);
-        }
-    }
-
-    return status == NVCV_SUCCESS;
-}
-
-bool NvidiaVSR::TransferFromFruc(int fruc_idx, ID3D11Texture2D* rgba_tex) {
-    if (!m_ready || fruc_idx < 0 || fruc_idx >= 3) return false;
-    if (!rgba_tex || !m_fruc_cv[fruc_idx]) return false;
-
-    NvCVImage* src_img = m_fruc_cv[fruc_idx];
-    NvCVImage* dst_img = GetOrInitImage(rgba_tex);
-    if (!src_img || !dst_img) return false;
-
-    if (NvCVImage_MapResource(dst_img, m_stream) != NVCV_SUCCESS) return false;
-
-    NvCV_Status status = NvCVImage_Transfer(src_img, dst_img, 1.0f, m_stream, nullptr);
-    
-    NvCVImage_UnmapResource(dst_img, m_stream);
-
-    return status == NVCV_SUCCESS;
 }
 

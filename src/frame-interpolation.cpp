@@ -35,37 +35,35 @@ bool FrameInterpolation::LoadDLL()
     return true;
 }
 
-void FrameInterpolation::PushCudaContext() {
-    if (m_cuCtxSetCurrent && m_cu_ctx) {
-        typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
-        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_cu_ctx);
-    }
-}
-
-void FrameInterpolation::PopCudaContext() {
-    if (m_cuCtxSetCurrent && m_cu_ctx) {
-        typedef int (__stdcall *PFN_cuCtxSetCurrent)(void*);
-        ((PFN_cuCtxSetCurrent)m_cuCtxSetCurrent)(m_cu_ctx);
-    }
-}
-
-bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height, NvCVImage** cv_images, void* cu_ctx)
+bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device, uint32_t width, uint32_t height)
 {
     m_device = d3d11_device;
     m_width = width;
     m_height = height;
-    m_cu_ctx = cu_ctx;
 
-    if (!m_nvcuda_dll) {
-        m_nvcuda_dll = LoadLibraryA("nvcuda.dll");
-        if (m_nvcuda_dll) {
-            m_cuCtxGetCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxGetCurrent");
-            m_cuCtxSetCurrent = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSetCurrent");
-            m_cuCtxSynchronize = (void*)GetProcAddress(m_nvcuda_dll, "cuCtxSynchronize");
-        }
-    }
+    if (!m_device) return false;
+    m_device->GetImmediateContext(&m_context);
 
     if (!LoadDLL()) return false;
+
+    // Create 3 D3D11 textures for FRUC (input 1, input 2, output)
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = width;
+    desc.Height = height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = m_tex_format;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+
+    for (int i = 0; i < 3; i++) {
+        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_tex[i]))) {
+            blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to create D3D11 texture %d", i);
+            Release();
+            return false;
+        }
+    }
 
     int count = 3;
     {
@@ -74,24 +72,16 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
             m_fruc_handle = nullptr;
         }
         
-        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (CudaResource, ARGBSurface)", count);
+        blog(LOG_INFO, "[RTX-VSR] FRUC: Trying config with %d resources (DirectX11Resource, ARGBSurface)", count);
         
         NvOFFRUC_CREATE_PARAM params = {};
         params.uiWidth = width;
         params.uiHeight = height;
-        params.pDevice = cu_ctx; // For CudaResource, pDevice is the CUcontext
-        params.eResourceType = CudaResource;
-        params.eCUDAResourceType = CudaResourceCuDevicePtr; 
-        params.eSurfaceFormat = ARGBSurface; // Using BGRA CUdeviceptr
+        params.pDevice = m_device.Get();
+        params.eResourceType = DirectX11Resource;
+        params.eSurfaceFormat = ARGBSurface;
 
-        // DO NOT push any context here. NvOFFRUC creates its own context during m_create.
         NvOFFRUC_STATUS status = m_create(&params, &m_fruc_handle);
-        
-        // Capture the context that NvOFFRUC just created and left on the thread!
-        if (status == NvOFFRUC_SUCCESS && m_cuCtxGetCurrent) {
-            typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
-            ((PFN_cuCtxGetCurrent)m_cuCtxGetCurrent)(&m_fruc_ctx);
-        }
         
         if (status != NvOFFRUC_SUCCESS) {
             blog(LOG_WARNING, "[RTX-VSR] FRUC: NvOFFRUCCreate failed: status=%d", status);
@@ -101,22 +91,17 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         NvOFFRUC_REGISTER_RESOURCE_PARAM reg_param = {};
         
         for (int t = 0; t < count; t++) {
-            reg_param.pArrResource[t] = cv_images[t]->pixels; // CUdeviceptr
-            m_cuda_ptrs[t] = cv_images[t]->pixels;
-            m_cuda_pitches[t] = cv_images[t]->pitch;
+            reg_param.pArrResource[t] = m_tex[t].Get();
         }
         
         reg_param.uiCount = count;
         
         status = m_register(m_fruc_handle, &reg_param);
         
-        // Pop NvOFFRUC's context off the thread so it doesn't break VSR's NvCVImage_Transfer!
-        PopCudaContext();
-        
         if (status == NvOFFRUC_SUCCESS) {
             m_resources_registered = true;
             m_resource_count = count;
-            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with CudaResource (ARGB), %d resources", count);
+            blog(LOG_INFO, "[RTX-VSR] FRUC: RegisterResource SUCCEEDED with DirectX11Resource (ARGB), %d resources", count);
             return true;
         }
         
@@ -131,37 +116,19 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
 void FrameInterpolation::Release()
 {
     if (m_resources_registered && m_unregister && m_fruc_handle) {
-        PushCudaContext();
         NvOFFRUC_UNREGISTER_RESOURCE_PARAM unreg = {};
         for (uint32_t t = 0; t < m_resource_count; t++) {
-            unreg.pArrResource[t] = m_cuda_ptrs[t];
+            unreg.pArrResource[t] = m_tex[t].Get();
         }
         unreg.uiCount = m_resource_count;
         m_unregister(m_fruc_handle, &unreg);
         m_resources_registered = false;
-        PopCudaContext();
-    }
-
-    for (int t = 0; t < 3; t++) {
-        if (m_cu_arrays[t] && m_cuArrayDestroy) {
-            typedef int (__stdcall *PFN_cuArrayDestroy)(void*);
-            ((PFN_cuArrayDestroy)m_cuArrayDestroy)(m_cu_arrays[t]);
-            m_cu_arrays[t] = nullptr;
-        }
     }
 
     if (m_fruc_handle && m_destroy) {
         m_destroy(m_fruc_handle);
         m_fruc_handle = nullptr;
     }
-
-    if (m_nvcuda_dll) {
-        FreeLibrary(m_nvcuda_dll);
-        m_nvcuda_dll = nullptr;
-    }
-    m_cuCtxGetCurrent = nullptr;
-    m_cuCtxSetCurrent = nullptr;
-    m_fruc_ctx = nullptr;
 
     if (m_fruc_dll) {
         FreeLibrary(m_fruc_dll);
@@ -175,7 +142,12 @@ void FrameInterpolation::Release()
     m_fence.Reset();
     m_diag_stage.Reset();
     m_context4.Reset();
+    m_context.Reset();
     m_device5.Reset();
+    
+    for (int i = 0; i < 3; i++) {
+        m_tex[i].Reset();
+    }
     
     m_device.Reset();
 }
@@ -189,14 +161,6 @@ int FrameInterpolation::GetNextInputIndex() {
 int FrameInterpolation::GetNextOutputIndex() {
     // Output index: always 0
     return 0;
-}
-
-void* FrameInterpolation::GetNextInputPointer() {
-    return m_cuda_ptrs[GetNextInputIndex()];
-}
-
-void* FrameInterpolation::GetNextOutputPointer() {
-    return m_cuda_ptrs[GetNextOutputIndex()];
 }
 
 // Reads back a 16x16 block from the center of a FRUC texture and returns a checksum.
@@ -243,22 +207,9 @@ bool FrameInterpolation::Process(double timestamp)
     if (!m_fruc_handle || !m_resources_registered) return false;
 
 
-    if (!m_context4 && m_device) {
-        Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_ctx;
-        m_device->GetImmediateContext(&immediate_ctx);
-        if (immediate_ctx) immediate_ctx.As(&m_context4);
-    }
 
     int in_idx = GetNextInputIndex();
     int out_idx = GetNextOutputIndex();
-    int prev_idx = (in_idx == 1) ? 2 : 1;
-    void* in_dev_ptr = m_cuda_ptrs[in_idx];
-    void* out_dev_ptr = m_cuda_ptrs[out_idx];
-
-    // Diagnostics only for the first frames and periodically afterwards
-    const bool diag = (m_process_count < 20) || (m_process_count % 600 == 0);
-    uint64_t sum_in = 0, sum_prev = 0, sum_out = 0;
-    // DiagSum is disabled because inputs are now CUdeviceptr, not ID3D11Texture2D
 
     bool out_frame_repeated = false;
 
@@ -268,53 +219,29 @@ bool FrameInterpolation::Process(double timestamp)
         out_timestamp = timestamp; // Same as input for first frame
     }
 
-    // For CudaResourceCuDevicePtr, pFrame holds the CUdeviceptr
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
-    in_params.stFrameDataInput.pFrame = in_dev_ptr;
+    in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();
     in_params.stFrameDataInput.nTimeStamp = timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_cuda_pitches[in_idx];
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     
-    if (m_context4 && m_fence) {
-        // No longer needed for CudaResource
-    }
-    
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
-    out_params.stFrameDataOutput.pFrame = out_dev_ptr;
+    out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
     out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_cuda_pitches[out_idx];
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
-
-    if (m_context4 && m_fence) {
-        // No longer needed for CudaResource
-    }
 
     FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
     if (f) {
-        fprintf(f, "fruc m_process calling (ctx=%p, in_ptr=%p, out_ptr=%p, in_pitch=%zu, out_pitch=%zu)\n",
-                m_cu_ctx, in_dev_ptr, out_dev_ptr, in_params.stFrameDataInput.nCuSurfacePitch, out_params.stFrameDataOutput.nCuSurfacePitch);
+        fprintf(f, "fruc m_process calling (in_tex=%p, out_tex=%p)\n",
+                in_params.stFrameDataInput.pFrame, out_params.stFrameDataOutput.pFrame);
         fclose(f);
     }
 
-    PushCudaContext();
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
-    PopCudaContext();
     
-    if (m_context4 && m_fence) {
-        // No longer needed for CudaResource
-    }
-
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
-        if (diag) {
-            // sum_out = DiagSum((ID3D11Texture2D*)out_dev_ptr);
-            // blog(LOG_INFO, "[RTX-VSR-FRUC-DIAG] n=%llu repeated=%d in[%d]=%llu prev[%d]=%llu out=%llu %s%s",
-            //     m_process_count, out_frame_repeated ? 1 : 0,
-            //     in_idx, sum_in, prev_idx, sum_prev, sum_out,
-            //     (sum_in == sum_prev) ? "IN==PREV " : "",
-            //     (sum_out == sum_prev) ? "OUT==PREV" : ((sum_out == sum_in) ? "OUT==IN" : "OUT=NEW"));
-        }
+
 
         if (m_process_count == 1) {
             // First frame: state initialized only, nothing interpolated yet
