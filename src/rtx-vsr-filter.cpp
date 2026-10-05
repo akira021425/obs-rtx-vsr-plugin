@@ -28,7 +28,7 @@ struct rtx_vsr_data {
     
     // Duplicate frame detection
     ID3D11Texture2D *hash_stage_d3d11;
-    uint32_t last_hash[256];
+    uint32_t last_hash[1280];
     
     uint32_t src_width;
     uint32_t src_height;
@@ -218,7 +218,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             // Hash staging texture (16x16)
             D3D11_TEXTURE2D_DESC desc = {};
             desc.Width = 16;
-            desc.Height = 16;
+            desc.Height = 80;
             desc.MipLevels = 1;
             desc.ArraySize = 1;
             desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -307,20 +307,39 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             if (filter->hash_stage_d3d11) {
                 auto d3d_context = filter->d3d11_interop->GetContext();
                 D3D11_BOX box;
-                box.left = width / 2 - 8;
-                box.right = width / 2 + 8;
-                box.top = height / 2 - 8;
-                box.bottom = height / 2 + 8;
-                box.front = 0;
-                box.back = 1;
+                box.front = 0; box.back = 1;
+                
+                // 1. Center
+                box.left = width / 2 - 8; box.right = width / 2 + 8;
+                box.top = height / 2 - 8; box.bottom = height / 2 + 8;
                 d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 0, 0, d3d11_src, 0, &box);
+
+                // 2. Top-Left
+                box.left = width / 4 - 8; box.right = width / 4 + 8;
+                box.top = height / 4 - 8; box.bottom = height / 4 + 8;
+                d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 16, 0, d3d11_src, 0, &box);
+
+                // 3. Top-Right
+                box.left = 3 * width / 4 - 8; box.right = 3 * width / 4 + 8;
+                box.top = height / 4 - 8; box.bottom = height / 4 + 8;
+                d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 32, 0, d3d11_src, 0, &box);
+
+                // 4. Bottom-Left
+                box.left = width / 4 - 8; box.right = width / 4 + 8;
+                box.top = 3 * height / 4 - 8; box.bottom = 3 * height / 4 + 8;
+                d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 48, 0, d3d11_src, 0, &box);
+
+                // 5. Bottom-Right
+                box.left = 3 * width / 4 - 8; box.right = 3 * width / 4 + 8;
+                box.top = 3 * height / 4 - 8; box.bottom = 3 * height / 4 + 8;
+                d3d_context->CopySubresourceRegion(filter->hash_stage_d3d11, 0, 0, 64, 0, d3d11_src, 0, &box);
                 
                 D3D11_MAPPED_SUBRESOURCE mapped;
                 if (SUCCEEDED(d3d_context->Map(filter->hash_stage_d3d11, 0, D3D11_MAP_READ, 0, &mapped))) {
                     uint8_t *pixel_data = (uint8_t*)mapped.pData;
                     uint32_t linesize = mapped.RowPitch;
-                    uint32_t current_hash[256];
-                    for (int y = 0; y < 16; ++y) {
+                    uint32_t current_hash[1280];
+                    for (int y = 0; y < 80; ++y) {
                         memcpy(&current_hash[y * 16], pixel_data + y * linesize, 64);
                     }
                     d3d_context->Unmap(filter->hash_stage_d3d11, 0);                    if (memcmp(current_hash, filter->last_hash, sizeof(current_hash)) == 0) {
@@ -330,7 +349,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     }
                     if (filter->frame_count <= 60) {
                         uint64_t sum = 0;
-                        for (int i=0; i<256; i++) sum += current_hash[i];
+                        for (int i=0; i<1280; i++) sum += current_hash[i];
                         blog(LOG_INFO, "[RTX-VSR-DEBUG] frame=%llu is_new=%d hash_sum=%llu", filter->frame_count, is_new_frame, sum);
                     }
                 }
