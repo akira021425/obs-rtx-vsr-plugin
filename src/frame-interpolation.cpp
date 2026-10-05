@@ -44,6 +44,16 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     if (!m_device) return false;
     m_device->GetImmediateContext(&m_context);
 
+    if (FAILED(m_device.As(&m_device5))) {
+        blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to get ID3D11Device5");
+        return false;
+    }
+    
+    if (FAILED(m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence)))) {
+        blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to create D3D11Fence");
+        return false;
+    }
+
     if (!LoadDLL()) return false;
 
     // Create 3 D3D11 textures for FRUC (input 1, input 2, output)
@@ -55,7 +65,8 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.Format = m_tex_format;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
     for (int i = 0; i < 3; i++) {
         if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_tex[i]))) {
@@ -95,6 +106,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         }
         
         reg_param.uiCount = count;
+        reg_param.pD3D11FenceObj = m_fence.Get();
         
         status = m_register(m_fruc_handle, &reg_param);
         
@@ -224,20 +236,40 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nTimeStamp = timestamp;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
+    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
     out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
+    
+    m_fence_value++;
+    out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
+
+    if (m_context4 && m_fence) {
+        m_context4->Signal(m_fence.Get(), m_fence_value - 1);
+    }
 
     FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
     if (f) {
-        fprintf(f, "fruc m_process calling (in_tex=%p, out_tex=%p)\n",
-                in_params.stFrameDataInput.pFrame, out_params.stFrameDataOutput.pFrame);
+        fprintf(f, "fruc m_process calling (in_tex=%p, out_tex=%p, wait=%llu, sig=%llu)\n",
+                in_params.stFrameDataInput.pFrame, out_params.stFrameDataOutput.pFrame,
+                m_fence_value - 1, m_fence_value);
         fclose(f);
     }
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
+    
+    if (m_context4 && m_fence) {
+        // Wait for FRUC to finish
+        if (m_fence->GetCompletedValue() < m_fence_value) {
+            if (!m_fence_event) {
+                m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+            }
+            m_fence->SetEventOnCompletion(m_fence_value, m_fence_event);
+            WaitForSingleObject(m_fence_event, 1000); // 1s timeout
+        }
+    }
     
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
