@@ -283,6 +283,12 @@ bool FrameInterpolation::Process(double timestamp)
 
     bool out_frame_repeated = false;
 
+    // First frame initialization logic
+    double out_timestamp = timestamp - 166666.0;
+    if (m_process_count == 0) {
+        out_timestamp = timestamp; // Same as input for first frame
+    }
+
     // For DirectX11Resource, pFrame holds the ID3D11Texture2D*
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = in_dev_ptr;
@@ -302,7 +308,7 @@ bool FrameInterpolation::Process(double timestamp)
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = out_dev_ptr;
-    out_params.stFrameDataOutput.nTimeStamp = timestamp - (333333.333333 / 2.0); // halfway between prev and current
+    out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
     out_params.stFrameDataOutput.nCuSurfacePitch = 0;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
 

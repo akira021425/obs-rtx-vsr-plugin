@@ -387,8 +387,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
                     bool t_to_fruc = filter->nvidia_vsr->TransferToFruc(d3d11_dst, fruc_in_idx);
                     if (t_to_fruc) {
-                        static double fruc_simulated_time = 0.0;
-                        fruc_simulated_time += 333333.333333;
+                        static uint64_t fruc_base_time = 0;
+                        fruc_base_time += 333333; // 100ns units for 30fps
+                        double fruc_simulated_time = (double)fruc_base_time;
                         bool fruc_success = filter->fruc->Process(fruc_simulated_time);
                         
                         if (fruc_success) {

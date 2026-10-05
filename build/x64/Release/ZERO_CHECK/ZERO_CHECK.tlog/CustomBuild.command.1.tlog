@@ -1,0 +1,10 @@
+^C:\USERS\ARAI5\ANDROIDSTUDIOPROJECTS\OCVULTIMATE\OBS-RTX-VSR\BUILD\CMAKEFILES\69BCDCC466FB7736A8DC5482F87A8F41\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr -BC:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/arai5/AndroidStudioProjects/OCVUltimate/obs-rtx-vsr/build/obs-rtx-vsr.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
