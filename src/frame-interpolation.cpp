@@ -290,6 +290,13 @@ bool FrameInterpolation::Process(double timestamp)
         // No longer needed for CudaResource
     }
 
+    FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
+    if (f) {
+        fprintf(f, "fruc m_process calling (ctx=%p, in_ptr=%p, out_ptr=%p, in_pitch=%zu, out_pitch=%zu)\n",
+                m_cu_ctx, in_dev_ptr, out_dev_ptr, in_params.stFrameDataInput.nCuSurfacePitch, out_params.stFrameDataOutput.nCuSurfacePitch);
+        fclose(f);
+    }
+
     PushCudaContext();
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
     PopCudaContext();

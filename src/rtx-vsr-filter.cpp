@@ -266,6 +266,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 
                 // FRUC init
                 void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
+                char buf[256];
+                snprintf(buf, sizeof(buf), "init fruc calling (cu_ctx=%p, d3d=%p)", cu_ctx, d3d11_dev.Get());
+                log_step(buf);
                 if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height, cv_images, cu_ctx)) {
                     log_step("init fruc failed");
                     blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
