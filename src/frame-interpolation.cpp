@@ -226,14 +226,16 @@ bool FrameInterpolation::Process(double timestamp)
     bool out_frame_repeated = false;
 
     // First frame initialization logic
-    double out_timestamp = timestamp - 166666.0;
+    double in_timestamp = (double)m_process_count * 10.0;
+    double out_timestamp = in_timestamp - 5.0;
     if (m_process_count == 0) {
-        out_timestamp = timestamp; // Same as input for first frame
+        out_timestamp = in_timestamp; // Same as input for first frame
     }
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();
-    in_params.stFrameDataInput.nTimeStamp = timestamp;
+    in_params.stFrameDataInput.nTimeStamp = in_timestamp;
+    in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4;
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
@@ -241,6 +243,7 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
     out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
+    out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4;
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
     
     m_fence_value++;
@@ -250,12 +253,21 @@ bool FrameInterpolation::Process(double timestamp)
         m_context4->Signal(m_fence.Get(), m_fence_value - 1);
     }
 
-    FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
-    if (f) {
-        fprintf(f, "fruc m_process calling (in_tex=%p, out_tex=%p, wait=%llu, sig=%llu)\n",
-                in_params.stFrameDataInput.pFrame, out_params.stFrameDataOutput.pFrame,
-                m_fence_value - 1, m_fence_value);
-        fclose(f);
+    if (m_process_count < 5) {
+        HMODULE lib = GetModuleHandleA("nvcuda.dll");
+        void* ctx = nullptr;
+        if (lib) {
+            typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
+            PFN_cuCtxGetCurrent getCur = (PFN_cuCtxGetCurrent)GetProcAddress(lib, "cuCtxGetCurrent");
+            if (getCur) getCur(&ctx);
+        }
+        FILE* f = fopen("C:\\Users\\arai5\\obs_crash_debug.txt", "a");
+        if (f) {
+            fprintf(f, "fruc m_process calling (in_tex=%p, out_tex=%p, wait=%llu, sig=%llu, ctx=%p, thread=%lu)\n",
+                    in_params.stFrameDataInput.pFrame, out_params.stFrameDataOutput.pFrame,
+                    m_fence_value - 1, m_fence_value, ctx, GetCurrentThreadId());
+            fclose(f);
+        }
     }
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
@@ -273,8 +285,6 @@ bool FrameInterpolation::Process(double timestamp)
     
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
-
-
         if (m_process_count == 1) {
             // First frame: state initialized only, nothing interpolated yet
             return false;
