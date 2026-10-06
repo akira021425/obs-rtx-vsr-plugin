@@ -45,7 +45,7 @@ private:
     bool m_enabled = true;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
-    DXGI_FORMAT m_tex_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    DXGI_FORMAT m_tex_format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
     // D3D11 fence for synchronization
     Microsoft::WRL::ComPtr<ID3D11Device5> m_device5;
