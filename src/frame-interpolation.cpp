@@ -236,7 +236,6 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
@@ -247,10 +246,6 @@ bool FrameInterpolation::Process(double timestamp)
     
     m_fence_value++;
     out_params.uSyncSignal.FenceSignalValue.uiFenceValueToSignalOn = m_fence_value;
-
-    if (m_context4 && m_fence) {
-        m_context4->Signal(m_fence.Get(), m_fence_value - 1);
-    }
 
     if (m_process_count < 5) {
         HMODULE lib = GetModuleHandleA("nvcuda.dll");
@@ -270,17 +265,6 @@ bool FrameInterpolation::Process(double timestamp)
     }
 
     NvOFFRUC_STATUS status = m_process(m_fruc_handle, &in_params, &out_params);
-    
-    if (m_context4 && m_fence) {
-        // Wait for FRUC to finish
-        if (m_fence->GetCompletedValue() < m_fence_value) {
-            if (!m_fence_event) {
-                m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-            }
-            m_fence->SetEventOnCompletion(m_fence_value, m_fence_event);
-            WaitForSingleObject(m_fence_event, 1000); // 1s timeout
-        }
-    }
     
     m_process_count++;
     if (status == NvOFFRUC_SUCCESS) {
