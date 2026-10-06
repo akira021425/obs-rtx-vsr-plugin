@@ -258,6 +258,8 @@ jobs:
     defaults:
       run:
         shell: pwsh
+    env:
+      CMAKE_TLS_VERIFY: 0
     steps:
       - uses: actions/checkout@v4
         with:
