@@ -234,7 +234,7 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
-    in_params.stFrameDataInput.nCuSurfacePitch = m_width * 4;
+    in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.bSkipWarp = (m_process_count == 0) ? 1 : 0; // First frame only initializes state
     in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
@@ -242,7 +242,7 @@ bool FrameInterpolation::Process(double timestamp)
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
     out_params.stFrameDataOutput.nTimeStamp = out_timestamp;
-    out_params.stFrameDataOutput.nCuSurfacePitch = m_width * 4;
+    out_params.stFrameDataOutput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     out_params.stFrameDataOutput.bHasFrameRepetitionOccurred = &out_frame_repeated;
     
     m_fence_value++;
