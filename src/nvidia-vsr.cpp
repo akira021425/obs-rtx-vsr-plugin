@@ -12,6 +12,20 @@ NvidiaVSR::~NvidiaVSR()
     Release();
 }
 
+void NvidiaVSR::LogCudaContext(const char* tag)
+{
+    HMODULE lib = GetModuleHandleA("nvcuda.dll");
+    if (!lib) {
+        blog(LOG_INFO, "[RTX-VSR] CUDA ctx [%s]: nvcuda.dll not loaded", tag);
+        return;
+    }
+    typedef int (__stdcall *PFN_cuCtxGetCurrent)(void**);
+    PFN_cuCtxGetCurrent getCur = (PFN_cuCtxGetCurrent)GetProcAddress(lib, "cuCtxGetCurrent");
+    void* ctx = nullptr;
+    int res = getCur ? getCur(&ctx) : -1;
+    blog(LOG_INFO, "[RTX-VSR] CUDA ctx [%s]: current=%p (res=%d) thread=%lu", tag, ctx, res, GetCurrentThreadId());
+}
+
 bool NvidiaVSR::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
                            uint32_t src_width, uint32_t src_height,
                            uint32_t dst_width, uint32_t dst_height)
@@ -235,6 +249,18 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
     status = NvCVImage_MapResource(src_img, m_stream);
     if (status != NVCV_SUCCESS) {
         blog(LOG_ERROR, "[RTX-VSR] MapResource(src) failed: %d", status);
+        static int s_fail_logs = 0;
+        if (s_fail_logs++ < 3) {
+            LogCudaContext("MapResource(src) failure (inside guard)");
+            blog(LOG_ERROR, "[RTX-VSR] expected ctx=%p stream=%p guard_pushed=%d", m_cu_ctx, m_stream, (int)ctxGuard.pushed);
+        }
+        // Drop the cached wrapper so the next frame re-registers the texture with CUDA.
+        auto it = m_tex_map.find(src_tex);
+        if (it != m_tex_map.end()) {
+            NvCVImage_Destroy(it->second);
+            delete it->second;
+            m_tex_map.erase(it);
+        }
         return false;
     }
 

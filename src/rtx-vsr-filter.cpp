@@ -251,24 +251,31 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
             gs_flush();
             
-            // VSR init (before FRUC, because VSR allocates the CUDA NV12 buffers for FRUC)
+            // FRUC init FIRST. NvOFFRUCCreate changes the CUDA context that is current on this
+            // thread; if VSR (CUDA stream / D3D11 resource registration) were created before it,
+            // later NvCVImage_MapResource() fails with -1400. Creating VSR afterwards makes VSR
+            // use whatever context FRUC left current, so both share the same CUDA context.
+            {
+                char buf[256];
+                snprintf(buf, sizeof(buf), "init fruc calling (d3d=%p)", d3d11_dev.Get());
+                log_step(buf);
+                NvidiaVSR::LogCudaContext("before FRUC init");
+                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
+                    log_step("init fruc failed");
+                    blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
+                }
+                NvidiaVSR::LogCudaContext("after FRUC init");
+                log_step("init fruc done");
+            }
+
             log_step("init vsr calling");
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
                 log_step("init vsr failed");
                 blog(LOG_ERROR, "[RTX-VSR] VSR initialization failed");
                 filter->vsr_failed = true;
             } else {
-                log_step("init vsr success, calling fruc");
-                
-                // FRUC init
-                char buf[256];
-                snprintf(buf, sizeof(buf), "init fruc calling (d3d=%p)", d3d11_dev.Get());
-                log_step(buf);
-                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                    log_step("init fruc failed");
-                    blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
-                }
-                log_step("init fruc done");
+                log_step("init vsr success");
+                NvidiaVSR::LogCudaContext("after VSR init");
             }
             log_step("init all done");
 

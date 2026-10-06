@@ -55,6 +55,9 @@ private:
 
 public:
     void* GetCudaContext() const { return m_cu_ctx; }
+
+    // Diagnostic: log the CUDA context currently bound to the calling thread.
+    static void LogCudaContext(const char* tag);
     
     int m_quality = 4;
     bool m_artifact_reduction = false;
