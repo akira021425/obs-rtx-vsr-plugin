@@ -56,6 +56,7 @@ private:
     
     bool m_resources_registered = false;
     uint32_t m_resource_count = 0;
+    double m_last_timestamp = 0.0;
     
     // Statistics
     uint64_t m_process_count = 0;

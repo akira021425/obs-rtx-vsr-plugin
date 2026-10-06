@@ -225,12 +225,11 @@ bool FrameInterpolation::Process(double timestamp)
 
     bool out_frame_repeated = false;
 
-    // First frame initialization logic
-    double in_timestamp = (double)m_process_count * 10.0;
-    double out_timestamp = in_timestamp - 5.0;
-    if (m_process_count == 0) {
-        out_timestamp = in_timestamp; // Same as input for first frame
-    }
+    // HighFPSViewer timestamp logic
+    double interval = 1.0;
+    double in_timestamp = m_last_timestamp + interval;
+    m_last_timestamp = in_timestamp;
+    double out_timestamp = in_timestamp - (interval * 0.5);
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();

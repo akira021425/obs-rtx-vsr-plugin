@@ -429,6 +429,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     auto context = filter->d3d11_interop->GetContext();
                     if (context) {
                         context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
+                        context->Flush(); // Ensure D3D11 copy is submitted before CUDA (FRUC) reads it
                         
                         log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
