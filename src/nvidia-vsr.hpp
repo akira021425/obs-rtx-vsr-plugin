@@ -21,6 +21,9 @@ public:
     // Process: call every frame. src_tex must be a D3D11 texture from gs_texture_get_obj.
     // dst_tex must also be a D3D11 texture. Both must match the sizes given at Initialize.
     bool Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex);
+    
+    // Copies the last VSR output directly to a given D3D11 texture using CUDA
+    bool CopyOutputToD3D11(ID3D11Texture2D *dst_tex);
 
     // Fast CUDA colorspace conversion (e.g. BGRA <-> NV12)
 

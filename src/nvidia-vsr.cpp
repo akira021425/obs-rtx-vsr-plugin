@@ -306,6 +306,59 @@ bool NvidiaVSR::Process(ID3D11Texture2D *src_tex, ID3D11Texture2D *dst_tex)
         return false;
     }
 
+    if (m_nvcuda_dll && m_stream) {
+        typedef int (__stdcall *PFN_cuStreamSynchronize)(void*);
+        PFN_cuStreamSynchronize sync = (PFN_cuStreamSynchronize)GetProcAddress(m_nvcuda_dll, "cuStreamSynchronize");
+        if (sync) sync(m_stream);
+    }
+
+    return true;
+}
+
+bool NvidiaVSR::CopyOutputToD3D11(ID3D11Texture2D *dst_tex)
+{
+    if (!m_ready || !m_dst_gpu || !dst_tex) return false;
+
+    struct CudaContextGuard {
+        HMODULE nvcuda;
+        bool pushed;
+        CudaContextGuard(HMODULE lib, void* ctx) : nvcuda(lib), pushed(false) {
+            if (nvcuda && ctx) {
+                typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                PFN_cuCtxPushCurrent push = (PFN_cuCtxPushCurrent)GetProcAddress(nvcuda, "cuCtxPushCurrent");
+                if (push) { push(ctx); pushed = true; }
+            }
+        }
+        ~CudaContextGuard() {
+            if (pushed && nvcuda) {
+                typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                PFN_cuCtxPopCurrent pop = (PFN_cuCtxPopCurrent)GetProcAddress(nvcuda, "cuCtxPopCurrent");
+                if (pop) { void* tmp; pop(&tmp); }
+            }
+        }
+    } ctxGuard(m_nvcuda_dll, m_cu_ctx);
+
+    NvCVImage* dst_img = GetOrInitImage(dst_tex);
+    if (!dst_img) return false;
+
+    NvCV_Status status = NvCVImage_MapResource(dst_img, m_stream);
+    if (status != NVCV_SUCCESS) return false;
+
+    status = NvCVImage_Transfer(m_dst_gpu, dst_img, 1.0f, m_stream, NULL);
+    if (status != NVCV_SUCCESS) {
+        NvCVImage_UnmapResource(dst_img, m_stream);
+        return false;
+    }
+
+    status = NvCVImage_UnmapResource(dst_img, m_stream);
+    if (status != NVCV_SUCCESS) return false;
+
+    if (m_nvcuda_dll && m_stream) {
+        typedef int (__stdcall *PFN_cuStreamSynchronize)(void*);
+        PFN_cuStreamSynchronize sync = (PFN_cuStreamSynchronize)GetProcAddress(m_nvcuda_dll, "cuStreamSynchronize");
+        if (sync) sync(m_stream);
+    }
+
     return true;
 }
 

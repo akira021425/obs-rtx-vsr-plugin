@@ -424,13 +424,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
-                    // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
+                    // Use CUDA directly to copy VSR output to FRUC input. This bypasses D3D11 CopyResource constraints.
                     log_step("fruc transfer in");
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
-                        context->Flush(); // Ensure D3D11 copy is submitted before CUDA (FRUC) reads it
-                        
+                    auto fruc_in_tex = filter->fruc->GetTexture(fruc_in_idx);
+                    if (filter->nvidia_vsr->CopyOutputToD3D11(fruc_in_tex)) {
                         log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
                         fruc_base_time += 333333; // 100ns units for 30fps
@@ -465,7 +462,10 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             if (filter->fruc_cache_texture) {
                                 ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
                                 if (d3d11_fruc_out) {
-                                    context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
+                                    auto context = filter->d3d11_interop->GetContext();
+                                    if (context) {
+                                        context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
+                                    }
                                 }
                             }
                         }
