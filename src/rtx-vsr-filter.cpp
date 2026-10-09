@@ -406,6 +406,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         if (context) { context->CopyResource(d3d11_dst, cache_d3d11); success = true; }
                     }
                 }
+            
             }
 
             // ===== FRUC processing =====
@@ -413,59 +414,52 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
                 filter->fruc_attempt_count++;
                 
-                if (!is_new_frame) {
-                    // Duplicate frame: show the ORIGINAL VSR output (already in d3d11_dst).
-                    // This gives true 60fps: alternating interpolated + original frames.
-                    // Do nothing - d3d11_dst already contains the VSR/cached output.
-                    log_step("fruc duplicate");
-                } else {
-                    // New frame: copy RGBA to FRUC input, process, copy output back
-                    log_step("fruc new");
-                    int fruc_in_idx = filter->fruc->GetNextInputIndex();
-                    int fruc_out_idx = filter->fruc->GetNextOutputIndex();
+                static double fruc_in_time = 0.0;
+                static double fruc_out_time = -0.5;
+
+                if (is_new_frame) {
+                    fruc_in_time += 1.0;
+                }
+                fruc_out_time += 0.5;
+
+                int fruc_in_idx = filter->fruc->GetNextInputIndex();
+                int fruc_out_idx = filter->fruc->GetNextOutputIndex();
+                
+                log_step("fruc transfer in");
+                auto context = filter->d3d11_interop->GetContext();
+                if (context) {
+                    context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
+                    filter->fruc->WaitSync(context.Get());
                     
-                    log_step("fruc transfer in");
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
-                        filter->fruc->WaitSync(context.Get()); // Wait on CPU until D3D11 copy is completely finished
+                    log_step("fruc process");
+                    HMODULE lib = GetModuleHandleA("nvcuda.dll");
+                    void* popped = nullptr;
+                    void* ctx = filter->nvidia_vsr->GetCudaContext();
+                    if (lib && ctx) {
+                        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                        PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+                        if (pushCur) pushCur(ctx);
+                    }
+
+                    bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
+
+                    if (lib && ctx) {
+                        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                        PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+                        if (popCur) popCur(&popped);
+                    }
+
+                    if (fruc_success) {
+                        log_step("fruc success");
+                        filter->fruc_success_count++;
                         
-                        log_step("fruc process");
-                        static uint64_t fruc_base_time = 0;
-                        fruc_base_time += 333333; // 100ns units for 30fps
-                        double fruc_simulated_time = (double)fruc_base_time;
-
-                        // Push CUDA context
-                        HMODULE lib = GetModuleHandleA("nvcuda.dll");
-                        void* popped = nullptr;
-                        void* ctx = filter->nvidia_vsr->GetCudaContext();
-                        if (lib && ctx) {
-                            typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
-                            PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
-                            if (pushCur) pushCur(ctx);
+                        if (!filter->fruc_cache_texture) {
+                            filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                         }
-
-                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
-
-                        // Pop CUDA context
-                        if (lib && ctx) {
-                            typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
-                            PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
-                            if (popCur) popCur(&popped);
-                        }
-
-                        if (fruc_success) {
-                            log_step("fruc success");
-                            filter->fruc_success_count++;
-                            
-                            if (!filter->fruc_cache_texture) {
-                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
-                            }
-                            if (filter->fruc_cache_texture) {
-                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
-                                if (d3d11_fruc_out) {
-                                    context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
-                                }
+                        if (filter->fruc_cache_texture) {
+                            ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
+                            if (d3d11_fruc_out) {
+                                context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
                             }
                         }
                     }
@@ -477,7 +471,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // Draw output
     if (success && filter->output_texture) {
         gs_texture_t *tex_to_draw = filter->output_texture;
-        if (is_new_frame && filter->fruc_cache_texture && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+        if (filter->fruc_cache_texture && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
             tex_to_draw = filter->fruc_cache_texture;
         }
         gs_effect_set_texture(image, tex_to_draw);
@@ -537,6 +531,9 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
+
 
 
 

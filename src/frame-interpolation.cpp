@@ -215,22 +215,14 @@ uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
     return sum;
 }
 
-bool FrameInterpolation::Process(double timestamp)
+bool FrameInterpolation::Process(double in_timestamp, double out_timestamp)
 {
     if (!m_fruc_handle || !m_resources_registered) return false;
-
-
 
     int in_idx = GetNextInputIndex();
     int out_idx = GetNextOutputIndex();
 
     bool out_frame_repeated = false;
-
-    // HighFPSViewer timestamp logic
-    double interval = 1.0;
-    double in_timestamp = m_last_timestamp + interval;
-    m_last_timestamp = in_timestamp;
-    double out_timestamp = in_timestamp - (interval * 0.5);
 
     NvOFFRUC_PROCESS_IN_PARAMS in_params = {};
     in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();
@@ -287,8 +279,7 @@ bool FrameInterpolation::Process(double timestamp)
 
     m_fail_count++;
     if (m_fail_count <= 5 || m_fail_count % 300 == 0) {
-        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f)",
-             status, m_success_count, m_fail_count, m_process_count, timestamp);
+        blog(LOG_WARNING, "[RTX-VSR] FRUC: Process failed: status=%d (success=%llu, fail=%llu, total=%llu, ts=%.3f)", status, m_success_count, m_fail_count, m_process_count, in_timestamp);
     }
 
     return false;
@@ -310,6 +301,9 @@ void FrameInterpolation::WaitSync(ID3D11DeviceContext* context) {
         }
     }
 }
+
+
+
 
 
 

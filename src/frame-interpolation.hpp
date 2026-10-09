@@ -19,7 +19,7 @@ public:
     int GetNextInputIndex();
     int GetNextOutputIndex();
     ID3D11Texture2D* GetTexture(int index) { return m_tex[index].Get(); }
-    bool Process(double timestamp);
+    bool Process(double in_timestamp, double out_timestamp);
     void WaitSync(ID3D11DeviceContext* context);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
