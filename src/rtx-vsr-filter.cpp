@@ -417,25 +417,16 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             }
 
             // ===== FRUC processing =====
-                log_step("fruc start");
-                if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+            log_step("fruc start");
+            if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+                if (is_new_frame) {
                     filter->fruc_attempt_count++;
                     
-                                        if (is_new_frame) {
-                        filter->fruc_in_time += 333333.3; // 30fps interval in 100ns units
-                        filter->fruc_dup_count = 0;
-                    } else {
-                        filter->fruc_dup_count++;
-                    }
-
-                                        double fruc_out_time;
-                    if (filter->fruc_dup_count == 0) {
-                        // When a new frame F(n) arrives, we output F(n-1) (the previous frame)
-                        fruc_out_time = filter->fruc_in_time - 333333.3;
-                    } else {
-                        // When a duplicate frame arrives, we output F(n-0.5) (the interpolated frame between F(n-1) and F(n))
-                        fruc_out_time = filter->fruc_in_time - 166666.6;
-                    }
+                    filter->fruc_in_time += 333333.3; // 30fps interval in 100ns units
+                    
+                    // We only need to generate ONE interpolated frame per new frame.
+                    // The interpolated frame should be exactly halfway between the previous frame and this new frame.
+                    double fruc_out_time = filter->fruc_in_time - 166666.6;
 
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
@@ -456,10 +447,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             if (pushCur) pushCur(ctx);
                         }
 
-                        bool fruc_success = filter->fruc->Process(filter->fruc_in_time, fruc_out_time, !is_new_frame);
+                        // is_repeated is always false here because we only call this when is_new_frame is true!
+                        bool fruc_success = filter->fruc->Process(filter->fruc_in_time, fruc_out_time, false);
 
                         if (lib && ctx) {
-                                                        typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
+                            typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
                             PFN_cuCtxSynchronize ctxSync = (PFN_cuCtxSynchronize)GetProcAddress(lib, "cuCtxSynchronize");
                             if (ctxSync) ctxSync(); // WAIT FOR CUDA TO FINISH WRITING
                             
@@ -472,7 +464,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             log_step("fruc success");
                             filter->fruc_success_count++;
                             
-                                                        filter->fruc_cache_idx = (filter->fruc_cache_idx + 1) % 2;
+                            filter->fruc_cache_idx = (filter->fruc_cache_idx + 1) % 2;
                             if (!filter->fruc_cache_texture[filter->fruc_cache_idx]) {
                                 filter->fruc_cache_texture[filter->fruc_cache_idx] = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                             }
@@ -484,14 +476,17 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             }
                         }
                     }
+                } else {
+                    // For duplicate frames, we don't call FRUC Process. We just use the cached interpolated texture.
                 }
             }
+        }
     }
 
     // Draw output
     if (success && filter->output_texture) {
                 gs_texture_t *tex_to_draw = filter->output_texture;
-        if (filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+        if (!is_new_frame && filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
             tex_to_draw = filter->fruc_cache_texture[filter->fruc_cache_idx];
         }
         gs_effect_set_texture(image, tex_to_draw);
