@@ -435,6 +435,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             uint64_t wait_val = filter->fruc->GetFenceValue();
                             context4->Signal(filter->fruc->GetFence(), wait_val);
                         }
+                        context->Flush(); // CRITICAL: Dispatch the command so CUDA can actually see the Signal
                         
                         log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
