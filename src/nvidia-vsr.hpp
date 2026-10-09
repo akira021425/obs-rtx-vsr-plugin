@@ -55,9 +55,7 @@ private:
 
 public:
     void* GetCudaContext() const { return m_cu_ctx; }
-    CUstream GetCudaStream() const { return m_stream; }
-    NvCVImage* GetDstGpuImage() const { return m_dst_gpu; }
-    NvCVImage* GetOrInitImagePublic(ID3D11Texture2D* tex) { return GetOrInitImage(tex); }
+
     // Diagnostic: log the CUDA context currently bound to the calling thread.
     static void LogCudaContext(const char* tag);
     
