@@ -53,7 +53,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DeviceContext4> m_context4;
     Microsoft::WRL::ComPtr<ID3D11Fence> m_fence;
     HANDLE m_fence_event = nullptr;
-    uint64_t m_fence_value = 1;
+    uint64_t m_fence_value = 0;
     
     bool m_resources_registered = false;
     uint32_t m_resource_count = 0;
