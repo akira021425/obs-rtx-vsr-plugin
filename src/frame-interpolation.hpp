@@ -8,6 +8,8 @@
 #include <windows.h>
 #include "nvCVImage.h"
 
+typedef struct CUstream_st *CUstream;
+
 class FrameInterpolation {
 public:
     FrameInterpolation();
