@@ -407,65 +407,70 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     }
                 }
             
+            
             }
 
             // ===== FRUC processing =====
-            log_step("fruc start");
-            if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
-                filter->fruc_attempt_count++;
-                
-                static double fruc_in_time = 0.0;
-                static double fruc_out_time = -0.5;
-
-                if (is_new_frame) {
-                    fruc_in_time += 1.0;
-                }
-                fruc_out_time += 0.5;
-
-                int fruc_in_idx = filter->fruc->GetNextInputIndex();
-                int fruc_out_idx = filter->fruc->GetNextOutputIndex();
-                
-                log_step("fruc transfer in");
-                auto context = filter->d3d11_interop->GetContext();
-                if (context) {
-                    context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
-                    filter->fruc->WaitSync(context.Get());
+                log_step("fruc start");
+                if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+                    filter->fruc_attempt_count++;
                     
-                    log_step("fruc process");
-                    HMODULE lib = GetModuleHandleA("nvcuda.dll");
-                    void* popped = nullptr;
-                    void* ctx = filter->nvidia_vsr->GetCudaContext();
-                    if (lib && ctx) {
-                        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
-                        PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
-                        if (pushCur) pushCur(ctx);
+                    static double fruc_in_time = 0.0;
+                    static double fruc_out_time = -166666.6;
+
+                    if (is_new_frame) {
+                        fruc_in_time += 333333.3; // 30fps interval in 100ns units
                     }
+                    fruc_out_time += 166666.6; // 60fps interval in 100ns units
 
-                    bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
-
-                    if (lib && ctx) {
-                        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
-                        PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
-                        if (popCur) popCur(&popped);
-                    }
-
-                    if (fruc_success) {
-                        log_step("fruc success");
-                        filter->fruc_success_count++;
+                    int fruc_in_idx = filter->fruc->GetNextInputIndex();
+                    int fruc_out_idx = filter->fruc->GetNextOutputIndex();
+                    
+                    log_step("fruc transfer in");
+                    auto context = filter->d3d11_interop->GetContext();
+                    if (context) {
+                        context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
+                        filter->fruc->WaitSync(context.Get());
                         
-                        if (!filter->fruc_cache_texture) {
-                            filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        log_step("fruc process");
+                        HMODULE lib = GetModuleHandleA("nvcuda.dll");
+                        void* popped = nullptr;
+                        void* ctx = filter->nvidia_vsr->GetCudaContext();
+                        if (lib && ctx) {
+                            typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                            PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+                            if (pushCur) pushCur(ctx);
                         }
-                        if (filter->fruc_cache_texture) {
-                            ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
-                            if (d3d11_fruc_out) {
-                                context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
+
+                        bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
+
+                        if (lib && ctx) {
+                            typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
+                            PFN_cuCtxSynchronize ctxSync = (PFN_cuCtxSynchronize)GetProcAddress(lib, "cuCtxSynchronize");
+                            if (ctxSync) ctxSync(); // WAIT FOR CUDA TO FINISH WRITING
+                            
+                            typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                            PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+                            if (popCur) popCur(&popped);
+                        }
+
+                        if (fruc_success) {
+                            log_step("fruc success");
+                            filter->fruc_success_count++;
+                            
+                            if (!filter->fruc_cache_texture) {
+                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                            }
+                            if (filter->fruc_cache_texture) {
+                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
+                                if (d3d11_fruc_out) {
+                                    context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
+                                }
                             }
                         }
                     }
                 }
             }
-        }
     }
 
     // Draw output
@@ -531,6 +536,8 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
 
 
 
