@@ -166,7 +166,7 @@ void FrameInterpolation::Release()
 }
 
 int FrameInterpolation::GetNextInputIndex() {
-    if (!m_resources_registered || m_resource_count < 4) return 1;
+    if (!m_resources_registered || m_resource_count < 3) return 1;
     // Input indices: 1 and 2
     return 1 + (m_process_count % 2);
 }
@@ -321,6 +321,10 @@ void FrameInterpolation::WaitFence(ID3D11DeviceContext* context) {
         }
     }
 }
+
+
+
+
 
 
 
