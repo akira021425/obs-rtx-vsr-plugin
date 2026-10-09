@@ -173,14 +173,14 @@ int FrameInterpolation::GetNextInputIndex() {
 
 int FrameInterpolation::GetNextOutputIndex() {
     // Output index: always 0
-    return (m_process_count % 2 == 0) ? 0 : 3;
+    return (m_process_count % 2 == 0) ? 0 : 0;
 }
 
 // Reads back a 16x16 block from the center of a FRUC texture and returns a checksum.
 // Used only for a limited number of frames to verify that FRUC receives distinct inputs.
 uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
 {
-    if (!tex || !m_device || !m_context4) return (m_process_count % 2 == 0) ? 0 : 3;
+    if (!tex || !m_device || !m_context4) return (m_process_count % 2 == 0) ? 0 : 0;
     if (!m_diag_stage) {
         D3D11_TEXTURE2D_DESC src_desc = {};
         tex->GetDesc(&src_desc);
@@ -193,7 +193,7 @@ uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
         desc.SampleDesc.Count = 1;
         desc.Usage = D3D11_USAGE_STAGING;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_diag_stage))) return (m_process_count % 2 == 0) ? 0 : 3;
+        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_diag_stage))) return (m_process_count % 2 == 0) ? 0 : 0;
     }
     D3D11_BOX box;
     box.left = m_width / 2 - 8;
@@ -321,6 +321,7 @@ void FrameInterpolation::WaitFence(ID3D11DeviceContext* context) {
         }
     }
 }
+
 
 
 
