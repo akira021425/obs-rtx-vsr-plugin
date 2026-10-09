@@ -428,14 +428,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     auto context = filter->d3d11_interop->GetContext();
                     if (context) {
                         context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
-                        
-                        // Signal the fence so FRUC (CUDA) knows when the D3D11 copy is done
-                        Microsoft::WRL::ComPtr<ID3D11DeviceContext4> context4;
-                        if (SUCCEEDED(context->QueryInterface(IID_PPV_ARGS(&context4)))) {
-                            uint64_t wait_val = filter->fruc->GetFenceValue();
-                            context4->Signal(filter->fruc->GetFence(), wait_val);
-                        }
-                        context->Flush(); // CRITICAL: Dispatch the command so CUDA can actually see the Signal
+                        filter->fruc->WaitSync(context.Get()); // Wait on CPU until D3D11 copy is completely finished
                         
                         log_step("fruc process");
                         static uint64_t fruc_base_time = 0;
@@ -447,12 +440,6 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         if (fruc_success) {
                             log_step("fruc success");
                             filter->fruc_success_count++;
-                            
-                            // Wait for FRUC (CUDA) to finish writing the output before D3D11 reads it
-                            if (context4) {
-                                uint64_t sig_val = filter->fruc->GetFenceValue(); // Already incremented in Process
-                                context4->Wait(filter->fruc->GetFence(), sig_val);
-                            }
                             
                             if (!filter->fruc_cache_texture) {
                                 filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);

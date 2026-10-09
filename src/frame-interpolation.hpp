@@ -20,6 +20,7 @@ public:
     int GetNextOutputIndex();
     ID3D11Texture2D* GetTexture(int index) { return m_tex[index].Get(); }
     bool Process(double timestamp);
+    void WaitSync(ID3D11DeviceContext* context);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }

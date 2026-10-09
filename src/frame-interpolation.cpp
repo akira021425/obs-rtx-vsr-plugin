@@ -49,10 +49,11 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         return false;
     }
     
-    if (FAILED(m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence)))) {
+    if (FAILED(m_device5->CreateFence(0, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)))) {
         blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to create D3D11Fence");
         return false;
     }
+    m_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
     if (!LoadDLL()) return false;
 
@@ -236,7 +237,7 @@ bool FrameInterpolation::Process(double timestamp)
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
+    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
@@ -292,4 +293,19 @@ bool FrameInterpolation::Process(double timestamp)
 
     return false;
 }
+
+
+void FrameInterpolation::WaitSync(ID3D11DeviceContext* context) {
+    if (!m_context4) {
+        context->QueryInterface(IID_PPV_ARGS(&m_context4));
+    }
+    if (m_context4 && m_fence && m_fence_event) {
+        m_fence_value++;
+        m_context4->Signal(m_fence.Get(), m_fence_value);
+        m_context4->Flush();
+        m_fence->SetEventOnCompletion(m_fence_value, m_fence_event);
+        WaitForSingleObject(m_fence_event, 1000);
+    }
+}
+
 
