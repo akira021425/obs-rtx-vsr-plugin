@@ -49,7 +49,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
         return false;
     }
     
-    if (FAILED(m_device5->CreateFence(0, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)))) {
+    if (FAILED(m_device5->CreateFence(0, D3D11_FENCE_FLAG_SHARED, IID_PPV_ARGS(&m_fence)))) {
         blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to create D3D11Fence");
         return false;
     }
