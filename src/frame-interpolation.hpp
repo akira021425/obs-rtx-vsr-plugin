@@ -19,7 +19,7 @@ public:
     int GetNextInputIndex();
     int GetNextOutputIndex();
     ID3D11Texture2D* GetTexture(int index) { return m_tex[index].Get(); }
-    bool Process(double in_timestamp, double out_timestamp);
+    bool Process(double in_timestamp, double out_timestamp, bool is_repeated);
     void WaitSync(ID3D11DeviceContext* context);
     void WaitFence(ID3D11DeviceContext* context);
 
@@ -79,6 +79,7 @@ public:
     ID3D11Fence* GetFence() const { return m_fence.Get(); }
     uint64_t GetFenceValue() const { return m_fence_value; }
 };
+
 
 
 

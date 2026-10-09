@@ -26,6 +26,9 @@ struct rtx_vsr_data {
     // FRUC result caching for duplicate frames
     gs_texture_t *fruc_cache_texture[2];
     int fruc_cache_idx;
+
+    double fruc_in_time;
+    int fruc_dup_count;
     
     // Duplicate frame detection
     ID3D11Texture2D *hash_stage_d3d11;
@@ -66,6 +69,8 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->vsr_cache_texture = nullptr;
     data->fruc_cache_texture[0] = nullptr; data->fruc_cache_texture[1] = nullptr;
     data->has_cached_vsr = false;
+    data->fruc_in_time = 0.0;
+    data->fruc_dup_count = 0;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     
     data->hash_stage_d3d11 = nullptr;
@@ -416,13 +421,19 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (success && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
                     filter->fruc_attempt_count++;
                     
-                    static double fruc_in_time = 0.0;
-                    static double fruc_out_time = -166666.6;
-
-                    if (is_new_frame) {
-                        fruc_in_time += 333333.3; // 30fps interval in 100ns units
+                                        if (is_new_frame) {
+                        filter->fruc_in_time += 333333.3; // 30fps interval in 100ns units
+                        filter->fruc_dup_count = 0;
+                    } else {
+                        filter->fruc_dup_count++;
                     }
-                    fruc_out_time += 166666.6; // 60fps interval in 100ns units
+
+                    double fruc_out_time;
+                    if (filter->fruc_dup_count == 0) {
+                        fruc_out_time = filter->fruc_in_time;
+                    } else {
+                        fruc_out_time = filter->fruc_in_time - 166666.6;
+                    }
 
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
@@ -443,7 +454,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             if (pushCur) pushCur(ctx);
                         }
 
-                        bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
+                        bool fruc_success = filter->fruc->Process(filter->fruc_in_time, fruc_out_time, !is_new_frame);
 
                         if (lib && ctx) {
                                                         typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
@@ -538,6 +549,11 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
+
+
+
 
 
 
