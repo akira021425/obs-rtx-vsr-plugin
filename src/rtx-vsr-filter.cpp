@@ -24,7 +24,8 @@ struct rtx_vsr_data {
     bool has_cached_vsr;
     
     // FRUC result caching for duplicate frames
-    gs_texture_t *fruc_cache_texture;
+    gs_texture_t *fruc_cache_texture[2];
+    int fruc_cache_idx;
     
     // Duplicate frame detection
     ID3D11Texture2D *hash_stage_d3d11;
@@ -63,7 +64,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->fruc = std::make_unique<FrameInterpolation>();
     data->output_texture = nullptr;
     data->vsr_cache_texture = nullptr;
-    data->fruc_cache_texture = nullptr;
+    data->fruc_cache_texture[0] = nullptr; data->fruc_cache_texture[1] = nullptr;
     data->has_cached_vsr = false;
     data->texrender = gs_texrender_create(GS_BGRA_UNORM, GS_ZS_NONE);
     
@@ -101,7 +102,7 @@ static void rtx_vsr_destroy(void *data)
     if (filter->hash_stage_d3d11) filter->hash_stage_d3d11->Release();
     if (filter->output_texture) gs_texture_destroy(filter->output_texture);
     if (filter->vsr_cache_texture) gs_texture_destroy(filter->vsr_cache_texture);
-    if (filter->fruc_cache_texture) gs_texture_destroy(filter->fruc_cache_texture);
+    if (filter->fruc_cache_texture[0]) gs_texture_destroy(filter->fruc_cache_texture[0]); if (filter->fruc_cache_texture[1]) gs_texture_destroy(filter->fruc_cache_texture[1]);
     if (filter->is_initialized) filter->d3d11_interop->Release();
     obs_leave_graphics();
     
@@ -205,7 +206,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         filter->fruc->Release();
         if (filter->output_texture) { gs_texture_destroy(filter->output_texture); filter->output_texture = nullptr; }
         if (filter->vsr_cache_texture) { gs_texture_destroy(filter->vsr_cache_texture); filter->vsr_cache_texture = nullptr; }
-        if (filter->fruc_cache_texture) { gs_texture_destroy(filter->fruc_cache_texture); filter->fruc_cache_texture = nullptr; }
+        if (filter->fruc_cache_texture[0]) { gs_texture_destroy(filter->fruc_cache_texture[0]); filter->fruc_cache_texture[0] = nullptr; } if (filter->fruc_cache_texture[1]) { gs_texture_destroy(filter->fruc_cache_texture[1]); filter->fruc_cache_texture[1] = nullptr; }
         if (filter->hash_stage_d3d11) { filter->hash_stage_d3d11->Release(); filter->hash_stage_d3d11 = nullptr; }
         filter->has_cached_vsr = false;
         filter->is_initialized = false;
@@ -445,7 +446,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
 
                         if (lib && ctx) {
-                            filter->fruc->WaitFence(context.Get()); // Instruct D3D11 to wait for CUDA write completion
+                                                        typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
+                            PFN_cuCtxSynchronize ctxSync = (PFN_cuCtxSynchronize)GetProcAddress(lib, "cuCtxSynchronize");
+                            if (ctxSync) ctxSync(); // WAIT FOR CUDA TO FINISH WRITING
                             
                             typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
                             PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
@@ -456,11 +459,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                             log_step("fruc success");
                             filter->fruc_success_count++;
                             
-                            if (!filter->fruc_cache_texture) {
-                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                                                        filter->fruc_cache_idx = (filter->fruc_cache_idx + 1) % 2;
+                            if (!filter->fruc_cache_texture[filter->fruc_cache_idx]) {
+                                filter->fruc_cache_texture[filter->fruc_cache_idx] = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
                             }
-                            if (filter->fruc_cache_texture) {
-                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
+                            if (filter->fruc_cache_texture[filter->fruc_cache_idx]) {
+                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture[filter->fruc_cache_idx]);
                                 if (d3d11_fruc_out) {
                                     context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
                                 }
@@ -473,9 +477,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
     // Draw output
     if (success && filter->output_texture) {
-        gs_texture_t *tex_to_draw = filter->output_texture;
-        if (filter->fruc_cache_texture && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
-            tex_to_draw = filter->fruc_cache_texture;
+                gs_texture_t *tex_to_draw = filter->output_texture;
+        if (filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+            tex_to_draw = filter->fruc_cache_texture[filter->fruc_cache_idx];
         }
         gs_effect_set_texture(image, tex_to_draw);
         while (gs_effect_loop(def_effect, "Draw")) {
@@ -534,6 +538,11 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
+
+
+
+
 
 
 
