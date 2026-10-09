@@ -428,10 +428,12 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         filter->fruc_dup_count++;
                     }
 
-                    double fruc_out_time;
+                                        double fruc_out_time;
                     if (filter->fruc_dup_count == 0) {
-                        fruc_out_time = filter->fruc_in_time;
+                        // When a new frame F(n) arrives, we output F(n-1) (the previous frame)
+                        fruc_out_time = filter->fruc_in_time - 333333.3;
                     } else {
+                        // When a duplicate frame arrives, we output F(n-0.5) (the interpolated frame between F(n-1) and F(n))
                         fruc_out_time = filter->fruc_in_time - 166666.6;
                     }
 
@@ -549,6 +551,7 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
 
 
 
