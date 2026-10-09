@@ -251,23 +251,6 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
             gs_flush();
             
-            // FRUC init FIRST. NvOFFRUCCreate changes the CUDA context that is current on this
-            // thread; if VSR (CUDA stream / D3D11 resource registration) were created before it,
-            // later NvCVImage_MapResource() fails with -1400. Creating VSR afterwards makes VSR
-            // use whatever context FRUC left current, so both share the same CUDA context.
-            {
-                char buf[256];
-                snprintf(buf, sizeof(buf), "init fruc calling (d3d=%p)", d3d11_dev.Get());
-                log_step(buf);
-                NvidiaVSR::LogCudaContext("before FRUC init");
-                if (!filter->fruc->Initialize(d3d11_dev, target_width, target_height)) {
-                    log_step("init fruc failed");
-                    blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
-                }
-                NvidiaVSR::LogCudaContext("after FRUC init");
-                log_step("init fruc done");
-            }
-
             log_step("init vsr calling");
             if (!filter->nvidia_vsr->Initialize(d3d11_dev, width, height, target_width, target_height)) {
                 log_step("init vsr failed");
@@ -276,6 +259,18 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             } else {
                 log_step("init vsr success");
                 NvidiaVSR::LogCudaContext("after VSR init");
+                
+                // Initialize FRUC AFTER VSR, using VSR's CUDA context
+                char buf[256];
+                void* cu_ctx = filter->nvidia_vsr->GetCudaContext();
+                snprintf(buf, sizeof(buf), "init fruc calling (cuda=%p)", cu_ctx);
+                log_step(buf);
+                if (!filter->fruc->Initialize(cu_ctx, target_width, target_height)) {
+                    log_step("init fruc failed");
+                    blog(LOG_WARNING, "[RTX-VSR] FRUC initialization failed - 60fps interpolation disabled");
+                }
+                NvidiaVSR::LogCudaContext("after FRUC init");
+                log_step("init fruc done");
             }
             log_step("init all done");
 
@@ -424,48 +419,54 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
                     
-                    // Use d3d11_dst (filter->output_texture) directly! It's already RGBA.
                     log_step("fruc transfer in");
-                    auto context = filter->d3d11_interop->GetContext();
-                    if (context) {
-                        context->CopyResource(filter->fruc->GetTexture(fruc_in_idx), d3d11_dst);
-                        context->Flush(); // Ensure D3D11 copy is submitted before CUDA (FRUC) reads it
-                        
-                        log_step("fruc process");
-                        static uint64_t fruc_base_time = 0;
-                        fruc_base_time += 333333; // 100ns units for 30fps
-                        double fruc_simulated_time = (double)fruc_base_time;
-                        
-                        // Push CUDA context
-                        HMODULE lib = GetModuleHandleA("nvcuda.dll");
-                        void* popped = nullptr;
-                        void* ctx = filter->nvidia_vsr->GetCudaContext();
-                        if (lib && ctx) {
-                            typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
-                            PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
-                            if (pushCur) pushCur(ctx);
-                        }
+                    NvCVImage* vsr_dst = filter->nvidia_vsr->GetDstGpuImage();
+                    NvCVImage* fruc_in = filter->fruc->GetCudaImage(fruc_in_idx);
+                    
+                    if (vsr_dst && fruc_in) {
+                        NvCVImage_Transfer(vsr_dst, fruc_in, 1.0f, filter->nvidia_vsr->GetCudaStream(), nullptr);
+                    }
+                    
+                    log_step("fruc process");
+                    static uint64_t fruc_base_time = 0;
+                    fruc_base_time += 333333; // 100ns units for 30fps
+                    double fruc_simulated_time = (double)fruc_base_time;
+                    
+                    // Push CUDA context
+                    HMODULE lib = GetModuleHandleA("nvcuda.dll");
+                    void* popped = nullptr;
+                    void* ctx = filter->nvidia_vsr->GetCudaContext();
+                    if (lib && ctx) {
+                        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                        PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+                        if (pushCur) pushCur(ctx);
+                    }
 
-                        bool fruc_success = filter->fruc->Process(fruc_simulated_time);
-                        
-                        // Pop CUDA context
-                        if (lib && ctx) {
-                            typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
-                            PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
-                            if (popCur) popCur(&popped);
-                        }
+                    bool fruc_success = filter->fruc->Process(fruc_simulated_time, filter->nvidia_vsr->GetCudaStream());
+                    
+                    // Pop CUDA context
+                    if (lib && ctx) {
+                        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                        PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+                        if (popCur) popCur(&popped);
+                    }
 
-                        if (fruc_success) {
-                            log_step("fruc success");
-                            filter->fruc_success_count++;
-                            
-                            if (!filter->fruc_cache_texture) {
-                                filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
-                            }
-                            if (filter->fruc_cache_texture) {
-                                ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
-                                if (d3d11_fruc_out) {
-                                    context->CopyResource(d3d11_fruc_out, filter->fruc->GetTexture(fruc_out_idx));
+                    if (fruc_success) {
+                        log_step("fruc success");
+                        filter->fruc_success_count++;
+                        
+                        if (!filter->fruc_cache_texture) {
+                            filter->fruc_cache_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+                        }
+                        if (filter->fruc_cache_texture) {
+                            ID3D11Texture2D* d3d11_fruc_out = (ID3D11Texture2D*)gs_texture_get_obj(filter->fruc_cache_texture);
+                            if (d3d11_fruc_out) {
+                                NvCVImage* cache_img = filter->nvidia_vsr->GetOrInitImagePublic(d3d11_fruc_out);
+                                NvCVImage* fruc_out = filter->fruc->GetCudaImage(fruc_out_idx);
+                                if (cache_img && fruc_out) {
+                                    NvCVImage_MapResource(cache_img, filter->nvidia_vsr->GetCudaStream());
+                                    NvCVImage_Transfer(fruc_out, cache_img, 1.0f, filter->nvidia_vsr->GetCudaStream(), nullptr);
+                                    NvCVImage_UnmapResource(cache_img, filter->nvidia_vsr->GetCudaStream());
                                 }
                             }
                         }
