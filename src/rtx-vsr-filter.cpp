@@ -445,9 +445,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         bool fruc_success = filter->fruc->Process(fruc_in_time, fruc_out_time);
 
                         if (lib && ctx) {
-                            typedef int (__stdcall *PFN_cuCtxSynchronize)(void);
-                            PFN_cuCtxSynchronize ctxSync = (PFN_cuCtxSynchronize)GetProcAddress(lib, "cuCtxSynchronize");
-                            if (ctxSync) ctxSync(); // WAIT FOR CUDA TO FINISH WRITING
+                            filter->fruc->WaitFence(context.Get()); // Instruct D3D11 to wait for CUDA write completion
                             
                             typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
                             PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
@@ -536,6 +534,7 @@ void register_rtx_vsr_filter()
     
     obs_register_source(&info);
 }
+
 
 
 

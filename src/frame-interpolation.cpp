@@ -69,7 +69,7 @@ bool FrameInterpolation::Initialize(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_d
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
     desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
         if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_tex[i]))) {
             blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to create D3D11 texture %d", i);
             Release();
@@ -158,7 +158,7 @@ void FrameInterpolation::Release()
     m_context.Reset();
     m_device5.Reset();
     
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
         m_tex[i].Reset();
     }
     
@@ -166,21 +166,21 @@ void FrameInterpolation::Release()
 }
 
 int FrameInterpolation::GetNextInputIndex() {
-    if (!m_resources_registered || m_resource_count < 3) return 1;
+    if (!m_resources_registered || m_resource_count < 4) return 1;
     // Input indices: 1 and 2
     return 1 + (m_process_count % 2);
 }
 
 int FrameInterpolation::GetNextOutputIndex() {
     // Output index: always 0
-    return 0;
+    return (m_process_count % 2 == 0) ? 0 : 3;
 }
 
 // Reads back a 16x16 block from the center of a FRUC texture and returns a checksum.
 // Used only for a limited number of frames to verify that FRUC receives distinct inputs.
 uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
 {
-    if (!tex || !m_device || !m_context4) return 0;
+    if (!tex || !m_device || !m_context4) return (m_process_count % 2 == 0) ? 0 : 3;
     if (!m_diag_stage) {
         D3D11_TEXTURE2D_DESC src_desc = {};
         tex->GetDesc(&src_desc);
@@ -193,7 +193,7 @@ uint64_t FrameInterpolation::DiagSum(ID3D11Texture2D* tex)
         desc.SampleDesc.Count = 1;
         desc.Usage = D3D11_USAGE_STAGING;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_diag_stage))) return 0;
+        if (FAILED(m_device->CreateTexture2D(&desc, nullptr, &m_diag_stage))) return (m_process_count % 2 == 0) ? 0 : 3;
     }
     D3D11_BOX box;
     box.left = m_width / 2 - 8;
@@ -229,7 +229,7 @@ bool FrameInterpolation::Process(double in_timestamp, double out_timestamp)
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
+    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
@@ -305,5 +305,20 @@ void FrameInterpolation::WaitSync(ID3D11DeviceContext* context) {
 
 
 
+
+
+
+void FrameInterpolation::WaitFence(ID3D11DeviceContext* context) {
+    if (!context || !m_fence) return;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext4> ctx4;
+    if (SUCCEEDED(context->QueryInterface(__uuidof(ID3D11DeviceContext4), (void**)&ctx4))) {
+        ctx4->Wait(m_fence.Get(), m_fence_value);
+    } else {
+        if (m_fence_event) {
+            m_fence->SetEventOnCompletion(m_fence_value, m_fence_event);
+            WaitForSingleObject(m_fence_event, 1000);
+        }
+    }
+}
 
 

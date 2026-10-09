@@ -21,6 +21,7 @@ public:
     ID3D11Texture2D* GetTexture(int index) { return m_tex[index].Get(); }
     bool Process(double in_timestamp, double out_timestamp);
     void WaitSync(ID3D11DeviceContext* context);
+    void WaitFence(ID3D11DeviceContext* context);
 
     void SetEnabled(bool enable) { m_enabled = enable; }
     bool IsEnabled() const { return m_enabled; }
@@ -32,7 +33,7 @@ public:
 private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_tex[3];
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_tex[4];
     
     NvOFFRUCHandle m_fruc_handle = nullptr;
     HMODULE m_fruc_dll = nullptr;
@@ -78,4 +79,6 @@ public:
     ID3D11Fence* GetFence() const { return m_fence.Get(); }
     uint64_t GetFenceValue() const { return m_fence_value; }
 };
+
+
 
