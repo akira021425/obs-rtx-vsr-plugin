@@ -45,6 +45,15 @@ bool FrameInterpolation::Initialize(void* cuda_ctx, uint32_t width, uint32_t hei
 
     if (!LoadDLL()) return false;
 
+    // Push CUDA context
+    HMODULE lib = GetModuleHandleA("nvcuda.dll");
+    void* popped = nullptr;
+    if (lib && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+        PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+        if (pushCur) pushCur(m_cu_ctx);
+    }
+
     // Create 3 CUDA device images for FRUC (input 1, input 2, output)
     for (int i = 0; i < 3; i++) {
         m_cu_tex[i] = new NvCVImage();
@@ -52,9 +61,20 @@ bool FrameInterpolation::Initialize(void* cuda_ctx, uint32_t width, uint32_t hei
         NvCV_Status cv_status = NvCVImage_Alloc(m_cu_tex[i], width, height, NVCV_RGBA, NVCV_U8, NVCV_CHUNKY, NVCV_GPU, 0);
         if (cv_status != NVCV_SUCCESS) {
             blog(LOG_ERROR, "[RTX-VSR] FRUC: Failed to alloc CUDA image %d (status: %d)", i, cv_status);
+            if (lib && m_cu_ctx) {
+                typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+                if (popCur) popCur(&popped);
+            }
             Release();
             return false;
         }
+    }
+    
+    if (lib && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+        PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+        if (popCur) popCur(&popped);
     }
 
     int count = 3;
@@ -122,12 +142,26 @@ void FrameInterpolation::Release()
         m_fruc_dll = nullptr;
     }
     
+    HMODULE lib = GetModuleHandleA("nvcuda.dll");
+    void* popped = nullptr;
+    if (lib && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+        PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+        if (pushCur) pushCur(m_cu_ctx);
+    }
+    
     for (int i = 0; i < 3; i++) {
         if (m_cu_tex[i]) {
             NvCVImage_Dealloc(m_cu_tex[i]);
             delete m_cu_tex[i];
             m_cu_tex[i] = nullptr;
         }
+    }
+    
+    if (lib && m_cu_ctx) {
+        typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+        PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+        if (popCur) popCur(&popped);
     }
 
     m_create = nullptr;
