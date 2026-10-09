@@ -435,7 +435,24 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                         fruc_base_time += 333333; // 100ns units for 30fps
                         double fruc_simulated_time = (double)fruc_base_time;
 
+                        // Push CUDA context
+                        HMODULE lib = GetModuleHandleA("nvcuda.dll");
+                        void* popped = nullptr;
+                        void* ctx = filter->nvidia_vsr->GetCudaContext();
+                        if (lib && ctx) {
+                            typedef int (__stdcall *PFN_cuCtxPushCurrent)(void*);
+                            PFN_cuCtxPushCurrent pushCur = (PFN_cuCtxPushCurrent)GetProcAddress(lib, "cuCtxPushCurrent");
+                            if (pushCur) pushCur(ctx);
+                        }
+
                         bool fruc_success = filter->fruc->Process(fruc_simulated_time);
+
+                        // Pop CUDA context
+                        if (lib && ctx) {
+                            typedef int (__stdcall *PFN_cuCtxPopCurrent)(void**);
+                            PFN_cuCtxPopCurrent popCur = (PFN_cuCtxPopCurrent)GetProcAddress(lib, "cuCtxPopCurrent");
+                            if (popCur) popCur(&popped);
+                        }
 
                         if (fruc_success) {
                             log_step("fruc success");
