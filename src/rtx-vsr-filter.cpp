@@ -502,7 +502,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
     // Periodic stats logging (every 10 seconds)
     uint64_t now = os_gettime_ns();
-    if (filter->last_log_time > 0 && (now - filter->last_log_time) >= 10000000000ULL) {
+    if (filter->last_log_time > 0 && (now - filter->last_log_time) >= 1000000000ULL) {
         blog(LOG_INFO, "[RTX-VSR] Stats: frames=%llu new=%llu dup=%llu vsr=%llu fruc_try=%llu fruc_ok=%llu fruc_interp=%llu fruc_repeat=%llu",
              filter->frame_count, filter->new_frame_count, filter->dup_frame_count,
              filter->vsr_count, filter->fruc_attempt_count, filter->fruc_success_count,

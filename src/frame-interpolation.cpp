@@ -270,9 +270,9 @@ bool FrameInterpolation::Process(double in_timestamp, double out_timestamp, bool
         if (out_frame_repeated) m_repeat_count++;
         else m_interp_count++;
 
-        if (m_success_count % 300 == 0) {
-            blog(LOG_INFO, "[RTX-VSR] FRUC: success=%llu interpolated=%llu repeated=%llu",
-                 m_success_count, m_interp_count, m_repeat_count);
+        if (m_success_count % 60 == 0) {
+            blog(LOG_INFO, "[RTX-VSR] FRUC (2sec report): total_success=%llu interpolated=%llu repeated=%llu | THIS FRAME: in_idx=%d out_idx=%d in_ts=%.2f out_ts=%.2f repeated=%d",
+                 m_success_count, m_interp_count, m_repeat_count, in_idx, out_idx, in_timestamp, out_timestamp, out_frame_repeated);
         }
         return true;
     }
