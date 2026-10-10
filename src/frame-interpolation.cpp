@@ -229,7 +229,7 @@ bool FrameInterpolation::Process(double in_timestamp, double out_timestamp, bool
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
     in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
-    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = 0;
+    in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = m_fence_value;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
     out_params.stFrameDataOutput.pFrame = m_tex[out_idx].Get();
