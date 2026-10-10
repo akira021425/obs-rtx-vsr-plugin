@@ -18,7 +18,8 @@ struct rtx_vsr_data {
     
     gs_texrender_t *texrender;       // For capturing source into a texture
          // For converting RGBA->RGBA for FRUC input
-    gs_texture_t *output_texture;    // The upscaled output texture
+    gs_texture_t *output_texture[4];
+    int output_texture_idx = 0;    // The upscaled output texture
     
     // VSR result caching
     gs_texture_t *vsr_cache_texture;
@@ -71,7 +72,7 @@ static void *rtx_vsr_create(obs_data_t *settings, obs_source_t *context)
     data->d3d11_interop = std::make_unique<D3D11Interop>();
     data->nvidia_vsr = std::make_unique<NvidiaVSR>();
     data->fruc = std::make_unique<FrameInterpolation>();
-    data->output_texture = nullptr;
+    for (int i = 0; i < 4; i++) data->output_texture[i] = nullptr;
     data->vsr_cache_texture = nullptr;
     data->fruc_cache_texture[0] = nullptr; data->fruc_cache_texture[1] = nullptr;
     data->has_cached_vsr = false;
@@ -111,7 +112,7 @@ static void rtx_vsr_destroy(void *data)
     if (filter->texrender) gs_texrender_destroy(filter->texrender);
     
     if (filter->hash_stage_d3d11) filter->hash_stage_d3d11->Release();
-    if (filter->output_texture) gs_texture_destroy(filter->output_texture);
+    for (int i = 0; i < 4; i++) if (filter->output_texture[i]) gs_texture_destroy(filter->output_texture[i]);
     if (filter->vsr_cache_texture) gs_texture_destroy(filter->vsr_cache_texture);
     if (filter->fruc_cache_texture[0]) gs_texture_destroy(filter->fruc_cache_texture[0]); if (filter->fruc_cache_texture[1]) gs_texture_destroy(filter->fruc_cache_texture[1]);
     if (filter->is_initialized) filter->d3d11_interop->Release();
@@ -215,7 +216,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
         log_step("resolution changed");
         filter->nvidia_vsr->Release();
         filter->fruc->Release();
-        if (filter->output_texture) { gs_texture_destroy(filter->output_texture); filter->output_texture = nullptr; }
+        for (int i = 0; i < 4; i++) if (filter->output_texture[i]) { gs_texture_destroy(filter->output_texture[i]); filter->output_texture[i] = nullptr; }
         if (filter->vsr_cache_texture) { gs_texture_destroy(filter->vsr_cache_texture); filter->vsr_cache_texture = nullptr; }
         if (filter->fruc_cache_texture[0]) { gs_texture_destroy(filter->fruc_cache_texture[0]); filter->fruc_cache_texture[0] = nullptr; } if (filter->fruc_cache_texture[1]) { gs_texture_destroy(filter->fruc_cache_texture[1]); filter->fruc_cache_texture[1] = nullptr; }
         if (filter->hash_stage_d3d11) { filter->hash_stage_d3d11->Release(); filter->hash_stage_d3d11 = nullptr; }
@@ -251,15 +252,15 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
             blog(LOG_INFO, "[RTX-VSR] Hash staging texture: hr=0x%08X, ptr=%p", hr, filter->hash_stage_d3d11);
 
             // Output texture (RGBA)
-            filter->output_texture = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
-            if (!filter->output_texture) {
+            for(int i=0; i<4; i++) filter->output_texture[i] = gs_texture_create(target_width, target_height, GS_RGBA_UNORM, 1, nullptr, GS_RENDER_TARGET);
+            if (!filter->output_texture[0]) {
                 blog(LOG_ERROR, "[RTX-VSR] Failed to create output texture");
                 filter->vsr_failed = true;
                 obs_source_skip_video_filter(filter->context);
                 return;
             }
             blog(LOG_INFO, "[RTX-VSR] Output texture created: %ux%u RGBA, d3d11=%p",
-                 target_width, target_height, gs_texture_get_obj(filter->output_texture));
+                 target_width, target_height, gs_texture_get_obj(filter->output_texture[0]));
 
             gs_flush();
             
@@ -327,9 +328,9 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     bool is_new_frame = true;
     filter->frame_count++;
 
-    if (filter->is_initialized && filter->nvidia_vsr->IsReady() && filter->output_texture) {
+    if (filter->is_initialized && filter->nvidia_vsr->IsReady() && filter->output_texture[filter->output_texture_idx]) {
         ID3D11Texture2D *d3d11_src = (ID3D11Texture2D *)gs_texture_get_obj(source_tex);
-        ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture);
+        ID3D11Texture2D *d3d11_dst = (ID3D11Texture2D *)gs_texture_get_obj(filter->output_texture[filter->output_texture_idx]);
         
         if (d3d11_src && d3d11_dst) {
             // ===== Duplicate frame detection (Horizontal 3 lines) =====
@@ -481,7 +482,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     }
 
     // Draw output
-    if (success && filter->output_texture) {
+    if (success && filter->output_texture[filter->output_texture_idx]) {
                 if (is_new_frame) {
             // Push interpolated frame to queue
             if (filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
@@ -491,17 +492,19 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                     filter->display_queue_count++;
                 }
             }
-            // Push latest source frame to queue
-            if (filter->output_texture) {
+                        // Push latest source frame to queue
+            if (filter->output_texture[filter->output_texture_idx]) {
                 if (filter->display_queue_count < 4) {
-                    filter->display_queue[filter->display_queue_head] = filter->output_texture;
+                    filter->display_queue[filter->display_queue_head] = filter->output_texture[filter->output_texture_idx];
                     filter->display_queue_head = (filter->display_queue_head + 1) % 4;
                     filter->display_queue_count++;
                 }
+                // Advance the output texture index for the NEXT VSR operation
+                filter->output_texture_idx = (filter->output_texture_idx + 1) % 4;
             }
         }
 
-        gs_texture_t *tex_to_draw = filter->output_texture;
+        gs_texture_t *tex_to_draw = filter->output_texture[(filter->output_texture_idx + 3) % 4];
         if (filter->display_queue_count > 0) {
             tex_to_draw = filter->display_queue[filter->display_queue_tail];
             filter->display_queue_tail = (filter->display_queue_tail + 1) % 4;
