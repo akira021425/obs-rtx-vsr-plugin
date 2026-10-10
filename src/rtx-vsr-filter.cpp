@@ -28,6 +28,10 @@ struct rtx_vsr_data {
     int fruc_cache_idx;
 
     double fruc_in_time;
+    gs_texture_t *display_queue[4] = {nullptr, nullptr, nullptr, nullptr};
+    int display_queue_head = 0;
+    int display_queue_tail = 0;
+    int display_queue_count = 0;
     int fruc_dup_count;
     
     // Duplicate frame detection
@@ -485,10 +489,32 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
 
     // Draw output
     if (success && filter->output_texture) {
-                gs_texture_t *tex_to_draw = filter->output_texture;
-        if (is_new_frame && filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
-            tex_to_draw = filter->fruc_cache_texture[filter->fruc_cache_idx];
+                if (is_new_frame) {
+            // Push interpolated frame to queue
+            if (filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+                if (filter->display_queue_count < 4) {
+                    filter->display_queue[filter->display_queue_head] = filter->fruc_cache_texture[filter->fruc_cache_idx];
+                    filter->display_queue_head = (filter->display_queue_head + 1) % 4;
+                    filter->display_queue_count++;
+                }
+            }
+            // Push latest source frame to queue
+            if (filter->output_texture) {
+                if (filter->display_queue_count < 4) {
+                    filter->display_queue[filter->display_queue_head] = filter->output_texture;
+                    filter->display_queue_head = (filter->display_queue_head + 1) % 4;
+                    filter->display_queue_count++;
+                }
+            }
         }
+
+        gs_texture_t *tex_to_draw = filter->output_texture;
+        if (filter->display_queue_count > 0) {
+            tex_to_draw = filter->display_queue[filter->display_queue_tail];
+            filter->display_queue_tail = (filter->display_queue_tail + 1) % 4;
+            filter->display_queue_count--;
+        }
+
         gs_effect_set_texture(image, tex_to_draw);
         while (gs_effect_loop(def_effect, "Draw")) {
             gs_draw_sprite(tex_to_draw, 0, target_width, target_height);
