@@ -422,11 +422,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (is_new_frame) {
                     filter->fruc_attempt_count++;
                     
-                    filter->fruc_in_time += 333333.3; // 30fps interval in 100ns units
+                    filter->fruc_in_time += 1.0; // 30fps interval, using sequence numbers like HighFPSViewer
                     
                     // We only need to generate ONE interpolated frame per new frame.
                     // The interpolated frame should be exactly halfway between the previous frame and this new frame.
-                    double fruc_out_time = filter->fruc_in_time - 166666.6;
+                    double fruc_out_time = filter->fruc_in_time - 0.5;
 
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
@@ -486,7 +486,7 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
     // Draw output
     if (success && filter->output_texture) {
                 gs_texture_t *tex_to_draw = filter->output_texture;
-        if (!is_new_frame && filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
+        if (is_new_frame && filter->fruc_cache_texture[filter->fruc_cache_idx] && filter->fruc->IsInitialized() && filter->fruc->IsEnabled()) {
             tex_to_draw = filter->fruc_cache_texture[filter->fruc_cache_idx];
         }
         gs_effect_set_texture(image, tex_to_draw);

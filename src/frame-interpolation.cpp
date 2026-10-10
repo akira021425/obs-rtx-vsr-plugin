@@ -228,8 +228,7 @@ bool FrameInterpolation::Process(double in_timestamp, double out_timestamp, bool
     in_params.stFrameDataInput.pFrame = m_tex[in_idx].Get();
     in_params.stFrameDataInput.nTimeStamp = in_timestamp;
     in_params.stFrameDataInput.nCuSurfacePitch = 0; // NOT USED for DirectX11Resource
-    bool in_repeated = is_repeated;
-    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = &in_repeated;
+    in_params.stFrameDataInput.bHasFrameRepetitionOccurred = nullptr;
     in_params.uSyncWait.FenceWaitValue.uiFenceValueToWaitOn = 0;
     
     NvOFFRUC_PROCESS_OUT_PARAMS out_params = {};
