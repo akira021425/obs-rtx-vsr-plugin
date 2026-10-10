@@ -426,11 +426,11 @@ static void rtx_vsr_video_render(void *data, gs_effect_t *effect)
                 if (is_new_frame) {
                     filter->fruc_attempt_count++;
                     
-                    filter->fruc_in_time += 1.0; // 30fps interval, using sequence numbers like HighFPSViewer
+                    filter->fruc_in_time += 333333.3; // 30fps interval in 100ns units (NVIDIA standard)
                     
                     // We only need to generate ONE interpolated frame per new frame.
                     // The interpolated frame should be exactly halfway between the previous frame and this new frame.
-                    double fruc_out_time = filter->fruc_in_time - 0.5;
+                    double fruc_out_time = filter->fruc_in_time - 166666.6;
 
                     int fruc_in_idx = filter->fruc->GetNextInputIndex();
                     int fruc_out_idx = filter->fruc->GetNextOutputIndex();
